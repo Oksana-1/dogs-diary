@@ -14,7 +14,7 @@ class MainController extends AbstractController
         $dogsName = 'Sharik';
 
         return $this->render('main/homepage.html.twig', [
-            'dogsName' => $dogsName
+            'dogsName' => $dogsName,
         ]);
     }
 }
