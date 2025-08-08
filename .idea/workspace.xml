@@ -4,11 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="eeec3105-e936-4f7b-89f2-082b6e37d3e2" name="Changes" comment="Add symfony debugger">
-      <change afterPath="$PROJECT_DIR$/src/Controller/DogsController.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Model/Dog.php" afterDir="false" />
+    <list default="true" id="eeec3105-e936-4f7b-89f2-082b6e37d3e2" name="Changes" comment="Add api-endpoint">
+      <change afterPath="$PROJECT_DIR$/src/Repository/DogsRepository.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Controller/DogsController.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Controller/DogsController.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Controller/MainController.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Controller/MainController.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Model/Dog.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Model/Dog.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/main/homepage.html.twig" beforeDir="false" afterPath="$PROJECT_DIR$/templates/main/homepage.html.twig" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -62,7 +64,8 @@
       <updated>1754316476761</updated>
       <workItem from="1754316477804" duration="4635000" />
       <workItem from="1754394128884" duration="2273000" />
-      <workItem from="1754420054208" duration="16130000" />
+      <workItem from="1754420054208" duration="17703000" />
+      <workItem from="1754660300032" duration="3147000" />
     </task>
     <task id="LOCAL-00001" summary="MainController added">
       <option name="closed" value="true" />
@@ -104,7 +107,15 @@
       <option name="project" value="LOCAL" />
       <updated>1754577293569</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Add api-endpoint">
+      <option name="closed" value="true" />
+      <created>1754580531615</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1754580531615</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -115,6 +126,7 @@
     <MESSAGE value="Add php-cs-fixer, fix styles" />
     <MESSAGE value="Add twig template" />
     <MESSAGE value="Add symfony debugger" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add symfony debugger" />
+    <MESSAGE value="Add api-endpoint" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add api-endpoint" />
   </component>
 </project>

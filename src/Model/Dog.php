@@ -20,7 +20,8 @@ class Dog
     {
         return $this->name;
     }
- public function getBirthDate()
+
+    public function getBirthDate()
     {
         return $this->birth_date;
     }
