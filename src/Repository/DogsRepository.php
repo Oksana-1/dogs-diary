@@ -20,4 +20,14 @@ class DogsRepository
             new Dog(2, 'Rusty', '15-09-2021'),
         ];
     }
+
+    public function find(int $id)
+    {
+        foreach ($this -> findAll() as $dog) {
+            if ($dog -> getId() === $id) {
+                return $dog;
+            }
+        }
+    return null;
+    }
 }
