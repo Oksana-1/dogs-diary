@@ -21,13 +21,14 @@ class DogsRepository
         ];
     }
 
-    public function find(int $id)
+    public function find(int $id): ?Dog
     {
-        foreach ($this -> findAll() as $dog) {
-            if ($dog -> getId() === $id) {
+        foreach ($this->findAll() as $dog) {
+            if ($dog->getId() === $id) {
                 return $dog;
             }
         }
-    return null;
+
+        return null;
     }
 }

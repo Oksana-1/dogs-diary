@@ -19,10 +19,11 @@ class DogsController extends AbstractController
     #[Route('/{id<\d+>}')]
     public function getItem(int $id, DogsRepository $repository): Response
     {
-        $dog = $repository -> find($id);
+        $dog = $repository->find($id);
         if (!$dog) {
-            throw $this -> createNotFoundException('Dog not found');
+            throw $this->createNotFoundException('Dog not found');
         }
-        return $this -> json($dog);
+
+        return $this->json($dog);
     }
 }
