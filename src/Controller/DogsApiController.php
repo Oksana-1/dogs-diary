@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/api/dogs')]
-class DogsController extends AbstractController
+class DogsApiController extends AbstractController
 {
     #[Route('', methods: ['GET'])]
     public function getCollection(DogsRepository $repository): Response
