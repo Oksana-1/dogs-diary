@@ -9,7 +9,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class DogController extends AbstractController
 {
-    #[Route('/dogs/{id<\d+>}')]
+    #[Route('/dogs/{id<\d+>}', name: 'app_dog_index')]
     public function index(int $id, DogsRepository $repository): Response
     {
         $dog = $repository->find($id);

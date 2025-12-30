@@ -14,10 +14,12 @@ class MainController extends AbstractController
     {
         $dogsName = 'Sharik';
         $dogs = $dogsRepository->findAll();
+        $myDog = $dogsRepository->find(1);
 
         return $this->render('main/homepage.html.twig', [
             'dogsName' => $dogsName,
             'dogs' => $dogs,
+            'myDog' => $myDog,
         ]);
     }
 }

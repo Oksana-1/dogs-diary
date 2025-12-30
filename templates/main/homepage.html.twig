@@ -3,6 +3,6 @@
     {% block title %}
         Sharik's page
     {% endblock %}
-    <div>Hello, {{ dogsName }}!</div>
     <div>General dogs count = {{ dogs | length }}</div>
+    <a href="{{ path('app_dog_index', { id: myDog.id} ) }}">{{ myDog.name }}</a>
 {% endblock %}
