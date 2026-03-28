@@ -1,7 +1,13 @@
 {% extends 'base.html.twig' %}
 {% block body %}
-    {% block title %}
-        {{ dog.name }}'s page
-    {% endblock %}
-    <div>Hello,  {{ dog.name }}!</div>
+    <div class="page">
+        <div class="dog-header">
+            <div class="dog-avatar">🐶</div>
+            <div class="dog-info">
+                <h1> {{ dog.name }}</h1>
+                <span class="breed-tag">Good boy</span>
+                <p style="margin-top:6px;">Born {{ dog.birthDate ? dog.birthDate|date('F j, Y') : 'Unknown'  }} · Male · {{ dog.weight }} kg</p>
+            </div>
+        </div>
+    </div>
 {% endblock %}

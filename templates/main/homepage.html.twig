@@ -1,8 +1,5 @@
 {% extends 'base.html.twig' %}
 {% block body %}
-    {% block title %}
-        Sharik's page
-    {% endblock %}
     <div>General dogs count = {{ dogs | length }}</div>
     <a href="{{ path('app_dog_index', { id: myDog.id} ) }}">{{ myDog.name }}</a>
 {% endblock %}
