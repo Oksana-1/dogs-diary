@@ -42,7 +42,7 @@ class Dog
         return $this;
     }
 
-    public function getBirthDate(): ?string
+    public function getBirthDate(): ?\DateTimeImmutable
     {
         return $this->birth_date;
     }
