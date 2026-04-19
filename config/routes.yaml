@@ -1,5 +1,11 @@
-controllers:
+web_controllers:
     resource:
-        path: ../src/Controller/
-        namespace: App\Controller
+        path: ../src/Controller/Web/
+        namespace: App\Controller\Web
+    type: attribute
+
+api_controllers:
+    resource:
+        path: ../src/Controller/Api/
+        namespace: App\Controller\Api
     type: attribute

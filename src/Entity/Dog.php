@@ -25,6 +25,9 @@ class Dog
     #[ORM\Column(nullable: true)]
     private ?int $height = null;
 
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $status = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -74,6 +77,18 @@ class Dog
     public function setHeight(?int $height): static
     {
         $this->height = $height;
+
+        return $this;
+    }
+
+    public function getStatus(): ?string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(?string $status): static
+    {
+        $this->status = $status;
 
         return $this;
     }

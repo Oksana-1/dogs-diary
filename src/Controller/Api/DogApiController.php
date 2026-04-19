@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller;
+namespace App\Controller\Api;
 
 use App\Entity\Dog;
 use App\Repository\DogRepository;
@@ -36,6 +36,7 @@ class DogApiController extends AbstractController
             'birthDate' => $dog->getBirthDate()?->format('Y-m-d'),
             'weight' => $dog->getWeight(),
             'height' => $dog->getHeight(),
+            'status' => $dog->getStatus(),
         ];
     }
 }

@@ -5,7 +5,7 @@
             <div class="dog-avatar">🐶</div>
             <div class="dog-info">
                 <h1> {{ dog.name }}</h1>
-                <span class="breed-tag">Good boy</span>
+                <span class="breed-tag">{{ dog.status ?? 'No status' }}</span>
                 <p style="margin-top:6px;">Born {{ dog.birthDate ? dog.birthDate|date('F j, Y') : 'Unknown'  }} · Male · {{ dog.weight }} kg</p>
             </div>
         </div>
