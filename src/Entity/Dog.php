@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\DogRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: DogRepository::class)]
 class Dog
@@ -14,18 +15,23 @@ class Dog
     private ?int $id = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 2, max: 100)]
     private ?string $name = null;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $birth_date = null;
 
     #[ORM\Column(nullable: true)]
+    #[Assert\Positive]
     private ?int $weight = null;
 
     #[ORM\Column(nullable: true)]
+    #[Assert\Positive]
     private ?int $height = null;
 
     #[ORM\Column(length: 100, nullable: true)]
+    #[Assert\Length(max: 100)]
     private ?string $status = null;
 
     public function getId(): ?int
