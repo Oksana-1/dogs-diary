@@ -64,4 +64,18 @@ class DogApiController extends AbstractController
 
         return $this->json($this->normalizeDog($dog));
     }
+    #[Route('/{id<\d+>}', methods: ['DELETE'])]
+    public function deleteItem(
+        int $id,
+        DogRepository $repository,
+        EntityManagerInterface $em
+        ): Response {
+            $dog = $repository->find($id);
+            if (!$dog) {
+                throw $this->createNotFoundException('Dog not found');
+            }
+            $em->remove($dog);
+            $em->flush();
+            return new Response(null, 204);
+        }
 }
