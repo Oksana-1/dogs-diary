@@ -2,6 +2,7 @@
 
 namespace App\Controller\Api;
 
+use App\Dto\CreateDogPayload;
 use App\Dto\UpdateDogPayload;
 use App\Entity\Dog;
 use App\Repository\DogRepository;
@@ -42,12 +43,13 @@ class DogApiController extends AbstractController
             'status' => $dog->getStatus(),
         ];
     }
+
     #[Route('/{id<\d+>}', methods: ['PUT'])]
     public function updateItem(
         int $id,
         #[MapRequestPayload] UpdateDogPayload $payload,
         DogRepository $repository,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
     ): Response {
         $dog = $repository->find($id);
         if (!$dog) {
@@ -64,18 +66,39 @@ class DogApiController extends AbstractController
 
         return $this->json($this->normalizeDog($dog));
     }
+
+    #[Route('', methods: ['POST'])]
+    public function createItem(
+        #[MapRequestPayload] CreateDogPayload $payload,
+        EntityManagerInterface $em,
+    ): Response {
+        $dog = (new Dog())
+            ->setName($payload->name)
+            ->setBirthDate(new \DateTimeImmutable($payload->birthDate))
+            ->setStatus($payload->status)
+            ->setWeight($payload->weight)
+            ->setHeight($payload->height);
+
+        $em->persist($dog);
+
+        $em->flush();
+
+        return $this->json($this->normalizeDog($dog), 201);
+    }
+
     #[Route('/{id<\d+>}', methods: ['DELETE'])]
     public function deleteItem(
         int $id,
         DogRepository $repository,
-        EntityManagerInterface $em
-        ): Response {
-            $dog = $repository->find($id);
-            if (!$dog) {
-                throw $this->createNotFoundException('Dog not found');
-            }
-            $em->remove($dog);
-            $em->flush();
-            return new Response(null, 204);
+        EntityManagerInterface $em,
+    ): Response {
+        $dog = $repository->find($id);
+        if (!$dog) {
+            throw $this->createNotFoundException('Dog not found');
         }
+        $em->remove($dog);
+        $em->flush();
+
+        return new Response(null, 204);
+    }
 }
