@@ -14,6 +14,8 @@ Small Symfony 7.3 app for tracking dogs and their treatments.
 ## Project Structure
 
 - `src/Controller` - Web and API controllers.
+- `src/Controller/Api/Dto` - HTTP request payload DTOs for API endpoints.
+- `src/Application/Dog` - Application service (`DogService`) for dog use-cases.
 - `src/Entity` - Doctrine entities (`Dog`, `Treatment`).
 - `src/Repository` - Doctrine repositories and legacy in-memory `DogsRepository`.
 - `templates` - Twig templates for HTML pages.
@@ -59,7 +61,11 @@ Small Symfony 7.3 app for tracking dogs and their treatments.
 
 - There are two dog models in the codebase:
   - `App\Model\Dog` (used by legacy in-memory repository path).
-  - `App\Entity\Dog` (Doctrine entity used by API controller).
+  - `App\Entity\Dog` (Doctrine persistence model used by `DogService`).
+- API controller is thin and delegates CRUD to `App\Application\Dog\DogService`.
+- API payload validation is handled by:
+  - `App\Controller\Api\Dto\CreateDogPayload`
+  - `App\Controller\Api\Dto\UpdateDogPayload`
 - `Treatment` persistence exists as Doctrine entity and is being connected to `Dog`.
 - If you work on persistence, prefer Doctrine entities/repositories over the legacy in-memory repository.
 

@@ -2,11 +2,9 @@
 
 namespace App\Controller\Api;
 
-use App\Dto\CreateDogPayload;
-use App\Dto\UpdateDogPayload;
-use App\Entity\Dog;
-use App\Repository\DogRepository;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Application\Dog\DogService;
+use App\Controller\Api\Dto\CreateDogPayload;
+use App\Controller\Api\Dto\UpdateDogPayload;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
@@ -16,88 +14,54 @@ use Symfony\Component\Routing\Attribute\Route;
 class DogApiController extends AbstractController
 {
     #[Route('', methods: ['GET'])]
-    public function getCollection(DogRepository $repository): Response
+    public function getCollection(DogService $dogService): Response
     {
-        return $this->json(array_map($this->normalizeDog(...), $repository->findAll()));
+        return $this->json($dogService->list());
     }
 
     #[Route('/{id<\d+>}', methods: ['GET'])]
-    public function getItem(int $id, DogRepository $repository): Response
+    public function getItem(int $id, DogService $dogService): Response
     {
-        $dog = $repository->find($id);
+        $dog = $dogService->get($id);
         if (!$dog) {
             throw $this->createNotFoundException('Dog not found');
         }
 
-        return $this->json($this->normalizeDog($dog));
-    }
-
-    private function normalizeDog(Dog $dog): array
-    {
-        return [
-            'id' => $dog->getId(),
-            'name' => $dog->getName(),
-            'birthDate' => $dog->getBirthDate()?->format('Y-m-d'),
-            'weight' => $dog->getWeight(),
-            'height' => $dog->getHeight(),
-            'status' => $dog->getStatus(),
-        ];
+        return $this->json($dog);
     }
 
     #[Route('/{id<\d+>}', methods: ['PUT'])]
     public function updateItem(
         int $id,
         #[MapRequestPayload] UpdateDogPayload $payload,
-        DogRepository $repository,
-        EntityManagerInterface $em,
+        DogService $dogService,
     ): Response {
-        $dog = $repository->find($id);
+        $dog = $dogService->update($id, $payload->name, $payload->birthDate, $payload->status, $payload->weight, $payload->height);
         if (!$dog) {
             throw $this->createNotFoundException('Dog not found');
         }
 
-        $dog->setName($payload->name);
-        $dog->setStatus($payload->status);
-        $dog->setWeight($payload->weight);
-        $dog->setHeight($payload->height);
-        $dog->setBirthDate(new \DateTimeImmutable($payload->birthDate));
-
-        $em->flush();
-
-        return $this->json($this->normalizeDog($dog));
+        return $this->json($dog);
     }
 
     #[Route('', methods: ['POST'])]
     public function createItem(
         #[MapRequestPayload] CreateDogPayload $payload,
-        EntityManagerInterface $em,
+        DogService $dogService,
     ): Response {
-        $dog = (new Dog())
-            ->setName($payload->name)
-            ->setBirthDate(new \DateTimeImmutable($payload->birthDate))
-            ->setStatus($payload->status)
-            ->setWeight($payload->weight)
-            ->setHeight($payload->height);
+        $dog = $dogService->create($payload->name, $payload->birthDate, $payload->status, $payload->weight, $payload->height);
 
-        $em->persist($dog);
-
-        $em->flush();
-
-        return $this->json($this->normalizeDog($dog), 201);
+        return $this->json($dog, 201);
     }
 
     #[Route('/{id<\d+>}', methods: ['DELETE'])]
     public function deleteItem(
         int $id,
-        DogRepository $repository,
-        EntityManagerInterface $em,
+        DogService $dogService,
     ): Response {
-        $dog = $repository->find($id);
-        if (!$dog) {
+        if (!$dogService->delete($id)) {
             throw $this->createNotFoundException('Dog not found');
         }
-        $em->remove($dog);
-        $em->flush();
 
         return new Response(null, 204);
     }
