@@ -37,6 +37,7 @@ body {
         font-size: 22px;
         font-weight: 500;
         color: var(--text-dark);
+        margin-bottom: 4px;
     }
 }
 .breed-tag {
@@ -46,5 +47,48 @@ body {
     border-radius: 9px;
     background: var(--bg-info);
     color: var(--text-info);
-    margin-top: 4px;
+    margin-bottom: 4px;
 }
+
+.dogs-list-title {
+    margin-bottom: 15px;
+}
+
+.dog-card-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.dog-card {
+    padding: 12px;
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    margin-bottom: 12px;
+}
+
+.dog-card-title {
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text-dark);
+    margin-bottom: 4px;
+}
+.button-line {
+    display: flex;
+    justify-content: flex-end;
+}
+.btn-outline {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 6px 12px;
+    border: 1px solid var(--text-info);
+    border-radius: 6px;
+    color: var(--text-info);
+    text-decoration: none;
+    font-size: 14px;
+    background: transparent;
+    cursor: pointer;
+    &:hover {
+        background: var(--bg-info);
+    }
+}
+

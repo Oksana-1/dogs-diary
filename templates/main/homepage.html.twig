@@ -1,5 +1,24 @@
 {% extends 'base.html.twig' %}
 {% block body %}
-    <div>General dogs count = {{ dogs | length }}</div>
-    <a href="{{ path('app_dog_index', { id: myDog.id} ) }}">{{ myDog.name }}</a>
+    <div class="page">
+        <h1 class="dogs-list-title">My lovely dogs</h1>
+
+        {% for dog in dogs %}
+            <a href="{{ path('app_dog_index', { id: dog.id }) }}" class="dog-card-link">
+                <div class="dog-header dog-card">
+                    <div class="dog-avatar">🐶</div>
+                    <div class="dog-info">
+                        <h2 class="dog-card-title">{{ dog.name }}</h2>
+                        <span class="breed-tag">{{ dog.status ?? 'No status' }}</span>
+                        <p class="dog-card-meta">
+                            Born {{ dog.birthDate ? dog.birthDate|date('F j, Y') : 'Unknown' }}
+                            · {{ dog.weight ?? 'Unknown' }} kg
+                        </p>
+                    </div>
+                </div>
+            </a>
+        {% else %}
+            <p>No dogs found.</p>
+        {% endfor %}
+    </div>
 {% endblock %}
