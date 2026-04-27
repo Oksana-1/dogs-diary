@@ -2,6 +2,8 @@
 
 namespace App\Application\Dog;
 
+use App\Application\Dog\Data\CreateDogData;
+use App\Application\Dog\Data\UpdateDogData;
 use App\Entity\Dog;
 use App\Repository\DogRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -38,20 +40,15 @@ final readonly class DogService
     /**
      * @return array<string, mixed>
      */
-    public function create(
-        string $name,
-        string $birthDate,
-        ?string $status,
-        ?int $weight,
-        ?int $height,
-    ): array {
+    public function create(CreateDogData $data): array
+    {
         $dog = $this->hydrateDog(
             new Dog(),
-            $name,
-            new \DateTimeImmutable($birthDate),
-            $status,
-            $weight,
-            $height,
+            $data->name,
+            new \DateTimeImmutable($data->birthDate),
+            $data->status,
+            $data->weight,
+            $data->height,
         );
 
         $this->em->persist($dog);
@@ -63,26 +60,20 @@ final readonly class DogService
     /**
      * @return array<string, mixed>|null
      */
-    public function update(
-        int $id,
-        string $name,
-        string $birthDate,
-        ?string $status,
-        ?int $weight,
-        ?int $height,
-    ): ?array {
-        $dog = $this->dogRepository->find($id);
+    public function update(UpdateDogData $data): ?array
+    {
+        $dog = $this->dogRepository->find($data->id);
         if (!$dog) {
             return null;
         }
 
         $this->hydrateDog(
             $dog,
-            $name,
-            new \DateTimeImmutable($birthDate),
-            $status,
-            $weight,
-            $height,
+            $data->name,
+            new \DateTimeImmutable($data->birthDate),
+            $data->status,
+            $data->weight,
+            $data->height,
         );
 
         $this->em->flush();

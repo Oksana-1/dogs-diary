@@ -2,6 +2,8 @@
 
 namespace App\Controller\Api;
 
+use App\Application\Dog\Data\CreateDogData;
+use App\Application\Dog\Data\UpdateDogData;
 use App\Application\Dog\DogService;
 use App\Controller\Api\Dto\CreateDogPayload;
 use App\Controller\Api\Dto\UpdateDogPayload;
@@ -36,7 +38,14 @@ class DogApiController extends AbstractController
         #[MapRequestPayload] UpdateDogPayload $payload,
         DogService $dogService,
     ): Response {
-        $dog = $dogService->update($id, $payload->name, $payload->birthDate, $payload->status, $payload->weight, $payload->height);
+        $dog = $dogService->update(new UpdateDogData(
+            id: $id,
+            name: $payload->name,
+            birthDate: $payload->birthDate,
+            status: $payload->status,
+            weight: $payload->weight,
+            height: $payload->height,
+        ));
         if (!$dog) {
             throw $this->createNotFoundException('Dog not found');
         }
@@ -49,7 +58,13 @@ class DogApiController extends AbstractController
         #[MapRequestPayload] CreateDogPayload $payload,
         DogService $dogService,
     ): Response {
-        $dog = $dogService->create($payload->name, $payload->birthDate, $payload->status, $payload->weight, $payload->height);
+        $dog = $dogService->create(new CreateDogData(
+            name: $payload->name,
+            birthDate: $payload->birthDate,
+            status: $payload->status,
+            weight: $payload->weight,
+            height: $payload->height,
+        ));
 
         return $this->json($dog, 201);
     }
