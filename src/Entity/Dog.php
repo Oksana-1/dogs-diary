@@ -19,8 +19,8 @@ class Dog
     #[Assert\Length(min: 2, max: 100)]
     private ?string $name = null;
 
-    #[ORM\Column]
-    private ?\DateTimeImmutable $birth_date = null;
+    #[ORM\Column(name: 'birth_date')]
+    private ?\DateTimeImmutable $birthDate = null;
 
     #[ORM\Column(nullable: true)]
     #[Assert\Positive]
@@ -53,12 +53,12 @@ class Dog
 
     public function getBirthDate(): ?\DateTimeImmutable
     {
-        return $this->birth_date;
+        return $this->birthDate;
     }
 
-    public function setBirthDate(\DateTimeImmutable $birth_date): static
+    public function setBirthDate(\DateTimeImmutable $birthDate): static
     {
-        $this->birth_date = $birth_date;
+        $this->birthDate = $birthDate;
 
         return $this;
     }
