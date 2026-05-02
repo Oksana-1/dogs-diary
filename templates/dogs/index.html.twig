@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 {% block body %}
-    <div class="page">
+    <div class="page" data-controller="modal">
         <div class="dog-header">
             <div class="dog-avatar">🐶</div>
             <div class="dog-info">
@@ -10,13 +10,15 @@
             </div>
         </div>
         <div class="button-line">
-            <button class="btn-outline" id="add-treatment-btn">Add treatment</button>
+            <button class="btn-outline" data-action="modal#open">Add treatment</button>
         </div>
 
-        <div id="treatment-modal" class="modal" style="display: none;">
+        <div class="modal"
+             data-modal-target="dialog"
+             data-action="click->modal#clickOutside">
             <div class="modal-content">
                 <h2>Add Treatment</h2>
-                <form id="treatment-form">
+                <form data-action="submit->modal#submit">
                     <div class="form-group">
                         <label for="treatment-type">Treatment type</label>
                         <select id="treatment-type" name="type" required>
@@ -46,7 +48,7 @@
                         <input type="file" id="photo" name="photo" accept="image/*">
                     </div>
                     <div class="modal-actions">
-                        <button type="button" class="btn-secondary" id="close-modal">Cancel</button>
+                        <button type="button" class="btn-secondary" data-action="modal#close">Cancel</button>
                         <button type="submit" class="btn-primary">Save</button>
                     </div>
                 </form>
