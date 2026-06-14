@@ -1,24 +1,92 @@
 {% extends 'base.html.twig' %}
 {% block body %}
-    <div class="page">
-        <h1 class="dogs-list-title">My lovely dogs</h1>
-
+    <div class="page" data-controller="modal">
+        <div class="logo-container">
+            <img src="{{ asset('images/logo.png') }}" class="fits" alt="logo"/>
+        </div>
         {% for dog in dogs %}
-            <a href="{{ path('app_dog_index', { id: dog.id }) }}" class="dog-card-link">
-                <div class="dog-header dog-card">
-                    <div class="dog-avatar">🐶</div>
+            <div class="dog-card dog-card-row">
+                <a href="{{ path('app_dog_index', { id: dog.id }) }}" class="dog-card-link dog-card-main">
+                    <div class="dog-avatar">
+                        {% if dog.avatar %}
+                            {% if dog.avatar starts with 'images/' %}
+                                <img src="{{ asset(dog.avatar) }}" alt="{{ dog.name }} avatar">
+                            {% else %}
+                                {{ dog.avatar }}
+                            {% endif %}
+                        {% else %}
+                            🐶 🐕
+                        {% endif %}
+                    </div>
                     <div class="dog-info">
-                        <h2 class="dog-card-title">{{ dog.name }}</h2>
+                        <div class="dog-info-header">
+                            <h2 class="dog-card-title">{{ dog.name }}</h2>
+                        </div>
                         <span class="breed-tag">{{ dog.status ?? 'No status' }}</span>
                         <p class="dog-card-meta">
                             Born {{ dog.birthDate ? dog.birthDate|date('F j, Y') : 'Unknown' }}
                             · {{ dog.weight ?? 'Unknown' }} kg
                         </p>
                     </div>
-                </div>
-            </a>
+                </a>
+                <button
+                    type="button"
+                    class="icon-button dog-edit-button"
+                    aria-label="Edit {{ dog.name }}"
+                    title="Edit {{ dog.name }}"
+                    data-action="modal#openEdit"
+                    data-modal-dog-id-param="{{ dog.id }}"
+                    data-modal-dog-name-param="{{ dog.name }}"
+                    data-modal-dog-birth-date-param="{{ dog.birthDate ? dog.birthDate|date('Y-m-d') : '' }}"
+                    data-modal-dog-status-param="{{ dog.status ?? '' }}"
+                    data-modal-dog-avatar-param="{{ dog.avatar ?? '' }}"
+                    data-modal-dog-weight-param="{{ dog.weight ?? '' }}"
+                    data-modal-dog-height-param="{{ dog.height ?? '' }}"
+                >
+                    ✎
+                </button>
+            </div>
         {% else %}
             <p>No dogs found.</p>
         {% endfor %}
+
+        <div class="modal"
+             data-modal-target="dialog"
+             data-action="click->modal#clickOutside">
+            <div class="modal-content">
+                <h2 data-modal-target="title">Edit Dog</h2>
+                <form data-action="submit->modal#submit">
+                    <input type="hidden" name="id" data-modal-target="id">
+                    <div class="form-group">
+                        <label for="edit-dog-name">Name</label>
+                        <input type="text" id="edit-dog-name" name="name" data-modal-target="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-dog-birth-date">Birth date</label>
+                        <input type="date" id="edit-dog-birth-date" name="birthDate" data-modal-target="birthDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-dog-status">Status</label>
+                        <input type="text" id="edit-dog-status" name="status" data-modal-target="status">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-dog-avatar">Avatar</label>
+                        <input type="text" id="edit-dog-avatar" name="avatar" data-modal-target="avatar">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-dog-weight">Weight, kg</label>
+                        <input type="number" id="edit-dog-weight" name="weight" data-modal-target="weight" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-dog-height">Height, cm</label>
+                        <input type="number" id="edit-dog-height" name="height" data-modal-target="height" min="1">
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-secondary" data-action="modal#close">Cancel</button>
+                        <button type="submit" class="btn-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 {% endblock %}

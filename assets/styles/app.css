@@ -15,10 +15,14 @@ body {
     max-width: 680px;
     margin: 0 auto;
 }
-.dog-header {
+.dog-header,
+.dog-card-main {
     display: flex;
     align-items: center;
     gap: 16px;
+}
+
+.dog-header {
     margin-bottom: 2rem;
 }
 .dog-avatar {
@@ -31,6 +35,13 @@ body {
     justify-content: center;
     font-size: 28px;
     flex-shrink: 0;
+    overflow: hidden;
+}
+
+.dog-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 .dog-info {
     h1 {
@@ -66,12 +77,55 @@ body {
     margin-bottom: 12px;
 }
 
+.dog-card-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dog-card-main {
+    flex: 1;
+    min-width: 0;
+}
+
 .dog-card-title {
     font-size: 22px;
-    font-weight: 500;
+    font-weight: 600;
     color: var(--text-dark);
     margin-bottom: 4px;
 }
+
+.dog-info {
+    min-width: 0;
+}
+
+.dog-info-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.icon-button {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--text-info);
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+}
+
+.icon-button:hover {
+    background: var(--bg-info);
+    border-color: var(--text-info);
+}
+
+.dog-edit-button {
+    flex-shrink: 0;
+}
+
 .button-line {
     display: flex;
     justify-content: flex-end;
@@ -139,6 +193,7 @@ body {
 }
 
 .form-group input[type="text"],
+.form-group input[type="number"],
 .form-group input[type="date"],
 .form-group select,
 .form-group textarea {
@@ -178,4 +233,15 @@ body {
     color: var(--text-dark);
     border: 1px solid var(--border-light);
 }
-
+.logo-container {
+    display: flex;
+    height: 300px;
+    align-items: center;
+    justify-content: center;
+}
+img.fits {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+}

@@ -47,6 +47,7 @@ final readonly class DogService
             $data->name,
             new \DateTimeImmutable($data->birthDate),
             $data->status,
+            $data->avatar,
             $data->weight,
             $data->height,
         );
@@ -72,6 +73,7 @@ final readonly class DogService
             $data->name,
             new \DateTimeImmutable($data->birthDate),
             $data->status,
+            $data->avatar,
             $data->weight,
             $data->height,
         );
@@ -99,12 +101,14 @@ final readonly class DogService
         string $name,
         \DateTimeImmutable $birthDate,
         ?string $status,
+        ?string $avatar,
         ?int $weight,
         ?int $height,
     ): Dog {
         $dog->setName($name);
         $dog->setBirthDate($birthDate);
         $dog->setStatus($status);
+        $dog->setAvatar($avatar);
         $dog->setWeight($weight);
         $dog->setHeight($height);
 
@@ -123,6 +127,7 @@ final readonly class DogService
             'weight' => $dog->getWeight(),
             'height' => $dog->getHeight(),
             'status' => $dog->getStatus(),
+            'avatar' => $dog->getAvatar(),
         ];
     }
 }

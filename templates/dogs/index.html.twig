@@ -2,7 +2,17 @@
 {% block body %}
     <div class="page" data-controller="modal">
         <div class="dog-header">
-            <div class="dog-avatar">🐶</div>
+            <div class="dog-avatar">
+                {% if dog.avatar %}
+                    {% if dog.avatar starts with 'images/' %}
+                        <img src="{{ asset(dog.avatar) }}" alt="{{ dog.name }} avatar">
+                    {% else %}
+                        {{ dog.avatar }}
+                    {% endif %}
+                {% else %}
+                    🐶
+                {% endif %}
+            </div>
             <div class="dog-info">
                 <h1> {{ dog.name }}</h1>
                 <span class="breed-tag">{{ dog.status ?? 'No status' }}</span>
