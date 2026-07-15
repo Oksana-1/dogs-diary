@@ -56,12 +56,23 @@ class Treatment
      */
     public function getType(): array
     {
-        return $this->type;
+        return array_values(array_filter(
+            array_map(
+                static fn (string $type): ?TreatmentTypeEnum => TreatmentTypeEnum::tryFrom($type),
+                $this->type,
+            ),
+        ));
     }
 
+    /**
+     * @param array<int, TreatmentTypeEnum> $type
+     */
     public function setType(array $type): static
     {
-        $this->type = $type;
+        $this->type = array_map(
+            static fn (TreatmentTypeEnum $treatmentType): string => $treatmentType->value,
+            $type,
+        );
 
         return $this;
     }
