@@ -22,17 +22,17 @@ class Treatment
     #[ORM\Column(type: Types::SIMPLE_ARRAY, enumType: TreatmentTypeEnum::class)]
     private array $type = [];
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTime $date = null;
+    #[ORM\Column(length: 255)]
+    private ?string $productName = null;
+
+    #[ORM\Column(name: 'treatment_date', type: Types::DATE_MUTABLE)]
+    private ?\DateTime $treatmentDate = null;
+
+    #[ORM\Column(name: 'due_date', type: Types::DATE_MUTABLE, nullable: true)]
+    private ?\DateTime $dueDate = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $note = null;
-
-    #[ORM\Column(name: 'created_at')]
-    private ?\DateTimeImmutable $createdAt = null;
-
-    #[ORM\Column(name: 'updated_at')]
-    private ?\DateTimeImmutable $updatedAt = null;
 
     public function getId(): ?int
     {
@@ -66,14 +66,38 @@ class Treatment
         return $this;
     }
 
-    public function getDate(): ?\DateTime
+    public function getProductName(): ?string
     {
-        return $this->date;
+        return $this->productName;
     }
 
-    public function setDate(\DateTime $date): static
+    public function setProductName(string $productName): static
     {
-        $this->date = $date;
+        $this->productName = $productName;
+
+        return $this;
+    }
+
+    public function getTreatmentDate(): ?\DateTime
+    {
+        return $this->treatmentDate;
+    }
+
+    public function setTreatmentDate(\DateTime $treatmentDate): static
+    {
+        $this->treatmentDate = $treatmentDate;
+
+        return $this;
+    }
+
+    public function getDueDate(): ?\DateTime
+    {
+        return $this->dueDate;
+    }
+
+    public function setDueDate(?\DateTime $dueDate): static
+    {
+        $this->dueDate = $dueDate;
 
         return $this;
     }
@@ -90,27 +114,4 @@ class Treatment
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
-    {
-        return $this->createdAt;
-    }
-
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
-    {
-        $this->createdAt = $createdAt;
-
-        return $this;
-    }
-
-    public function getUpdatedAt(): ?\DateTimeImmutable
-    {
-        return $this->updatedAt;
-    }
-
-    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
-    {
-        $this->updatedAt = $updatedAt;
-
-        return $this;
-    }
 }
