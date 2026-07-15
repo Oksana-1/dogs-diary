@@ -15,8 +15,9 @@ class Treatment
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(name: 'dog_id')]
-    private ?int $dogId = null;
+    #[ORM\ManyToOne(inversedBy: 'treatments')]
+    #[ORM\JoinColumn(name: 'dog_id', nullable: false, onDelete: 'RESTRICT')]
+    private ?Dog $dog = null;
 
     #[ORM\Column(type: Types::SIMPLE_ARRAY, enumType: TreatmentTypeEnum::class)]
     private array $type = [];
@@ -38,14 +39,14 @@ class Treatment
         return $this->id;
     }
 
-    public function getDogId(): ?int
+    public function getDog(): ?Dog
     {
-        return $this->dogId;
+        return $this->dog;
     }
 
-    public function setDogId(int $dogId): static
+    public function setDog(?Dog $dog): static
     {
-        $this->dogId = $dogId;
+        $this->dog = $dog;
 
         return $this;
     }

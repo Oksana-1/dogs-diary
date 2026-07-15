@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\DogRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -37,6 +39,17 @@ class Dog
     #[ORM\Column(length: 255, nullable: true)]
     #[Assert\Length(max: 255)]
     private ?string $avatar = null;
+
+    /**
+     * @var Collection<int, Treatment>
+     */
+    #[ORM\OneToMany(targetEntity: Treatment::class, mappedBy: 'dog')]
+    private Collection $treatments;
+
+    public function __construct()
+    {
+        $this->treatments = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -111,6 +124,33 @@ class Dog
     public function setAvatar(?string $avatar): static
     {
         $this->avatar = $avatar;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Treatment>
+     */
+    public function getTreatments(): Collection
+    {
+        return $this->treatments;
+    }
+
+    public function addTreatment(Treatment $treatment): static
+    {
+        if (!$this->treatments->contains($treatment)) {
+            $this->treatments->add($treatment);
+            $treatment->setDog($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTreatment(Treatment $treatment): static
+    {
+        if ($this->treatments->removeElement($treatment) && $treatment->getDog() === $this) {
+            $treatment->setDog(null);
+        }
 
         return $this;
     }

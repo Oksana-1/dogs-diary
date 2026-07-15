@@ -47,7 +47,7 @@ Small Symfony 7.3 app for tracking dogs and their treatments.
 ### Web
 
 - `GET /` - Homepage with dogs list.
-- `GET /dogs/{id}` - Dog details page.
+- `GET /dog/{id}` - Dog details page.
 
 ### API
 
@@ -64,8 +64,8 @@ Small Symfony 7.3 app for tracking dogs and their treatments.
 - API payload validation is handled by:
   - `App\Controller\Api\Dto\CreateDogPayload`
   - `App\Controller\Api\Dto\UpdateDogPayload`
-- `Treatment` persistence exists as Doctrine entity and is being connected to `Dog`.
-- If you work on persistence, prefer Doctrine entities/repositories over the legacy in-memory repository.
+- `Treatment` persistence exists as a Doctrine entity and is connected to `Dog` through a `ManyToOne` relation, but it has no API or UI persistence flow.
+- Dog data is Doctrine-backed; there is no legacy in-memory dog repository in this checkout.
 
 ## Useful Commands
 
