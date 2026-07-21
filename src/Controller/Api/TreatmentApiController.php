@@ -94,12 +94,16 @@ class TreatmentApiController extends AbstractController
 
     #[Route('/{id<\d+>}', methods: ['DELETE'])]
     public function deleteItem(
+        int $dogId,
         int $id,
-       TreatmentService $treatmentService,
+        TreatmentService $treatmentService,
     ): Response {
-        if (!$treatmentService->delete($id)) {
+        $existingTreatment = $treatmentService->get($id);
+        if (!$existingTreatment || $existingTreatment['dogId'] !== $dogId) {
             throw $this->createNotFoundException('Treatment not found');
         }
+
+        $treatmentService->delete($id);
 
         return new Response(null, 204);
     }
