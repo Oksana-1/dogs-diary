@@ -1,54 +1,56 @@
 {% extends 'base.html.twig' %}
 {% block body %}
     <div class="page" data-controller="modal">
-        <div class="logo-container">
-            <img src="{{ asset('images/logo.png') }}" class="fits" alt="logo"/>
-        </div>
-        {% for dog in dogs %}
-            <div class="dog-card dog-card-row">
-                <a href="{{ path('app_dog_index', { id: dog.id }) }}" class="dog-card-link dog-card-main">
-                    <div class="dog-avatar">
-                        {% if dog.avatar %}
-                            {% if dog.avatar starts with 'images/' %}
-                                <img src="{{ asset(dog.avatar) }}" alt="{{ dog.name }} avatar">
+        <div class="container">
+            <a href="{{ path('app_main') }}" class="logo-container">
+                🐾
+            </a>
+            {% for dog in dogs %}
+                <div class="dog-card dog-card-row">
+                    <a href="{{ path('app_dog_index', { id: dog.id }) }}" class="dog-card-link dog-card-main">
+                        <div class="dog-avatar">
+                            {% if dog.avatar %}
+                                {% if dog.avatar starts with 'images/' %}
+                                    <img src="{{ asset(dog.avatar) }}" alt="{{ dog.name }} avatar">
+                                {% else %}
+                                    {{ dog.avatar }}
+                                {% endif %}
                             {% else %}
-                                {{ dog.avatar }}
+                                🐶 🐕
                             {% endif %}
-                        {% else %}
-                            🐶 🐕
-                        {% endif %}
-                    </div>
-                    <div class="dog-info">
-                        <div class="dog-info-header">
-                            <h2 class="dog-card-title">{{ dog.name }}</h2>
                         </div>
-                        <span class="breed-tag">{{ dog.status ?? 'No status' }}</span>
-                        <p class="dog-card-meta">
-                            Born {{ dog.birthDate ? dog.birthDate|date('F j, Y') : 'Unknown' }}
-                            · {{ dog.weight ?? 'Unknown' }} kg
-                        </p>
-                    </div>
-                </a>
-                <button
-                    type="button"
-                    class="icon-button dog-edit-button"
-                    aria-label="Edit {{ dog.name }}"
-                    title="Edit {{ dog.name }}"
-                    data-action="modal#openEdit"
-                    data-modal-dog-id-param="{{ dog.id }}"
-                    data-modal-dog-name-param="{{ dog.name }}"
-                    data-modal-dog-birth-date-param="{{ dog.birthDate ? dog.birthDate|date('Y-m-d') : '' }}"
-                    data-modal-dog-status-param="{{ dog.status ?? '' }}"
-                    data-modal-dog-avatar-param="{{ dog.avatar ?? '' }}"
-                    data-modal-dog-weight-param="{{ dog.weight ?? '' }}"
-                    data-modal-dog-height-param="{{ dog.height ?? '' }}"
-                >
-                    ✎
-                </button>
-            </div>
-        {% else %}
-            <p>No dogs found.</p>
-        {% endfor %}
+                        <div class="dog-info">
+                            <div class="dog-info-header">
+                                <h2 class="dog-card-title">{{ dog.name }}</h2>
+                            </div>
+                            <span class="breed-tag">{{ dog.status ?? 'No status' }}</span>
+                            <p class="dog-card-meta">
+                                Born {{ dog.birthDate ? dog.birthDate|date('F j, Y') : 'Unknown' }}
+                                · {{ dog.weight ?? 'Unknown' }} kg
+                            </p>
+                        </div>
+                    </a>
+                    {#<button
+                        type="button"
+                        class="icon-button dog-edit-button"
+                        aria-label="Edit {{ dog.name }}"
+                        title="Edit {{ dog.name }}"
+                        data-action="modal#openEdit"
+                        data-modal-dog-id-param="{{ dog.id }}"
+                        data-modal-dog-name-param="{{ dog.name }}"
+                        data-modal-dog-birth-date-param="{{ dog.birthDate ? dog.birthDate|date('Y-m-d') : '' }}"
+                        data-modal-dog-status-param="{{ dog.status ?? '' }}"
+                        data-modal-dog-avatar-param="{{ dog.avatar ?? '' }}"
+                        data-modal-dog-weight-param="{{ dog.weight ?? '' }}"
+                        data-modal-dog-height-param="{{ dog.height ?? '' }}"
+                    >
+                        ✎
+                    </button>#}
+                </div>
+            {% else %}
+                <p>No dogs found.</p>
+            {% endfor %}
+        </div>
 
         <div class="modal"
              data-modal-target="dialog"

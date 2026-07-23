@@ -1,28 +1,33 @@
 {% extends 'base.html.twig' %}
 {% block body %}
     <div class="page" data-controller="modal">
-        <div class="dog-header">
-            <div class="dog-avatar">
-                {% if dog.avatar %}
-                    {% if dog.avatar starts with 'images/' %}
-                        <img src="{{ asset(dog.avatar) }}" alt="{{ dog.name }} avatar">
+        <div class="container">
+            <a href="{{ path('app_main') }}" class="logo-container">
+                🐾
+            </a>
+            <div class="dog-header">
+                <div class="dog-avatar">
+                    {% if dog.avatar %}
+                        {% if dog.avatar starts with 'images/' %}
+                            <img src="{{ asset(dog.avatar) }}" alt="{{ dog.name }} avatar">
+                        {% else %}
+                            {{ dog.avatar }}
+                        {% endif %}
                     {% else %}
-                        {{ dog.avatar }}
+                        🐶
                     {% endif %}
-                {% else %}
-                    🐶
-                {% endif %}
+                </div>
+                <div class="dog-info">
+                    <h1> {{ dog.name }}</h1>
+                    <span class="breed-tag">{{ dog.status ?? 'No status' }}</span>
+                    <p style="margin-top:6px;">Born {{ dog.birthDate ? dog.birthDate|date('F j, Y') : 'Unknown'  }} · Male · {{ dog.weight }} kg</p>
+                </div>
             </div>
-            <div class="dog-info">
-                <h1> {{ dog.name }}</h1>
-                <span class="breed-tag">{{ dog.status ?? 'No status' }}</span>
-                <p style="margin-top:6px;">Born {{ dog.birthDate ? dog.birthDate|date('F j, Y') : 'Unknown'  }} · Male · {{ dog.weight }} kg</p>
+            <div class="button-line">
+                <button class="btn-outline" data-action="modal#open">Add treatment</button>
             </div>
-        </div>
-        <div class="button-line">
-            <button class="btn-outline" data-action="modal#open">Add treatment</button>
-        </div>
 
+        </div>
         <div class="modal"
              data-modal-target="dialog"
              data-action="click->modal#clickOutside">
