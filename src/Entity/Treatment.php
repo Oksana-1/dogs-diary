@@ -124,5 +124,4 @@ class Treatment
 
         return $this;
     }
-
 }

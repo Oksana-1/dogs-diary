@@ -20,7 +20,7 @@ class TreatmentApiController extends AbstractController
     public function getCollection(int $dogId, TreatmentService $treatmentService): Response
     {
         $treatments = $treatmentService->listForDog($dogId);
-        if ($treatments === null) {
+        if (null === $treatments) {
             throw $this->createNotFoundException('Dog not found');
         }
 
@@ -55,7 +55,7 @@ class TreatmentApiController extends AbstractController
             dueDate: $payload->dueDate,
             note: $payload->note,
         ));
-        if ($treatment === null) {
+        if (null === $treatment) {
             throw $this->createNotFoundException('Dog not found');
         }
 
@@ -85,7 +85,7 @@ class TreatmentApiController extends AbstractController
             dueDate: $payload->dueDate,
             note: $payload->note,
         ));
-        if ($treatment === null) {
+        if (null === $treatment) {
             throw $this->createNotFoundException('Treatment not found');
         }
 
@@ -107,5 +107,4 @@ class TreatmentApiController extends AbstractController
 
         return new Response(null, 204);
     }
-
 }
