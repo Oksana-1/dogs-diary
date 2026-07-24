@@ -1,10 +1,23 @@
 {% extends 'base.html.twig' %}
 {% block body %}
     <div class="page" data-controller="modal">
+        <section class="full-screen-banner">
+            <img class="banner-image" src="{{ asset('images/dogs.jpeg') }}" alt="Best dogs ever">
+            <div class="banner-container">
+                <div class="banner-overlay">
+                    <h1 class="h1">
+                        Best dogs ever
+                    </h1>
+                </div>
+                <div class="banner-text">
+                    <h1 class="h1">
+                        Best dogs ever
+                    </h1>
+                </div>
+            </div>
+
+        </section>
         <div class="container">
-            <a href="{{ path('app_main') }}" class="logo-container">
-                🐾
-            </a>
             {% for dog in dogs %}
                 <div class="dog-card dog-card-row">
                     <a href="{{ path('app_dog_index', { id: dog.id }) }}" class="dog-card-link dog-card-main">
