@@ -24,6 +24,9 @@ class Dog
     #[ORM\Column(name: 'birth_date')]
     private ?\DateTimeImmutable $birthDate = null;
 
+    #[ORM\Column(name: 'adopt_date', nullable: true)]
+    private ?\DateTimeImmutable $adoptDate = null;
+
     #[ORM\Column(nullable: true)]
     #[Assert\Positive]
     private ?int $weight = null;
@@ -76,6 +79,18 @@ class Dog
     public function setBirthDate(\DateTimeImmutable $birthDate): static
     {
         $this->birthDate = $birthDate;
+
+        return $this;
+    }
+
+    public function getAdoptDate(): ?\DateTimeImmutable
+    {
+        return $this->adoptDate;
+    }
+
+    public function setAdoptDate(?\DateTimeImmutable $adoptDate): static
+    {
+        $this->adoptDate = $adoptDate;
 
         return $this;
     }

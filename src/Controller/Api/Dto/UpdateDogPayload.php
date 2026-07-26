@@ -13,6 +13,8 @@ final readonly class UpdateDogPayload
         #[Assert\NotBlank]
         #[Assert\Date]
         public string $birthDate,
+        #[Assert\Date]
+        public ?string $adoptDate = null,
         #[Assert\Length(max: 100)]
         public ?string $status = null,
         #[Assert\Length(max: 255)]

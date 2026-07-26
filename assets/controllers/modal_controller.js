@@ -7,6 +7,7 @@ export default class extends Controller {
         'id',
         'name',
         'birthDate',
+        'adoptDate',
         'status',
         'avatar',
         'weight',
@@ -28,6 +29,7 @@ export default class extends Controller {
         this.idTarget.value = params.dogId ?? '';
         this.nameTarget.value = params.dogName ?? '';
         this.birthDateTarget.value = params.dogBirthDate ?? '';
+        this.adoptDateTarget.value = params.dogAdoptDate ?? '';
         this.statusTarget.value = params.dogStatus ?? '';
         this.avatarTarget.value = params.dogAvatar ?? '';
         this.weightTarget.value = params.dogWeight ?? '';
@@ -93,6 +95,7 @@ export default class extends Controller {
             body: JSON.stringify({
                 name: this.nameTarget.value,
                 birthDate: this.birthDateTarget.value,
+                adoptDate: this.optionalString(this.adoptDateTarget.value),
                 status: this.optionalString(this.statusTarget.value),
                 avatar: this.optionalString(this.avatarTarget.value),
                 weight: this.optionalNumber(this.weightTarget.value),

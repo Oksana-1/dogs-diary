@@ -154,6 +154,7 @@ body {
     }
     .banner-text {
         color: var(--bg-main);
+        position: relative;
     }
 }
 .dogs-section {
@@ -206,20 +207,6 @@ body {
     background-color: var(--bg-main);
     border-radius: 1rem;
     flex-grow: 1;
-    position: relative;
-    overflow: hidden;
-    &::before {
-        content: "🐾";
-        display: block;
-        position: absolute;
-        bottom: -25px;
-        right: -25px;
-        height: 60px;
-        width: 60px;
-        font-size: 60px;
-        color: var(--bg-card);
-    }
-
     h1 {
         font-size: 22px;
         font-weight: 500;

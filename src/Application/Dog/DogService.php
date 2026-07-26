@@ -46,6 +46,7 @@ final readonly class DogService
             new Dog(),
             $data->name,
             new \DateTimeImmutable($data->birthDate),
+            $this->parseDateOrNull($data->adoptDate),
             $data->status,
             $data->avatar,
             $data->weight,
@@ -72,6 +73,7 @@ final readonly class DogService
             $dog,
             $data->name,
             new \DateTimeImmutable($data->birthDate),
+            $this->parseDateOrNull($data->adoptDate),
             $data->status,
             $data->avatar,
             $data->weight,
@@ -100,6 +102,7 @@ final readonly class DogService
         Dog $dog,
         string $name,
         \DateTimeImmutable $birthDate,
+        ?\DateTimeImmutable $adoptDate,
         ?string $status,
         ?string $avatar,
         ?int $weight,
@@ -107,6 +110,7 @@ final readonly class DogService
     ): Dog {
         $dog->setName($name);
         $dog->setBirthDate($birthDate);
+        $dog->setAdoptDate($adoptDate);
         $dog->setStatus($status);
         $dog->setAvatar($avatar);
         $dog->setWeight($weight);
@@ -124,10 +128,20 @@ final readonly class DogService
             'id' => $dog->getId(),
             'name' => $dog->getName(),
             'birthDate' => $dog->getBirthDate()?->format('Y-m-d'),
+            'adoptDate' => $dog->getAdoptDate()?->format('Y-m-d'),
             'weight' => $dog->getWeight(),
             'height' => $dog->getHeight(),
             'status' => $dog->getStatus(),
             'avatar' => $dog->getAvatar(),
         ];
+    }
+
+    private function parseDateOrNull(?string $date): ?\DateTimeImmutable
+    {
+        if ($date === null || $date === '') {
+            return null;
+        }
+
+        return new \DateTimeImmutable($date);
     }
 }

@@ -19,8 +19,9 @@
             </div>
             <span class="breed-tag">{{ dog.status ?? 'No status' }}</span>
             <p class="dog-card-meta">
-                Born {{ dog.birthDate ? dog.birthDate|date('F j, Y') : 'Unknown' }}
-                · {{ dog.weight ?? 'Unknown' }} kg
+                Born: {{ dog.birthDate ? dog.birthDate|date('F j, Y') : 'Unknown' }}<br>
+                Adopted: {{ dog.adoptDate ? dog.adoptDate|date('F j, Y') : 'Unknown' }}<br>
+                Weight: {{ dog.weight ?? 'Unknown' }} kg
             </p>
         </div>
     </a>

@@ -42,6 +42,7 @@ class DogApiController extends AbstractController
             id: $id,
             name: $payload->name,
             birthDate: $payload->birthDate,
+            adoptDate: $payload->adoptDate,
             status: $payload->status,
             avatar: $payload->avatar,
             weight: $payload->weight,
@@ -62,6 +63,7 @@ class DogApiController extends AbstractController
         $dog = $dogService->create(new CreateDogData(
             name: $payload->name,
             birthDate: $payload->birthDate,
+            adoptDate: $payload->adoptDate,
             status: $payload->status,
             avatar: $payload->avatar,
             weight: $payload->weight,

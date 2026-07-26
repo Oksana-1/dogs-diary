@@ -18,6 +18,9 @@
                     <h1> {{ dog.name }}</h1>
                     <span class="breed-tag">{{ dog.status ?? 'No status' }}</span>
                     <p style="margin-top:6px;">Born {{ dog.birthDate ? dog.birthDate|date('F j, Y') : 'Unknown'  }} · Male · {{ dog.weight }} kg</p>
+                    {% if dog.adoptDate %}
+                        <p style="margin-top:6px;">Adopted {{ dog.adoptDate|date('F j, Y') }}</p>
+                    {% endif %}
                 </div>
             </div>
             <div class="button-line">
