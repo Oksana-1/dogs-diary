@@ -1,6 +1,8 @@
 {% extends 'base.html.twig' %}
 {% block body %}
-    <div class="page" data-controller="modal">
+    <div class="page"
+         data-controller="modal dog-edit"
+         data-dog-edit-dog-id-value="{{ dog.id }}">
         <div class="container">
             <div class="dog-header">
                 <div class="dog-avatar">
@@ -15,7 +17,14 @@
                     {% endif %}
                 </div>
                 <div class="dog-info">
-                    <h1> {{ dog.name }}</h1>
+                    <div class="dog-info-header">
+                        <h1> {{ dog.name }}</h1>
+                        <button type="button"
+                                class="icon-button dog-edit-button"
+                                title="Edit {{ dog.name }}"
+                                aria-label="Edit {{ dog.name }}"
+                                data-action="dog-edit#open">✏️</button>
+                    </div>
                     <span class="breed-tag">{{ dog.status ?? 'No status' }}</span>
                     <p style="margin-top:6px;">Born {{ dog.birthDate ? dog.birthDate|date('F j, Y') : 'Unknown'  }} · Male · {{ dog.weight }} kg</p>
                     {% if dog.adoptDate %}
@@ -28,6 +37,7 @@
             </div>
 
         </div>
+        {% include 'dogs/components/edit_modal.html.twig' %}
         <div class="modal"
              data-modal-target="dialog"
              data-action="click->modal#clickOutside">

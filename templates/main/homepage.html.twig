@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 {% block body %}
-    <div class="page" data-controller="modal">
+    <div class="page">
         <section class="full-screen-banner">
             <img class="banner-image" src="{{ asset('images/dogs.jpeg') }}" alt="Best dogs ever">
             <div class="banner-container">
@@ -22,47 +22,5 @@
                 {% endfor %}
             </div>
         </section>
-        <div class="modal"
-             data-modal-target="dialog"
-             data-action="click->modal#clickOutside">
-            <div class="modal-content">
-                <h2 data-modal-target="title">Edit Dog</h2>
-                <form data-action="submit->modal#submit">
-                    <input type="hidden" name="id" data-modal-target="id">
-                    <div class="form-group">
-                        <label for="edit-dog-name">Name</label>
-                        <input type="text" id="edit-dog-name" name="name" data-modal-target="name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-dog-birth-date">Birth date</label>
-                        <input type="date" id="edit-dog-birth-date" name="birthDate" data-modal-target="birthDate" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-dog-adopt-date">Adopt date</label>
-                        <input type="date" id="edit-dog-adopt-date" name="adoptDate" data-modal-target="adoptDate">
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-dog-status">Status</label>
-                        <input type="text" id="edit-dog-status" name="status" data-modal-target="status">
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-dog-avatar">Avatar</label>
-                        <input type="text" id="edit-dog-avatar" name="avatar" data-modal-target="avatar">
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-dog-weight">Weight, kg</label>
-                        <input type="number" id="edit-dog-weight" name="weight" data-modal-target="weight" min="1">
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-dog-height">Height, cm</label>
-                        <input type="number" id="edit-dog-height" name="height" data-modal-target="height" min="1">
-                    </div>
-                    <div class="modal-actions">
-                        <button type="button" class="btn-secondary" data-action="modal#close">Cancel</button>
-                        <button type="submit" class="btn-primary">Save</button>
-                    </div>
-                </form>
-            </div>
-        </div>
     </div>
 {% endblock %}
