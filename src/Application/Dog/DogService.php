@@ -17,30 +17,19 @@ final readonly class DogService
     }
 
     /**
-     * @return array<int, array<string, mixed>>
+     * @return array<int, Dog>
      */
     public function list(): array
     {
-        return array_map($this->normalizeDog(...), $this->dogRepository->findAll());
+        return $this->dogRepository->findAll();
     }
 
-    /**
-     * @return array<string, mixed>|null
-     */
-    public function get(int $id): ?array
+    public function get(int $id): ?Dog
     {
-        $dog = $this->dogRepository->find($id);
-        if (!$dog) {
-            return null;
-        }
-
-        return $this->normalizeDog($dog);
+        return $this->dogRepository->find($id);
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    public function create(CreateDogData $data): array
+    public function create(CreateDogData $data): Dog
     {
         $dog = $this->hydrateDog(
             new Dog(),
@@ -56,13 +45,10 @@ final readonly class DogService
         $this->em->persist($dog);
         $this->em->flush();
 
-        return $this->normalizeDog($dog);
+        return $dog;
     }
 
-    /**
-     * @return array<string, mixed>|null
-     */
-    public function update(UpdateDogData $data): ?array
+    public function update(UpdateDogData $data): ?Dog
     {
         $dog = $this->dogRepository->find($data->id);
         if (!$dog) {
@@ -82,7 +68,7 @@ final readonly class DogService
 
         $this->em->flush();
 
-        return $this->normalizeDog($dog);
+        return $dog;
     }
 
     public function delete(int $id): bool
@@ -117,23 +103,6 @@ final readonly class DogService
         $dog->setHeight($height);
 
         return $dog;
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function normalizeDog(Dog $dog): array
-    {
-        return [
-            'id' => $dog->getId(),
-            'name' => $dog->getName(),
-            'birthDate' => $dog->getBirthDate()?->format('Y-m-d'),
-            'adoptDate' => $dog->getAdoptDate()?->format('Y-m-d'),
-            'weight' => $dog->getWeight(),
-            'height' => $dog->getHeight(),
-            'status' => $dog->getStatus(),
-            'avatar' => $dog->getAvatar(),
-        ];
     }
 
     private function parseDateOrNull(?string $date): ?\DateTimeImmutable

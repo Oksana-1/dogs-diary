@@ -7,6 +7,7 @@ use App\Application\Dog\Data\UpdateDogData;
 use App\Application\Dog\DogService;
 use App\Controller\Api\Dto\CreateDogPayload;
 use App\Controller\Api\Dto\UpdateDogPayload;
+use App\View\DogView;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
@@ -18,7 +19,10 @@ class DogApiController extends AbstractController
     #[Route('', methods: ['GET'])]
     public function getCollection(DogService $dogService): Response
     {
-        return $this->json($dogService->list());
+        return $this->json(array_map(
+            fn ($dog) => DogView::from($dog)->toArray(),
+            $dogService->list(),
+        ));
     }
 
     #[Route('/{id<\d+>}', methods: ['GET'])]
@@ -29,7 +33,7 @@ class DogApiController extends AbstractController
             throw $this->createNotFoundException('Dog not found');
         }
 
-        return $this->json($dog);
+        return $this->json(DogView::from($dog)->toArray());
     }
 
     #[Route('/{id<\d+>}', methods: ['PUT'])]
@@ -52,7 +56,7 @@ class DogApiController extends AbstractController
             throw $this->createNotFoundException('Dog not found');
         }
 
-        return $this->json($dog);
+        return $this->json(DogView::from($dog)->toArray());
     }
 
     #[Route('', methods: ['POST'])]
@@ -70,7 +74,7 @@ class DogApiController extends AbstractController
             height: $payload->height,
         ));
 
-        return $this->json($dog, 201);
+        return $this->json(DogView::from($dog)->toArray(), 201);
     }
 
     #[Route('/{id<\d+>}', methods: ['DELETE'])]
@@ -85,3 +89,4 @@ class DogApiController extends AbstractController
         return new Response(null, 204);
     }
 }
+

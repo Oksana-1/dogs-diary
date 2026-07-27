@@ -8,6 +8,7 @@ use App\Application\Treatment\TreatmentService;
 use App\Controller\Api\Dto\CreateTreatmentPayload;
 use App\Controller\Api\Dto\UpdateTreatmentPayload;
 use App\Enum\TreatmentTypeEnum;
+use App\View\TreatmentView;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
@@ -24,18 +25,21 @@ class TreatmentApiController extends AbstractController
             throw $this->createNotFoundException('Dog not found');
         }
 
-        return $this->json($treatments);
+        return $this->json(array_map(
+            fn ($treatment) => TreatmentView::from($treatment)->toArray(),
+            $treatments,
+        ));
     }
 
     #[Route('/{id<\d+>}', methods: ['GET'])]
     public function getItem(int $dogId, int $id, TreatmentService $treatmentService): Response
     {
         $treatment = $treatmentService->get($id);
-        if (!$treatment || $treatment['dogId'] !== $dogId) {
+        if (!$treatment || $treatment->getDog()?->getId() !== $dogId) {
             throw $this->createNotFoundException('Treatment not found');
         }
 
-        return $this->json($treatment);
+        return $this->json(TreatmentView::from($treatment)->toArray());
     }
 
     #[Route('', methods: ['POST'])]
@@ -59,7 +63,7 @@ class TreatmentApiController extends AbstractController
             throw $this->createNotFoundException('Dog not found');
         }
 
-        return $this->json($treatment, 201);
+        return $this->json(TreatmentView::from($treatment)->toArray(), 201);
     }
 
     #[Route('/{id<\d+>}', methods: ['PUT'])]
@@ -70,7 +74,7 @@ class TreatmentApiController extends AbstractController
         TreatmentService $treatmentService,
     ): Response {
         $existingTreatment = $treatmentService->get($id);
-        if (!$existingTreatment || $existingTreatment['dogId'] !== $dogId) {
+        if (!$existingTreatment || $existingTreatment->getDog()?->getId() !== $dogId) {
             throw $this->createNotFoundException('Treatment not found');
         }
 
@@ -89,7 +93,7 @@ class TreatmentApiController extends AbstractController
             throw $this->createNotFoundException('Treatment not found');
         }
 
-        return $this->json($treatment);
+        return $this->json(TreatmentView::from($treatment)->toArray());
     }
 
     #[Route('/{id<\d+>}', methods: ['DELETE'])]
@@ -99,7 +103,7 @@ class TreatmentApiController extends AbstractController
         TreatmentService $treatmentService,
     ): Response {
         $existingTreatment = $treatmentService->get($id);
-        if (!$existingTreatment || $existingTreatment['dogId'] !== $dogId) {
+        if (!$existingTreatment || $existingTreatment->getDog()?->getId() !== $dogId) {
             throw $this->createNotFoundException('Treatment not found');
         }
 
@@ -108,3 +112,4 @@ class TreatmentApiController extends AbstractController
         return new Response(null, 204);
     }
 }
+

@@ -19,7 +19,7 @@ final readonly class TreatmentService
     }
 
     /**
-     * @return array<int, array<string, mixed>>|null
+     * @return array<int, Treatment>|null
      */
     public function listForDog(int $dogId): ?array
     {
@@ -28,28 +28,15 @@ final readonly class TreatmentService
             return null;
         }
 
-        $treatments = $this->treatmentRepository->findBy(['dog' => $dog], ['treatmentDate' => 'DESC']);
-
-        return array_map($this->normalizeTreatment(...), $treatments);
+        return $this->treatmentRepository->findBy(['dog' => $dog], ['treatmentDate' => 'DESC']);
     }
 
-    /**
-     * @return array<string, mixed>|null
-     */
-    public function get(int $id): ?array
+    public function get(int $id): ?Treatment
     {
-        $treatment = $this->treatmentRepository->find($id);
-        if (!$treatment) {
-            return null;
-        }
-
-        return $this->normalizeTreatment($treatment);
+        return $this->treatmentRepository->find($id);
     }
 
-    /**
-     * @return array<string, mixed>|null
-     */
-    public function create(CreateTreatmentData $data): ?array
+    public function create(CreateTreatmentData $data): ?Treatment
     {
         $dog = $this->dogRepository->find($data->dogId);
         if (!$dog) {
@@ -69,13 +56,10 @@ final readonly class TreatmentService
         $this->em->persist($treatment);
         $this->em->flush();
 
-        return $this->normalizeTreatment($treatment);
+        return $treatment;
     }
 
-    /**
-     * @return array<string, mixed>|null
-     */
-    public function update(UpdateTreatmentData $data): ?array
+    public function update(UpdateTreatmentData $data): ?Treatment
     {
         $treatment = $this->treatmentRepository->find($data->id);
         if (!$treatment) {
@@ -93,7 +77,7 @@ final readonly class TreatmentService
 
         $this->em->flush();
 
-        return $this->normalizeTreatment($treatment);
+        return $treatment;
     }
 
     public function delete(int $id): bool
@@ -127,21 +111,5 @@ final readonly class TreatmentService
         $treatment->setNote($note);
 
         return $treatment;
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function normalizeTreatment(Treatment $treatment): array
-    {
-        return [
-            'id' => $treatment->getId(),
-            'dogId' => $treatment->getDog()?->getId(),
-            'types' => array_map(static fn ($type) => $type->value, $treatment->getType()),
-            'productName' => $treatment->getProductName(),
-            'treatmentDate' => $treatment->getTreatmentDate()?->format('Y-m-d'),
-            'dueDate' => $treatment->getDueDate()?->format('Y-m-d'),
-            'note' => $treatment->getNote(),
-        ];
     }
 }
