@@ -3,6 +3,7 @@
 namespace App\View;
 
 use App\Entity\Dog;
+use App\View\TreatmentView;
 
 final readonly class DogView extends AbstractView
 {
@@ -27,6 +28,9 @@ final readonly class DogView extends AbstractView
             'height' => $this->dog->getHeight(),
             'status' => $this->dog->getStatus(),
             'avatar' => $this->dog->getAvatar(),
+            'treatments' => $this->dog->getTreatments()->map(
+                static fn ($treatment) => TreatmentView::from($treatment)->toArray()
+            )->toArray(),
         ];
     }
 }

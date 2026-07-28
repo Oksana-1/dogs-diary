@@ -7,5 +7,6 @@ import './stimulus_bootstrap.js';
  */
 import './styles/app.css';
 import './bootstrap.js';
+import './treatment-modals.js';
 
 console.log('This log comes from assets/app.js - welcome to AssetMapper! 🎉');

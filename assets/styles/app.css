@@ -8,10 +8,16 @@
     font-family: "Montserrat", sans-serif;
     font-weight: 400;
 }
+html, body {
+    height: 100%;
+}
 body {
     background-color: var(--bg-main);
     color: var(--text-dark);
     padding-top: 60px;
+}
+.main {
+    min-height: calc(100% - var(--header-height));
 }
 .h1 {
     font-family: "Montserrat", sans-serif;
@@ -485,4 +491,120 @@ body {
     .footer-links {
         gap: 0.75rem;
     }
+}
+
+/* Treatments Styles */
+.treatments-section {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background-color: var(--bg-card);
+    border-radius: 1rem;
+}
+
+.treatments-section h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-dark);
+}
+
+.treatments-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.treatments-table thead {
+    background-color: var(--bg-info);
+}
+
+.treatments-table th {
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-info);
+    border-bottom: 2px solid var(--border-light);
+}
+
+.treatments-table td {
+    padding: 12px;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.treatments-table tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.treatment-badge {
+    display: inline-block;
+    background-color: var(--bg-info);
+    color: var(--text-info);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-right: 4px;
+}
+
+.treatment-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.action-button {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    padding: 0;
+}
+
+.action-button:hover {
+    background-color: var(--bg-info);
+    border-color: var(--text-info);
+}
+
+.action-edit {
+    color: var(--text-info);
+}
+
+.action-delete {
+    color: #d32f2f;
+}
+
+.action-delete:hover {
+    border-color: #d32f2f;
+    background-color: rgba(211, 47, 47, 0.1);
+}
+
+.modal-content-confirm {
+    text-align: center;
+}
+
+.modal-content-confirm p {
+    margin-bottom: 2rem;
+    color: var(--text-dark);
+    font-size: 14px;
+}
+
+.btn-danger {
+    background-color: #d32f2f;
+    color: #fff;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-danger:hover {
+    background-color: #b71c1c;
 }

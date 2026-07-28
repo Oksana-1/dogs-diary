@@ -80,3 +80,8 @@ Auto-fix style:
 ```bash
 vendor/bin/php-cs-fixer fix
 ```
+
+Reassemble assets
+```bash
+php bin/console asset-map:compile
+```

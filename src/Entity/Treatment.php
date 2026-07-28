@@ -58,7 +58,8 @@ class Treatment
     {
         return array_values(array_filter(
             array_map(
-                static fn (string $type): ?TreatmentTypeEnum => TreatmentTypeEnum::tryFrom($type),
+                static fn ($type): ?TreatmentTypeEnum => 
+                    is_string($type) ? TreatmentTypeEnum::tryFrom($type) : $type,
                 $this->type,
             ),
         ));

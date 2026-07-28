@@ -36,6 +36,54 @@
                 <button class="btn-outline" data-action="modal#open">Add treatment</button>
             </div>
 
+            {% set todayTreatments = dog.treatments|filter(t => t.treatmentDate == "now"|date('Y-m-d')) %}
+            {% if todayTreatments|length > 0 %}
+                <div class="treatments-section">
+                    <h2>Today's Treatments</h2>
+                    <table class="treatments-table">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Product</th>
+                                <th>Date</th>
+                                <th>Next Due</th>
+                                <th>Notes</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for treatment in todayTreatments %}
+                                <tr data-treatment-id="{{ treatment.id }}">
+                                    <td>
+                                        {% for type in treatment.types %}
+                                            <span class="treatment-badge">{{ type|replace({'_': ' '})|title }}</span>
+                                        {% endfor %}
+                                    </td>
+                                    <td>{{ treatment.productName }}</td>
+                                    <td>{{ treatment.treatmentDate }}</td>
+                                    <td>{{ treatment.dueDate ?? '—' }}</td>
+                                    <td>{{ treatment.note ?? '—' }}</td>
+                                    <td class="treatment-actions">
+                                        <button type="button" class="action-button action-edit" 
+                                                data-treatment-id="{{ treatment.id }}"
+                                                data-treatment-type="{{ treatment.types|join(',') }}"
+                                                data-treatment-product="{{ treatment.productName }}"
+                                                data-treatment-date="{{ treatment.treatmentDate }}"
+                                                data-treatment-due="{{ treatment.dueDate }}"
+                                                data-treatment-note="{{ treatment.note }}"
+                                                title="Edit treatment" aria-label="Edit treatment">✏️</button>
+                                        <button type="button" class="action-button action-delete" 
+                                                data-treatment-id="{{ treatment.id }}"
+                                                data-treatment-product="{{ treatment.productName }}"
+                                                title="Delete treatment" aria-label="Delete treatment">🗑️</button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+
         </div>
         {% include 'dogs/components/edit_modal.html.twig' %}
         <div class="modal"
@@ -77,6 +125,56 @@
                         <button type="submit" class="btn-primary">Save</button>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <!-- Edit Treatment Modal -->
+        <div class="modal" id="edit-treatment-modal" data-action="click->modal#clickOutside">
+            <div class="modal-content">
+                <h2>Edit Treatment</h2>
+                <form data-action="submit->modal#submit">
+                    <input type="hidden" id="edit-treatment-id" name="treatment_id">
+                    <div class="form-group">
+                        <label for="edit-treatment-type">Treatment type</label>
+                        <select id="edit-treatment-type" name="type" required>
+                            <option value="">Select type</option>
+                            <option value="flea_tick">Flea & Tick</option>
+                            <option value="anti_worm">Anti Worm</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-product-name">Product / brand name</label>
+                        <input type="text" id="edit-product-name" name="product" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-treatment-date">Date of treatment</label>
+                        <input type="date" id="edit-treatment-date" name="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-next-due-date">Next due date</label>
+                        <input type="date" id="edit-next-due-date" name="next_due">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-notes">Notes</label>
+                        <textarea id="edit-notes" name="notes" rows="3"></textarea>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-secondary" data-action="modal#close">Cancel</button>
+                        <button type="submit" class="btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Delete Treatment Modal -->
+        <div class="modal" id="delete-treatment-modal" data-action="click->modal#clickOutside">
+            <div class="modal-content modal-content-confirm">
+                <h2>Delete Treatment</h2>
+                <p id="delete-treatment-message">Are you sure you want to delete this treatment?</p>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" data-action="modal#close">Cancel</button>
+                    <button type="button" class="btn-danger">Delete</button>
+                </div>
             </div>
         </div>
 
