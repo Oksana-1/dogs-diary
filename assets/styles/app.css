@@ -608,3 +608,10 @@ body {
 .btn-danger:hover {
     background-color: #b71c1c;
 }
+
+/* Vue islands ------------------------------------------------------------- */
+
+.island-loading {
+    color: var(--text-muted, #777);
+    font-size: 0.88rem;
+}

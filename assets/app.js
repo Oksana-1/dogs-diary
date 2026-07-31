@@ -1,4 +1,3 @@
-import './stimulus_bootstrap.js';
 /*
  * Welcome to your app's main JavaScript file!
  *
@@ -8,5 +7,8 @@ import './stimulus_bootstrap.js';
 import './styles/app.css';
 import './bootstrap.js';
 import './treatment-modals.js';
+import { startVueIslands } from './vue/islands.js';
+
+startVueIslands();
 
 console.log('This log comes from assets/app.js - welcome to AssetMapper! 🎉');

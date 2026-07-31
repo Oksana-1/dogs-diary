@@ -22,4 +22,14 @@ return [
     '@symfony/stimulus-bundle' => [
         'path' => '@symfony/stimulus-bundle/loader.js',
     ],
+    // Full browser build: one self-contained file that includes the runtime
+    // template compiler, so island components can use `template: '...'` strings
+    // without any Node build step. Unlike the esm-bundler build it does not
+    // reference compile-time flags such as __VUE_OPTIONS_API__, so nothing has
+    // to define them. For production you may switch to
+    // 'vue/dist/vue.esm-browser.prod.js' (smaller, no dev warnings).
+    'vue' => [
+        'version' => '3.5.40',
+        'package_specifier' => 'vue/dist/vue.esm-browser.js',
+    ],
 ];
