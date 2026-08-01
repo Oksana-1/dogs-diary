@@ -11,6 +11,7 @@ import { createApp } from 'vue';
  */
 const islands = {
     Hello: () => import('./islands/Hello.js'),
+    DogsList: () => import('./islands/main/DogsList.js'),
 };
 
 const MOUNTED_FLAG = 'vueIslandMounted';
