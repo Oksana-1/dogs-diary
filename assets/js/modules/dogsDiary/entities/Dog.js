@@ -3,7 +3,7 @@ export default class Dog {
         this.id = dog.id;
         this.name = dog.name;
         this.birthDate = dog.birthDate;
-        this.adopt_date = dog.adopt_date;
+        this.adoptDate = dog.adoptDate;
         this.weight = dog.weight;
         this.height = dog.height;
         this.status = dog.status;

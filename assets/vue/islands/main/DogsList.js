@@ -9,17 +9,20 @@ export default {
     },
     data() {
         return {
-            dogs: null,
+            dogs: [],
             isLoading: false,
+            error: null,
         }
     },
     methods: {
         async loadDogs() {
             this.isLoading = true;
+            this.error = null;
             try {
                 this.dogs = await repository.list();
             } catch (error) {
                 console.error(error);
+                this.error = 'Unable to load dogs. Please try again.';
             } finally {
                 this.isLoading = false;
             }
@@ -32,9 +35,11 @@ export default {
         <section class="dogs-section">
             <div class="dogs-container">
                 <div v-if="isLoading">Is loading...</div>
-                <div v-else>
+                <div v-else-if="error" role="alert">{{ error }}</div>
+                <div v-else-if="dogs.length">
                     <DogItem v-for="dog in dogs" :dog="dog" :key="dog.id"/>
                 </div>
+                <div v-else>No dogs found.</div>
             </div>
         </section>
     `,

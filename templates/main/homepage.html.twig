@@ -13,16 +13,6 @@
             </div>
 
         </section>
-        <section class="dogs-section">
-            <div class="dogs-container">
-                {% for dog in dogs %}
-                    {% include 'dogs/components/card.html.twig' %}
-                {% else %}
-                    <p>No dogs found.</p>
-                {% endfor %}
-            </div>
-        </section>
         {{ vue_island('DogsList') }}
-        {{ vue_island('Hello', { name: 'Smarty' }) }}
     </div>
 {% endblock %}

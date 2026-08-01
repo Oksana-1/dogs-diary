@@ -3,14 +3,32 @@ import Dog from "../../../js/modules/dogsDiary/entities/Dog.js";
 export default {
     name: 'DogItem',
     props: {
-        dog: Dog
+        dog: Dog,
+    },
+    data() {
+        return {
+            avatarFailed: false,
+        };
+    },
+    methods: {
+        avatarUrl(avatar) {
+            if (avatar.startsWith('/') || avatar.startsWith('http://') || avatar.startsWith('https://')) {
+                return avatar;
+            }
+
+            return avatar.startsWith('images/') ? `/assets/${avatar}` : avatar;
+        },
     },
     template: `
         <div class="dog-card dog-card-row">
-            <a href="#" class="dog-card-link dog-card-main">
+            <a :href="'/dog/' + dog.id" class="dog-card-link dog-card-main">
             <div class="dog-avatar-column">
                 <div class="dog-avatar">
-                    <img src="/assets/images/dogAvatarPlaceholder.jpg" :alt="dog.name" class="image-placeholder" />
+                    <img v-if="dog.avatar && !avatarFailed"
+                         :src="avatarUrl(dog.avatar)"
+                         :alt="dog.name"
+                         @error="avatarFailed = true" />
+                    <div v-else class="image-placeholder" aria-hidden="true"></div>
                 </div>
             </div>
         <div class="dog-info">

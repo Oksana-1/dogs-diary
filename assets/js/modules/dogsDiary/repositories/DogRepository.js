@@ -1,4 +1,5 @@
 import DogCollection from "../entities/DogCollection.js";
+import Dog from "../entities/Dog.js";
 
 export default class DogRepository {
 
@@ -7,7 +8,7 @@ export default class DogRepository {
     }
 
     async find(id) {
-        return this.api.get(`/dogs/${id}`);
+        return new Dog(await this.api.get(`/dogs/${id}`));
     }
 
     async list() {
@@ -16,7 +17,7 @@ export default class DogRepository {
     }
 
     async create(data) {
-        return this.api.post("/dogs", data);
+        return new Dog(await this.api.post("/dogs", data));
     }
 
 }
