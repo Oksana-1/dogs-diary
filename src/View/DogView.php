@@ -23,6 +23,7 @@ final readonly class DogView extends AbstractView
             'id' => $this->dog->getId(),
             'name' => $this->dog->getName(),
             'birthDate' => $this->dog->getBirthDate()?->format('Y-m-d'),
+            'gender' => $this->dog->getGender()?->value,
             'adoptDate' => $this->dog->getAdoptDate()?->format('Y-m-d'),
             'weight' => $this->dog->getWeight(),
             'height' => $this->dog->getHeight(),

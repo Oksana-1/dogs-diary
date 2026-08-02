@@ -7,6 +7,7 @@ final readonly class CreateDogData
     public function __construct(
         public string $name,
         public string $birthDate,
+        public ?string $gender = null,
         public ?string $adoptDate = null,
         public ?string $status = null,
         public ?string $avatar = null,

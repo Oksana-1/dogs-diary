@@ -7,6 +7,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Doctrine\DBAL\Types\Types;
+use App\Enum\GenderTypeEnum;
 
 #[ORM\Entity(repositoryClass: DogRepository::class)]
 class Dog
@@ -20,6 +22,9 @@ class Dog
     #[Assert\NotBlank]
     #[Assert\Length(min: 2, max: 100)]
     private ?string $name = null;
+
+    #[ORM\Column(nullable: true, type: Types::STRING, enumType: GenderTypeEnum::class)]
+    private ?GenderTypeEnum $gender = null;
 
     #[ORM\Column(name: 'birth_date')]
     private ?\DateTimeImmutable $birthDate = null;
@@ -70,7 +75,17 @@ class Dog
 
         return $this;
     }
+    public function getGender(): ?GenderTypeEnum
+    {
+        return $this->gender;
+    }
 
+    public function setGender(?GenderTypeEnum $gender): static
+    {
+        $this->gender = $gender;
+
+        return $this;
+    }
     public function getBirthDate(): ?\DateTimeImmutable
     {
         return $this->birthDate;

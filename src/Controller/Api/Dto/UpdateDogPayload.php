@@ -3,6 +3,7 @@
 namespace App\Controller\Api\Dto;
 
 use Symfony\Component\Validator\Constraints as Assert;
+use App\Enum\GenderTypeEnum;
 
 final readonly class UpdateDogPayload
 {
@@ -13,6 +14,8 @@ final readonly class UpdateDogPayload
         #[Assert\NotBlank]
         #[Assert\Date]
         public string $birthDate,
+        #[Assert\Choice(callback: [GenderTypeEnum::class, 'values'])]
+        public ?string $gender = null,
         #[Assert\Date]
         public ?string $adoptDate = null,
         #[Assert\Length(max: 100)]

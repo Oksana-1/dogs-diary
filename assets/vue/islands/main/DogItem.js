@@ -38,6 +38,7 @@ export default {
             <span class="breed-tag">{{ dog.status ?? 'No status' }}</span>
             <p class="dog-card-meta">
                 Born: {{ dog.birthDate ? dog.birthDate : 'Unknown' }}<br>
+                Gender {{ dog.gender || 'Unknown' }}<br></br>
                 Adopted: {{ dog.adoptDate ? dog.adoptDate : 'Unknown' }}<br>
                 Weight: {{ dog.weight ?? 'Unknown' }} kg
             </p>

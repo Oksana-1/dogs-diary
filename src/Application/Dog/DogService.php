@@ -4,6 +4,7 @@ namespace App\Application\Dog;
 
 use App\Application\Dog\Data\CreateDogData;
 use App\Application\Dog\Data\UpdateDogData;
+use App\Enum\GenderTypeEnum;
 use App\Entity\Dog;
 use App\Repository\DogRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -35,6 +36,7 @@ final readonly class DogService
             new Dog(),
             $data->name,
             new \DateTimeImmutable($data->birthDate),
+            $data->gender,
             $this->parseDateOrNull($data->adoptDate),
             $data->status,
             $data->avatar,
@@ -59,6 +61,7 @@ final readonly class DogService
             $dog,
             $data->name,
             new \DateTimeImmutable($data->birthDate),
+            $data->gender,
             $this->parseDateOrNull($data->adoptDate),
             $data->status,
             $data->avatar,
@@ -88,6 +91,7 @@ final readonly class DogService
         Dog $dog,
         string $name,
         \DateTimeImmutable $birthDate,
+        ?string $gender,
         ?\DateTimeImmutable $adoptDate,
         ?string $status,
         ?string $avatar,
@@ -96,6 +100,7 @@ final readonly class DogService
     ): Dog {
         $dog->setName($name);
         $dog->setBirthDate($birthDate);
+        $dog->setGender($gender !== null ? GenderTypeEnum::from($gender) : null);
         $dog->setAdoptDate($adoptDate);
         $dog->setStatus($status);
         $dog->setAvatar($avatar);
