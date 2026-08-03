@@ -10,8 +10,8 @@ import { createApp } from 'vue';
  * Add a component: drop a file in assets/vue/islands/ and register it here.
  */
 const islands = {
-    Hello: () => import('./islands/Hello.js'),
     DogsList: () => import('./islands/main/DogsList.js'),
+    DogDetail: () => import('./islands/dogDetail/DogDetail.js'),
 };
 
 const MOUNTED_FLAG = 'vueIslandMounted';

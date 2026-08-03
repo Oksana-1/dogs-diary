@@ -163,6 +163,9 @@ body {
         position: relative;
     }
 }
+.bg-light {
+    background-color: var(--bg-light);
+}
 .dogs-section {
     padding: 5rem 0;
 }
@@ -265,6 +268,27 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
+}
+
+.dog-details {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem 1.5rem;
+    margin: 1rem 0 0;
+}
+
+.dog-details div {
+    min-width: 0;
+}
+
+.dog-details dt {
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.dog-details dd {
+    margin: 2px 0 0;
+    overflow-wrap: anywhere;
 }
 
 .icon-button {
