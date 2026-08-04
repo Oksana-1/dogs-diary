@@ -1,10 +1,7 @@
 {% extends 'base.html.twig' %}
 {% block body %}
-    <div class="page"
-         data-controller="modal dog-edit"
-         data-dog-edit-dog-id-value="{{ dog.id }}">
+    <div class="page" data-controller="modal">
         {{ vue_island('DogDetail', { dog: dog }, { class: 'bg-light' }, 'section') }}
-        {% include 'dogs/components/edit_modal.html.twig' %}
         <div class="modal"
              data-modal-target="dialog"
              data-action="click->modal#clickOutside">
