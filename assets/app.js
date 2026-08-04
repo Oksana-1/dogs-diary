@@ -6,7 +6,6 @@
  */
 import './styles/app.css';
 import './bootstrap.js';
-import './treatment-modals.js';
 import { startVueIslands } from './vue/islands.js';
 
 startVueIslands();

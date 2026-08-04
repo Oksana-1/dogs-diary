@@ -1,15 +1,21 @@
 import TreatmentTable from './TreatmentTable.js';
 import DogEditModal from '../../ui/modals/DogEditModal.js';
+import TreatmentFormModal from '../../ui/modals/TreatmentFormModal.js';
+import BaseModal from '../../ui/modals/BaseModal.js';
 import DogRepository from '../../../js/modules/dogsDiary/repositories/DogRepository.js';
+import TreatmentRepository from '../../../js/modules/dogsDiary/repositories/TreatmentRepository.js';
 import api from '../../../js/core/api/ApiClient.js';
 
 const dogRepository = new DogRepository(api);
+const treatmentRepository = new TreatmentRepository(api);
 
 export default {
     name: 'DogDetail',
 
     components: {
+        BaseModal,
         DogEditModal,
+        TreatmentFormModal,
         TreatmentTable,
     },
 
@@ -20,10 +26,32 @@ export default {
     data() {
         return {
             dogState: { ...this.dog },
+            treatments: [...(this.dog.treatments ?? [])],
             isDogEditOpen: false,
             isDogSaving: false,
             dogEditError: null,
+            isTreatmentFormOpen: false,
+            selectedTreatment: null,
+            isTreatmentSaving: false,
+            treatmentFormError: null,
+            treatmentToDelete: null,
+            isTreatmentDeleting: false,
+            treatmentDeleteError: null,
         };
+    },
+
+    computed: {
+        treatmentDeleteText() {
+            if (this.treatmentDeleteError) {
+                return `Unable to delete this treatment: ${this.treatmentDeleteError}`;
+            }
+
+            const product = this.treatmentToDelete?.productName;
+
+            return product
+                ? `Are you sure you want to delete “${product}”?`
+                : 'Are you sure you want to delete this treatment?';
+        },
     },
 
     methods: {
@@ -50,6 +78,87 @@ export default {
                 this.dogEditError = error.message || 'Unable to update the dog. Please try again.';
             } finally {
                 this.isDogSaving = false;
+            }
+        },
+
+        openTreatmentCreate() {
+            this.selectedTreatment = null;
+            this.treatmentFormError = null;
+            this.isTreatmentFormOpen = true;
+        },
+
+        openTreatmentEdit(treatment) {
+            this.selectedTreatment = treatment;
+            this.treatmentFormError = null;
+            this.isTreatmentFormOpen = true;
+        },
+
+        closeTreatmentForm() {
+            if (!this.isTreatmentSaving) {
+                this.isTreatmentFormOpen = false;
+                this.selectedTreatment = null;
+            }
+        },
+
+        async saveTreatment(data) {
+            this.isTreatmentSaving = true;
+            this.treatmentFormError = null;
+
+            try {
+                if (this.selectedTreatment) {
+                    const treatment = await treatmentRepository.update(
+                        this.dogState.id,
+                        this.selectedTreatment.id,
+                        data,
+                    );
+                    this.treatments = this.treatments.map(
+                        (current) => current.id === treatment.id ? treatment : current,
+                    );
+                } else {
+                    const treatment = await treatmentRepository.create(this.dogState.id, data);
+                    this.treatments = [treatment, ...this.treatments];
+                }
+
+                this.isTreatmentFormOpen = false;
+                this.selectedTreatment = null;
+            } catch (error) {
+                console.error('Treatment save failed:', error);
+                this.treatmentFormError = error.message || 'Unable to save the treatment. Please try again.';
+            } finally {
+                this.isTreatmentSaving = false;
+            }
+        },
+
+        openTreatmentDelete(treatment) {
+            this.treatmentToDelete = treatment;
+            this.treatmentDeleteError = null;
+        },
+
+        closeTreatmentDelete() {
+            if (!this.isTreatmentDeleting) {
+                this.treatmentToDelete = null;
+                this.treatmentDeleteError = null;
+            }
+        },
+
+        async deleteTreatment() {
+            if (!this.treatmentToDelete) {
+                return;
+            }
+
+            const treatmentId = this.treatmentToDelete.id;
+            this.isTreatmentDeleting = true;
+            this.treatmentDeleteError = null;
+
+            try {
+                await treatmentRepository.delete(this.dogState.id, treatmentId);
+                this.treatments = this.treatments.filter((treatment) => treatment.id !== treatmentId);
+                this.treatmentToDelete = null;
+            } catch (error) {
+                console.error('Treatment delete failed:', error);
+                this.treatmentDeleteError = error.message || 'Please try again.';
+            } finally {
+                this.isTreatmentDeleting = false;
             }
         },
 
@@ -95,10 +204,14 @@ export default {
                 </div>
             </div>
             <div class="button-line">
-                <button class="btn-outline" data-action="modal#open">Add treatment</button>
+                <button type="button" class="btn-outline" @click="openTreatmentCreate">Add treatment</button>
             </div>
 
-            <TreatmentTable :treatments="dogState.treatments" />
+            <TreatmentTable
+                :treatments="treatments"
+                @edit="openTreatmentEdit"
+                @delete="openTreatmentDelete"
+            />
             <DogEditModal
                 :dog="dogState"
                 :is-open="isDogEditOpen"
@@ -106,6 +219,22 @@ export default {
                 :error="dogEditError"
                 @on-resolve="updateDog"
                 @on-reject="closeDogEdit"
+            />
+            <TreatmentFormModal
+                :treatment="selectedTreatment"
+                :is-open="isTreatmentFormOpen"
+                :disabled="isTreatmentSaving"
+                :error="treatmentFormError"
+                @on-resolve="saveTreatment"
+                @on-reject="closeTreatmentForm"
+            />
+            <BaseModal
+                title="Delete Treatment"
+                :text="treatmentDeleteText"
+                :is-open="treatmentToDelete !== null"
+                :disabled="isTreatmentDeleting"
+                @on-resolve="deleteTreatment"
+                @on-reject="closeTreatmentDelete"
             />
         </div>
     `,

@@ -56,6 +56,11 @@ Small Symfony 7.3 app for tracking dogs and their treatments.
 - `POST /api/dogs` - Create dog.
 - `PUT /api/dogs/{id}` - Update dog.
 - `DELETE /api/dogs/{id}` - Delete dog.
+- `GET /api/dogs/{dogId}/treatments` - List a dog's treatments.
+- `GET /api/dogs/{dogId}/treatments/{id}` - Get a treatment.
+- `POST /api/dogs/{dogId}/treatments` - Create a treatment.
+- `PUT /api/dogs/{dogId}/treatments/{id}` - Update a treatment.
+- `DELETE /api/dogs/{dogId}/treatments/{id}` - Delete a treatment.
 
 ## Current Architecture Notes
 
@@ -64,7 +69,7 @@ Small Symfony 7.3 app for tracking dogs and their treatments.
 - API payload validation is handled by:
   - `App\Controller\Api\Dto\CreateDogPayload`
   - `App\Controller\Api\Dto\UpdateDogPayload`
-- `Treatment` persistence exists as a Doctrine entity and is connected to `Dog` through a `ManyToOne` relation, but it has no API or UI persistence flow.
+- Treatment CRUD is exposed through the nested dog API and owned by the `DogDetail` Vue island.
 - Dog data is Doctrine-backed; there is no legacy in-memory dog repository in this checkout.
 
 ## Useful Commands

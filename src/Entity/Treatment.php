@@ -19,6 +19,7 @@ class Treatment
     #[ORM\JoinColumn(name: 'dog_id', nullable: false, onDelete: 'RESTRICT')]
     private ?Dog $dog = null;
 
+    /** @var array<int, TreatmentTypeEnum> */
     #[ORM\Column(type: Types::SIMPLE_ARRAY, enumType: TreatmentTypeEnum::class)]
     private array $type = [];
 
@@ -56,13 +57,7 @@ class Treatment
      */
     public function getType(): array
     {
-        return array_values(array_filter(
-            array_map(
-                static fn ($type): ?TreatmentTypeEnum => 
-                    is_string($type) ? TreatmentTypeEnum::tryFrom($type) : $type,
-                $this->type,
-            ),
-        ));
+        return $this->type;
     }
 
     /**
@@ -70,10 +65,7 @@ class Treatment
      */
     public function setType(array $type): static
     {
-        $this->type = array_map(
-            static fn (TreatmentTypeEnum $treatmentType): string => $treatmentType->value,
-            $type,
-        );
+        $this->type = $type;
 
         return $this;
     }

@@ -5,11 +5,13 @@ export default {
         treatments: { type: Array, default: () => [] },
     },
 
-    computed: {
-        todayTreatments() {
-            const today = new Date().toISOString().slice(0, 10);
+    emits: ['edit', 'delete'],
 
-            return this.treatments.filter((treatment) => treatment.treatmentDate === today);
+    computed: {
+        sortedTreatments() {
+            return [...this.treatments].sort(
+                (left, right) => right.treatmentDate.localeCompare(left.treatmentDate),
+            );
         },
     },
 
@@ -20,16 +22,16 @@ export default {
     },
 
     template: /*language=HTML*/ `
-        <div v-if="todayTreatments.length" class="treatments-section">
-            <h2>Today's Treatments</h2>
-            <table class="treatments-table">
+        <div class="treatments-section">
+            <h2>Treatments</h2>
+            <table v-if="sortedTreatments.length" class="treatments-table">
                 <thead>
                 <tr>
                     <th>Type</th><th>Product</th><th>Date</th><th>Next Due</th><th>Notes</th><th>Actions</th>
                 </tr>
                 </thead>
                 <tbody>
-                <tr v-for="treatment in todayTreatments" :key="treatment.id" :data-treatment-id="treatment.id">
+                <tr v-for="treatment in sortedTreatments" :key="treatment.id">
                     <td>
                         <span v-for="type in treatment.types" :key="type" class="treatment-badge">{{ formatType(type) }}</span>
                     </td>
@@ -39,21 +41,16 @@ export default {
                     <td>{{ treatment.note ?? '—' }}</td>
                     <td class="treatment-actions">
                         <button type="button" class="action-button action-edit"
-                                :data-treatment-id="treatment.id"
-                                :data-treatment-type="treatment.types.join(',')"
-                                :data-treatment-product="treatment.productName"
-                                :data-treatment-date="treatment.treatmentDate"
-                                :data-treatment-due="treatment.dueDate"
-                                :data-treatment-note="treatment.note"
+                                @click="$emit('edit', treatment)"
                                 title="Edit treatment" aria-label="Edit treatment">✏️</button>
                         <button type="button" class="action-button action-delete"
-                                :data-treatment-id="treatment.id"
-                                :data-treatment-product="treatment.productName"
+                                @click="$emit('delete', treatment)"
                                 title="Delete treatment" aria-label="Delete treatment">🗑️</button>
                     </td>
                 </tr>
                 </tbody>
             </table>
+            <p v-else>No treatments recorded.</p>
         </div>
     `,
 };
