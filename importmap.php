@@ -16,12 +16,6 @@ return [
         'path' => './assets/app.js',
         'entrypoint' => true,
     ],
-    '@hotwired/stimulus' => [
-        'version' => '3.2.2',
-    ],
-    '@symfony/stimulus-bundle' => [
-        'path' => '@symfony/stimulus-bundle/loader.js',
-    ],
     // Full browser build: one self-contained file that includes the runtime
     // template compiler, so island components can use `template: '...'` strings
     // without any Node build step. Unlike the esm-bundler build it does not

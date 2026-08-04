@@ -73,8 +73,8 @@ function unmountAll(root = document) {
 }
 
 /**
- * Islands added after the initial load — the treatment/dog modals swap markup
- * in via Stimulus, and any future Turbo Frame or Stream would do the same.
+ * Mount islands inserted after the initial page load, including any future
+ * Turbo Frame or Stream content.
  */
 const observer = new MutationObserver((mutations) => {
     for (const mutation of mutations) {

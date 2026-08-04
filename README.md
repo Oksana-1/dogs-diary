@@ -7,6 +7,7 @@ Small Symfony 7.3 app for tracking dogs and their treatments.
 - PHP 8.2+
 - Symfony 7.3
 - Twig (server-rendered pages)
+- Vue 3 islands for interactive features
 - Doctrine ORM + Doctrine Migrations
 - PostgreSQL (via Docker Compose)
 - AssetMapper (no Webpack/Vite)
@@ -18,8 +19,8 @@ Small Symfony 7.3 app for tracking dogs and their treatments.
 - `src/Application/Dog` - Application service (`DogService`) for dog use-cases.
 - `src/Entity` - Doctrine entities (`Dog`, `Treatment`).
 - `src/Repository` - Doctrine repositories.
-- `templates` - Twig templates for HTML pages.
-- `assets` - AssetMapper JS/CSS entrypoints.
+- `templates` - Twig page shells and shared server-rendered layout.
+- `assets` - AssetMapper JS/CSS entrypoints and Vue islands.
 - `migrations` - Doctrine migration files.
 
 ## Local Run
@@ -70,6 +71,8 @@ Small Symfony 7.3 app for tracking dogs and their treatments.
   - `App\Controller\Api\Dto\CreateDogPayload`
   - `App\Controller\Api\Dto\UpdateDogPayload`
 - Treatment CRUD is exposed through the nested dog API and owned by the `DogDetail` Vue island.
+- The dog detail Twig template only provides the `DogDetail` island mount point; Vue owns its interactive DOM.
+- Vue is the only frontend interaction layer; Stimulus is not installed.
 - Dog data is Doctrine-backed; there is no legacy in-memory dog repository in this checkout.
 
 ## Useful Commands

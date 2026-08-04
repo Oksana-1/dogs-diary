@@ -1,6 +1,4 @@
 {% extends 'base.html.twig' %}
 {% block body %}
-    <div class="page">
-        {{ vue_island('DogDetail', { dog: dog }, { class: 'bg-light' }, 'section') }}
-    </div>
+    {{ vue_island('DogDetail', { dog: dog }, { class: 'bg-light' }, 'section') }}
 {% endblock %}

@@ -5,9 +5,6 @@
  * which should already be in your base.html.twig.
  */
 import './styles/app.css';
-import './bootstrap.js';
 import { startVueIslands } from './vue/islands.js';
 
 startVueIslands();
-
-console.log('This log comes from assets/app.js - welcome to AssetMapper! 🎉');
