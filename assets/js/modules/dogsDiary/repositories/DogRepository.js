@@ -20,4 +20,8 @@ export default class DogRepository {
         return new Dog(await this.api.post("/dogs", data));
     }
 
+    async update(id, data) {
+        return new Dog(await this.api.put(`/dogs/${id}`, data));
+    }
+
 }
