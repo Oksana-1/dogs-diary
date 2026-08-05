@@ -1,17 +1,32 @@
 import DogRepository from "../../../js/modules/dogsDiary/repositories/DogRepository.js";
+import DogCreateUpdateModal from '../../ui/modals/DogCreateUpdateModal.js';
 import DogItem from "./DogItem.js";
 import api from "../../../js/core/api/ApiClient.js";
 const repository = new DogRepository(api);
 export default {
     name: 'DogsList',
     components: {
-      DogItem,
+        DogItem,
+        DogCreateUpdateModal
     },
     data() {
         return {
             dogs: [],
             isLoading: false,
             error: null,
+            isDogCreateOpen: false,
+            isDogSaving: false,
+            dogCreateError: null,
+            dogInitial: {
+                name: '',
+                birthDate:'',
+                gender: '',
+                adoptDate: '',
+                status:  '',
+                avatar:  '',
+                weight: '',
+                height:'',
+            }
         }
     },
     methods: {
@@ -26,6 +41,28 @@ export default {
             } finally {
                 this.isLoading = false;
             }
+        },
+        showDogCreateModal() {
+            this.dogCreateError = null;
+            this.isDogCreateOpen = true;
+        },
+        closeDogCreateModal() {
+            this.isDogCreateOpen = false;
+        },
+        async createDog(data) {
+            this.isDogSaving = true;
+            this.dogCreateError = null;
+            try {
+                const dog = await repository.create(data);
+                this.dogs = [...this.dogs, dog];
+                this.error = null;
+                this.isDogCreateOpen = false;
+            } catch (error) {
+                console.error('Dog save failed:', error);
+                this.dogCreateError = error.message || 'Unable to save the dog. Please try again.';
+            } finally {
+                this.isDogSaving = false;
+            }
         }
     },
     created() {
@@ -36,11 +73,24 @@ export default {
             <div class="dogs-container">
                 <div v-if="isLoading">Is loading...</div>
                 <div v-else-if="error" role="alert">{{ error }}</div>
-                <div v-else-if="dogs.length">
-                    <DogItem v-for="dog in dogs" :dog="dog" :key="dog.id"/>
+                <template v-else>
+                     <div v-if="dogs.length">
+                        <DogItem v-for="dog in dogs" :dog="dog" :key="dog.id"/>
+                    </div>
+                    <div v-else>No dogs found.</div>
+                </template>
+                <div class="btn-row">
+                    <button class="btn-auth btn-signup" @click="showDogCreateModal">Add dog</button>
                 </div>
-                <div v-else>No dogs found.</div>
             </div>
+            <DogCreateUpdateModal
+                :dog="dogInitial"
+                :is-open="isDogCreateOpen"
+                :disabled="isDogSaving"
+                :error="dogCreateError"
+                @on-resolve="createDog"
+                @on-reject="closeDogCreateModal"
+            />
         </section>
     `,
 };

@@ -14,7 +14,7 @@ function dogDraft(dog) {
 }
 
 export default {
-    name: 'DogEditModal',
+    name: 'DogCreateUpdateModal',
 
     props: {
         dog: { type: Object, required: true },
@@ -29,9 +29,15 @@ export default {
         modalId += 1;
 
         return {
-            titleId: `dog-edit-modal-title-${modalId}`,
+            titleId: `dog-create-update-modal-title-${modalId}`,
             draft: dogDraft(this.dog),
         };
+    },
+
+    computed: {
+        title() {
+            return this.dog.id ? `Edit ${this.dog.name}` : 'Add dog';
+        },
     },
 
     watch: {
@@ -88,7 +94,7 @@ export default {
                  @click.self="onReject"
                  @keydown.esc.prevent="onReject">
                 <div class="modal-content">
-                    <h2 :id="titleId">Edit {{ dog.name }}</h2>
+                    <h2 :id="titleId">{{ title }}</h2>
                     <form @submit.prevent="onResolve">
                         <div class="form-group">
                             <label for="edit-dog-name">Name</label>

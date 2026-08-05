@@ -650,3 +650,7 @@ body {
     color: var(--text-muted, #777);
     font-size: 0.88rem;
 }
+.btn-row {
+    display: flex;
+    justify-content: center;
+}

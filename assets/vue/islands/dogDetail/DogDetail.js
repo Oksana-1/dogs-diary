@@ -1,5 +1,5 @@
 import TreatmentTable from './TreatmentTable.js';
-import DogEditModal from '../../ui/modals/DogEditModal.js';
+import DogCreateUpdateModal from '../../ui/modals/DogCreateUpdateModal.js';
 import TreatmentFormModal from '../../ui/modals/TreatmentFormModal.js';
 import BaseModal from '../../ui/modals/BaseModal.js';
 import DogRepository from '../../../js/modules/dogsDiary/repositories/DogRepository.js';
@@ -14,7 +14,7 @@ export default {
 
     components: {
         BaseModal,
-        DogEditModal,
+        DogCreateUpdateModal,
         TreatmentFormModal,
         TreatmentTable,
     },
@@ -212,7 +212,7 @@ export default {
                 @edit="openTreatmentEdit"
                 @delete="openTreatmentDelete"
             />
-            <DogEditModal
+            <DogCreateUpdateModal
                 :dog="dogState"
                 :is-open="isDogEditOpen"
                 :disabled="isDogSaving"
