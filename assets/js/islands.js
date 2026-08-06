@@ -7,11 +7,11 @@ import { createApp } from 'vue';
  * a page actually contains that island. AssetMapper rewrites these relative
  * paths to versioned URLs at build time — no bundler involved.
  *
- * Add a component: drop a file in assets/vue/islands/ and register it here.
+ * Add a component: drop a file in assets/js/components/islands/ and register it here.
  */
 const islands = {
-    DogsList: () => import('./islands/main/DogsList.js'),
-    DogDetail: () => import('./islands/dogDetail/DogDetail.js'),
+    AppDogList: () => import('./components/AppDogList.js'),
+    AppDogDetail: () => import('./components/AppDogDetail.js'),
 };
 
 const MOUNTED_FLAG = 'vueIslandMounted';
@@ -27,7 +27,7 @@ async function mountIsland(el) {
 
     if (!load) {
         console.error(
-            `[vue-islands] Unknown island "${name}". Register it in assets/vue/islands.js. Known: ${Object.keys(islands).join(', ')}`,
+            `[vue-islands] Unknown island "${name}". Register it in assets/js/islands.js. Known: ${Object.keys(islands).join(', ')}`,
         );
         return;
     }

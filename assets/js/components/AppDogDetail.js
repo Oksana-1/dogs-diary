@@ -1,16 +1,16 @@
-import TreatmentTable from './TreatmentTable.js';
-import DogCreateUpdateModal from '../../ui/modals/DogCreateUpdateModal.js';
-import TreatmentFormModal from '../../ui/modals/TreatmentFormModal.js';
-import BaseModal from '../../ui/modals/BaseModal.js';
-import DogRepository from '../../../js/modules/dogsDiary/repositories/DogRepository.js';
-import TreatmentRepository from '../../../js/modules/dogsDiary/repositories/TreatmentRepository.js';
-import api from '../../../js/core/api/ApiClient.js';
+import TreatmentTable from './islands/dogDetailPage/TreatmentTable.js';
+import DogCreateUpdateModal from './ui/modals/DogCreateUpdateModal.js';
+import TreatmentFormModal from './ui/modals/TreatmentFormModal.js';
+import BaseModal from './ui/modals/BaseModal.js';
+import DogRepository from '../modules/dogsDiary/repositories/DogRepository.js';
+import TreatmentRepository from '../modules/dogsDiary/repositories/TreatmentRepository.js';
+import api from '../core/api/ApiClient.js';
 
 const dogRepository = new DogRepository(api);
 const treatmentRepository = new TreatmentRepository(api);
 
 export default {
-    name: 'DogDetail',
+    name: 'AppDogDetail',
 
     components: {
         BaseModal,

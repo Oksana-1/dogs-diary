@@ -5,6 +5,6 @@
  * which should already be in your base.html.twig.
  */
 import './styles/app.css';
-import { startVueIslands } from './vue/islands.js';
+import { startVueIslands } from './js/islands.js';
 
 startVueIslands();

@@ -1,10 +1,10 @@
-import DogRepository from "../../../js/modules/dogsDiary/repositories/DogRepository.js";
-import DogCreateUpdateModal from '../../ui/modals/DogCreateUpdateModal.js';
-import DogItem from "./DogItem.js";
-import api from "../../../js/core/api/ApiClient.js";
+import DogRepository from "../modules/dogsDiary/repositories/DogRepository.js";
+import DogCreateUpdateModal from './ui/modals/DogCreateUpdateModal.js';
+import DogItem from './islands/dogListPage/DogItem.js';
+import api from "../core/api/ApiClient.js";
 const repository = new DogRepository(api);
 export default {
-    name: 'DogsList',
+    name: 'AppDogList',
     components: {
         DogItem,
         DogCreateUpdateModal

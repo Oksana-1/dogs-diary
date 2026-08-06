@@ -1,4 +1,4 @@
-import Dog from "../../../js/modules/dogsDiary/entities/Dog.js";
+import Dog from "../../../modules/dogsDiary/entities/Dog.js";
 
 export default {
     name: 'DogItem',
