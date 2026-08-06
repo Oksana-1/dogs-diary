@@ -1,3 +1,6 @@
+import TreatmentCollection from "../entities/TreatmentCollection.js";
+import Treatment from "../entities/Treatment.js";
+
 export default class TreatmentRepository {
 
     constructor(api) {
@@ -5,15 +8,16 @@ export default class TreatmentRepository {
     }
 
     async list(id) {
-        return this.api.get(`/dogs/${id}/treatments`);
+        const treatments = await this.api.get(`/dogs/${id}/treatments`);
+        return new TreatmentCollection(treatments);
     }
 
     async create(dogId, data) {
-        return this.api.post(`/dogs/${dogId}/treatments`, data);
+        return new Treatment(await this.api.post(`/dogs/${dogId}/treatments`, data));
     }
 
     async update(dogId, id, data) {
-        return this.api.put(`/dogs/${dogId}/treatments/${id}`, data);
+        return new Treatment(await this.api.put(`/dogs/${dogId}/treatments/${id}`, data));
     }
 
     async delete(dogId, id) {
