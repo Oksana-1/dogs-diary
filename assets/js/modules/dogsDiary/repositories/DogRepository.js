@@ -24,4 +24,8 @@ export default class DogRepository {
         return new Dog(await this.api.put(`/dogs/${id}`, data));
     }
 
+    async delete(id) {
+        return this.api.delete(`/dogs/${id}`);
+    }
+
 }

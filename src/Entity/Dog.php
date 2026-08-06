@@ -51,7 +51,7 @@ class Dog
     /**
      * @var Collection<int, Treatment>
      */
-    #[ORM\OneToMany(targetEntity: Treatment::class, mappedBy: 'dog')]
+    #[ORM\OneToMany(targetEntity: Treatment::class, mappedBy: 'dog', cascade: ['remove'])]
     private Collection $treatments;
 
     public function __construct()

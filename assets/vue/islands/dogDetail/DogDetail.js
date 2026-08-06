@@ -37,6 +37,9 @@ export default {
             treatmentToDelete: null,
             isTreatmentDeleting: false,
             treatmentDeleteError: null,
+            dogToDelete: null,
+            dogDeleteError: null,
+            isDogDeleting: false,
         };
     },
 
@@ -52,6 +55,17 @@ export default {
                 ? `Are you sure you want to delete “${product}”?`
                 : 'Are you sure you want to delete this treatment?';
         },
+        dogDeleteText() {
+            if (this.dogDeleteError) {
+                return `Unable to delete this dog: ${this.dogDeleteError}`;
+            }
+
+            const dog = this.dogToDelete?.name;
+
+            return dog
+                ? `Are you sure you want to delete “${dog}”?`
+                : 'Are you sure you want to delete this dog?';
+        }
     },
 
     methods: {
@@ -140,7 +154,12 @@ export default {
                 this.treatmentDeleteError = null;
             }
         },
-
+        closeDogDelete() {
+            if (!this.isDogDeleting) {
+                this.dogToDelete = null;
+                this.dogDeleteError = null;
+            }
+        },
         async deleteTreatment() {
             if (!this.treatmentToDelete) {
                 return;
@@ -161,6 +180,26 @@ export default {
                 this.isTreatmentDeleting = false;
             }
         },
+        async deleteDog() {
+            if (!this.dogToDelete) {
+                return;
+            }
+
+            const dogId = this.dogToDelete.id;
+            this.isDogDeleting = true;
+            this.dogDeleteError = null;
+
+            try {
+                await dogRepository.delete(dogId);
+                this.dogToDelete = null;
+                window.location.assign('/');
+            } catch (error) {
+                console.error('Dog delete failed:', error);
+                this.dogDeleteError = error.message || 'Please try again.';
+            } finally {
+                this.isDogDeleting = false;
+            }
+        },
 
         avatarUrl(avatar) {
             return avatar?.startsWith('images/') ? `/assets/${avatar}` : avatar;
@@ -172,6 +211,10 @@ export default {
 
         formatGender(gender) {
             return gender ? gender.charAt(0).toUpperCase() + gender.slice(1) : 'Unknown';
+        },
+        openDogDelete(dog) {
+            this.dogToDelete = dog;
+            this.dogDeleteError = null;
         },
     },
 
@@ -212,6 +255,9 @@ export default {
                 @edit="openTreatmentEdit"
                 @delete="openTreatmentDelete"
             />
+            <div class="btn-row">
+                <button type="button" class="btn-auth btn-signup" @click="openDogDelete(dogState)">Delete dog</button>
+            </div>
             <DogCreateUpdateModal
                 :dog="dogState"
                 :is-open="isDogEditOpen"
@@ -235,6 +281,14 @@ export default {
                 :disabled="isTreatmentDeleting"
                 @on-resolve="deleteTreatment"
                 @on-reject="closeTreatmentDelete"
+            />
+            <BaseModal
+                title="Delete Dog"
+                :text="dogDeleteText"
+                :is-open="dogToDelete !== null"
+                :disabled="isDogDeleting"
+                @on-resolve="deleteDog"
+                @on-reject="closeDogDelete"
             />
         </div>
     `,
