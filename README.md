@@ -1,11 +1,11 @@
 # Dogs Diary
 
-Small Symfony 7.3 app for tracking dogs and their treatments.
+Small Symfony 7.4 LTS app for tracking dogs and their treatments.
 
 ## Stack
 
 - PHP 8.2+
-- Symfony 7.3
+- Symfony 7.4 LTS
 - Twig (server-rendered pages)
 - Vue 3 islands for interactive features
 - Doctrine ORM + Doctrine Migrations
