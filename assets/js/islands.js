@@ -7,11 +7,11 @@ import { createApp } from 'vue';
  * a page actually contains that island. AssetMapper rewrites these relative
  * paths to versioned URLs at build time — no bundler involved.
  *
- * Add a component: drop a file in assets/js/components/islands/ and register it here.
+ * Add a component: drop a file in assets/js/modules/dogsDiary/view/ and register it here.
  */
 const islands = {
-    AppDogList: () => import('./components/AppDogList.js'),
-    AppDogDetail: () => import('./components/AppDogDetail.js'),
+    AppDogList: () => import('./modules/dogsDiary/view/AppDogList.js'),
+    AppDogDetail: () => import('./modules/dogsDiary/view/AppDogDetail.js'),
 };
 
 const MOUNTED_FLAG = 'vueIslandMounted';
