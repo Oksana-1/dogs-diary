@@ -1,72 +1,68 @@
-import DogRepository from "../repositories/DogRepository.js";
+import { ref } from 'vue';
+import DogRepository from '../repositories/DogRepository.js';
 import DogCreateUpdateModal from './ui/modals/DogCreateUpdateModal.js';
 import DogItem from './islands/dogListPage/DogItem.js';
-import api from "../../../core/api/ApiClient.js";
+import useAsyncModal from './composables/useAsyncModal.js';
+import api from '../../../core/api/ApiClient.js';
+
 const repository = new DogRepository(api);
+const emptyDog = Object.freeze({
+    name: '',
+    birthDate: '',
+    gender: '',
+    adoptDate: '',
+    status: '',
+    avatar: '',
+    weight: '',
+    height: '',
+});
+
 export default {
     name: 'AppDogList',
     components: {
         DogItem,
         DogCreateUpdateModal
     },
-    data() {
-        return {
-            dogs: [],
-            isLoading: false,
-            error: null,
-            isDogCreateOpen: false,
-            isDogSaving: false,
-            dogCreateError: null,
-            dogInitial: {
-                name: '',
-                birthDate:'',
-                gender: '',
-                adoptDate: '',
-                status:  '',
-                avatar:  '',
-                weight: '',
-                height:'',
+    setup() {
+        const dogs = ref([]);
+        const isLoading = ref(false);
+        const error = ref(null);
+        const dogCreate = useAsyncModal({
+            fallbackError: 'Unable to save the dog. Please try again.',
+        });
+
+        async function loadDogs() {
+            isLoading.value = true;
+            error.value = null;
+
+            try {
+                dogs.value = await repository.list();
+            } catch (requestError) {
+                console.error(requestError);
+                error.value = 'Unable to load dogs. Please try again.';
+            } finally {
+                isLoading.value = false;
             }
         }
-    },
-    methods: {
-        async loadDogs() {
-            this.isLoading = true;
-            this.error = null;
-            try {
-                this.dogs = await repository.list();
-            } catch (error) {
-                console.error(error);
-                this.error = 'Unable to load dogs. Please try again.';
-            } finally {
-                this.isLoading = false;
-            }
-        },
-        showDogCreateModal() {
-            this.dogCreateError = null;
-            this.isDogCreateOpen = true;
-        },
-        closeDogCreateModal() {
-            this.isDogCreateOpen = false;
-        },
-        async createDog(data) {
-            this.isDogSaving = true;
-            this.dogCreateError = null;
-            try {
+
+        async function createDog(data) {
+            await dogCreate.execute(async () => {
                 const dog = await repository.create(data);
-                this.dogs = [...this.dogs, dog];
-                this.error = null;
-                this.isDogCreateOpen = false;
-            } catch (error) {
-                console.error('Dog save failed:', error);
-                this.dogCreateError = error.message || 'Unable to save the dog. Please try again.';
-            } finally {
-                this.isDogSaving = false;
-            }
+                dogs.value = [...dogs.value, dog];
+                error.value = null;
+            });
         }
-    },
-    created() {
-      this.loadDogs();
+
+        void loadDogs();
+
+        return {
+            dogs,
+            isLoading,
+            error,
+            dogCreate,
+            emptyDog,
+            createDog,
+        };
     },
     template: `
         <section class="dogs-section">
@@ -80,16 +76,16 @@ export default {
                     <div v-else>No dogs found.</div>
                 </template>
                 <div class="btn-row">
-                    <button class="btn-auth btn-signup" @click="showDogCreateModal">Add dog</button>
+                    <button class="btn-auth btn-signup" @click="dogCreate.open(emptyDog)">Add dog</button>
                 </div>
             </div>
             <DogCreateUpdateModal
-                :dog="dogInitial"
-                :is-open="isDogCreateOpen"
-                :disabled="isDogSaving"
-                :error="dogCreateError"
-                @on-resolve="createDog"
-                @on-reject="closeDogCreateModal"
+                :dog="dogCreate.subject || emptyDog"
+                :is-open="dogCreate.isOpen"
+                :disabled="dogCreate.isPending"
+                :error="dogCreate.error"
+                @submit="createDog"
+                @close="dogCreate.close"
             />
         </section>
     `,

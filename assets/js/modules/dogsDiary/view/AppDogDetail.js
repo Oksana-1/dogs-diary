@@ -1,7 +1,9 @@
+import { computed, ref } from 'vue';
 import TreatmentTable from './islands/dogDetailPage/TreatmentTable.js';
 import DogCreateUpdateModal from './ui/modals/DogCreateUpdateModal.js';
 import TreatmentFormModal from './ui/modals/TreatmentFormModal.js';
-import BaseModal from './ui/modals/BaseModal.js';
+import ConfirmModal from './ui/modals/ConfirmModal.js';
+import useAsyncModal from './composables/useAsyncModal.js';
 import DogRepository from '../repositories/DogRepository.js';
 import TreatmentRepository from '../repositories/TreatmentRepository.js';
 import api from '../../../core/api/ApiClient.js';
@@ -13,7 +15,7 @@ export default {
     name: 'AppDogDetail',
 
     components: {
-        BaseModal,
+        ConfirmModal,
         DogCreateUpdateModal,
         TreatmentFormModal,
         TreatmentTable,
@@ -23,199 +25,137 @@ export default {
         dog: { type: Object, required: true },
     },
 
-    data() {
-        return {
-            dogState: { ...this.dog },
-            treatments: [...(this.dog.treatments ?? [])],
-            isDogEditOpen: false,
-            isDogSaving: false,
-            dogEditError: null,
-            isTreatmentFormOpen: false,
-            selectedTreatment: null,
-            isTreatmentSaving: false,
-            treatmentFormError: null,
-            treatmentToDelete: null,
-            isTreatmentDeleting: false,
-            treatmentDeleteError: null,
-            dogToDelete: null,
-            dogDeleteError: null,
-            isDogDeleting: false,
-        };
-    },
+    setup(props) {
+        const dogState = ref({ ...props.dog });
+        const treatments = ref([...(props.dog.treatments ?? [])]);
+        const dogEdit = useAsyncModal({
+            fallbackError: 'Unable to update the dog. Please try again.',
+        });
+        const treatmentForm = useAsyncModal({
+            fallbackError: 'Unable to save the treatment. Please try again.',
+        });
+        const treatmentDelete = useAsyncModal();
+        const dogDelete = useAsyncModal();
 
-    computed: {
-        treatmentDeleteText() {
-            if (this.treatmentDeleteError) {
-                return `Unable to delete this treatment: ${this.treatmentDeleteError}`;
+        const treatmentDeleteText = computed(() => {
+            if (treatmentDelete.error) {
+                return `Unable to delete this treatment: ${treatmentDelete.error}`;
             }
 
-            const product = this.treatmentToDelete?.productName;
+            const product = treatmentDelete.subject?.productName;
 
             return product
                 ? `Are you sure you want to delete “${product}”?`
                 : 'Are you sure you want to delete this treatment?';
-        },
-        dogDeleteText() {
-            if (this.dogDeleteError) {
-                return `Unable to delete this dog: ${this.dogDeleteError}`;
+        });
+
+        const dogDeleteText = computed(() => {
+            if (dogDelete.error) {
+                return `Unable to delete this dog: ${dogDelete.error}`;
             }
 
-            const dog = this.dogToDelete?.name;
+            const dog = dogDelete.subject?.name;
 
             return dog
                 ? `Are you sure you want to delete “${dog}”?`
                 : 'Are you sure you want to delete this dog?';
+        });
+
+        function openDogEdit() {
+            dogEdit.open(dogState.value);
         }
-    },
 
-    methods: {
-        openDogEdit() {
-            this.dogEditError = null;
-            this.isDogEditOpen = true;
-        },
+        async function updateDog(data) {
+            await dogEdit.execute(async () => {
+                dogState.value = await dogRepository.update(dogState.value.id, data);
+            });
+        }
 
-        closeDogEdit() {
-            if (!this.isDogSaving) {
-                this.isDogEditOpen = false;
-            }
-        },
+        function openTreatmentCreate() {
+            treatmentForm.open();
+        }
 
-        async updateDog(data) {
-            this.isDogSaving = true;
-            this.dogEditError = null;
+        function openTreatmentEdit(treatment) {
+            treatmentForm.open(treatment);
+        }
 
-            try {
-                this.dogState = await dogRepository.update(this.dogState.id, data);
-                this.isDogEditOpen = false;
-            } catch (error) {
-                console.error('Dog update failed:', error);
-                this.dogEditError = error.message || 'Unable to update the dog. Please try again.';
-            } finally {
-                this.isDogSaving = false;
-            }
-        },
-
-        openTreatmentCreate() {
-            this.selectedTreatment = null;
-            this.treatmentFormError = null;
-            this.isTreatmentFormOpen = true;
-        },
-
-        openTreatmentEdit(treatment) {
-            this.selectedTreatment = treatment;
-            this.treatmentFormError = null;
-            this.isTreatmentFormOpen = true;
-        },
-
-        closeTreatmentForm() {
-            if (!this.isTreatmentSaving) {
-                this.isTreatmentFormOpen = false;
-                this.selectedTreatment = null;
-            }
-        },
-
-        async saveTreatment(data) {
-            this.isTreatmentSaving = true;
-            this.treatmentFormError = null;
-
-            try {
-                if (this.selectedTreatment) {
+        async function saveTreatment(data) {
+            await treatmentForm.execute(async (selectedTreatment) => {
+                if (selectedTreatment) {
                     const treatment = await treatmentRepository.update(
-                        this.dogState.id,
-                        this.selectedTreatment.id,
+                        dogState.value.id,
+                        selectedTreatment.id,
                         data,
                     );
-                    this.treatments = this.treatments.map(
+                    treatments.value = treatments.value.map(
                         (current) => current.id === treatment.id ? treatment : current,
                     );
                 } else {
-                    const treatment = await treatmentRepository.create(this.dogState.id, data);
-                    this.treatments = [treatment, ...this.treatments];
+                    const treatment = await treatmentRepository.create(dogState.value.id, data);
+                    treatments.value = [treatment, ...treatments.value];
                 }
+            });
+        }
 
-                this.isTreatmentFormOpen = false;
-                this.selectedTreatment = null;
-            } catch (error) {
-                console.error('Treatment save failed:', error);
-                this.treatmentFormError = error.message || 'Unable to save the treatment. Please try again.';
-            } finally {
-                this.isTreatmentSaving = false;
-            }
-        },
-
-        openTreatmentDelete(treatment) {
-            this.treatmentToDelete = treatment;
-            this.treatmentDeleteError = null;
-        },
-
-        closeTreatmentDelete() {
-            if (!this.isTreatmentDeleting) {
-                this.treatmentToDelete = null;
-                this.treatmentDeleteError = null;
-            }
-        },
-        closeDogDelete() {
-            if (!this.isDogDeleting) {
-                this.dogToDelete = null;
-                this.dogDeleteError = null;
-            }
-        },
-        async deleteTreatment() {
-            if (!this.treatmentToDelete) {
+        async function deleteTreatment() {
+            if (!treatmentDelete.subject) {
                 return;
             }
 
-            const treatmentId = this.treatmentToDelete.id;
-            this.isTreatmentDeleting = true;
-            this.treatmentDeleteError = null;
+            await treatmentDelete.execute(async (treatment) => {
+                await treatmentRepository.delete(dogState.value.id, treatment.id);
+                treatments.value = treatments.value.filter((current) => current.id !== treatment.id);
+            });
+        }
 
-            try {
-                await treatmentRepository.delete(this.dogState.id, treatmentId);
-                this.treatments = this.treatments.filter((treatment) => treatment.id !== treatmentId);
-                this.treatmentToDelete = null;
-            } catch (error) {
-                console.error('Treatment delete failed:', error);
-                this.treatmentDeleteError = error.message || 'Please try again.';
-            } finally {
-                this.isTreatmentDeleting = false;
-            }
-        },
-        async deleteDog() {
-            if (!this.dogToDelete) {
+        async function deleteDog() {
+            if (!dogDelete.subject) {
                 return;
             }
 
-            const dogId = this.dogToDelete.id;
-            this.isDogDeleting = true;
-            this.dogDeleteError = null;
+            const deleted = await dogDelete.execute(async (dog) => {
+                await dogRepository.delete(dog.id);
 
-            try {
-                await dogRepository.delete(dogId);
-                this.dogToDelete = null;
+                return true;
+            });
+
+            if (deleted) {
                 window.location.assign('/');
-            } catch (error) {
-                console.error('Dog delete failed:', error);
-                this.dogDeleteError = error.message || 'Please try again.';
-            } finally {
-                this.isDogDeleting = false;
             }
-        },
+        }
 
-        avatarUrl(avatar) {
+        function avatarUrl(avatar) {
             return avatar?.startsWith('images/') ? `/assets/${avatar}` : avatar;
-        },
+        }
 
-        formatDate(value, options = { year: 'numeric', month: 'long', day: 'numeric' }) {
+        function formatDate(value, options = { year: 'numeric', month: 'long', day: 'numeric' }) {
             return value ? new Date(`${value}T00:00:00`).toLocaleDateString('en-US', options) : 'Unknown';
-        },
+        }
 
-        formatGender(gender) {
+        function formatGender(gender) {
             return gender ? gender.charAt(0).toUpperCase() + gender.slice(1) : 'Unknown';
-        },
-        openDogDelete(dog) {
-            this.dogToDelete = dog;
-            this.dogDeleteError = null;
-        },
+        }
+
+        return {
+            dogState,
+            treatments,
+            dogEdit,
+            treatmentForm,
+            treatmentDelete,
+            dogDelete,
+            treatmentDeleteText,
+            dogDeleteText,
+            openDogEdit,
+            updateDog,
+            openTreatmentCreate,
+            openTreatmentEdit,
+            saveTreatment,
+            deleteTreatment,
+            deleteDog,
+            avatarUrl,
+            formatDate,
+            formatGender,
+        };
     },
 
     template: /*language=HTML*/ `
@@ -253,42 +193,42 @@ export default {
             <TreatmentTable
                 :treatments="treatments"
                 @edit="openTreatmentEdit"
-                @delete="openTreatmentDelete"
+                @delete="treatmentDelete.open"
             />
             <div class="btn-row">
-                <button type="button" class="btn-auth btn-signup" @click="openDogDelete(dogState)">Delete dog</button>
+                <button type="button" class="btn-auth btn-signup" @click="dogDelete.open(dogState)">Delete dog</button>
             </div>
             <DogCreateUpdateModal
-                :dog="dogState"
-                :is-open="isDogEditOpen"
-                :disabled="isDogSaving"
-                :error="dogEditError"
-                @on-resolve="updateDog"
-                @on-reject="closeDogEdit"
+                :dog="dogEdit.subject || dogState"
+                :is-open="dogEdit.isOpen"
+                :disabled="dogEdit.isPending"
+                :error="dogEdit.error"
+                @submit="updateDog"
+                @close="dogEdit.close"
             />
             <TreatmentFormModal
-                :treatment="selectedTreatment"
-                :is-open="isTreatmentFormOpen"
-                :disabled="isTreatmentSaving"
-                :error="treatmentFormError"
-                @on-resolve="saveTreatment"
-                @on-reject="closeTreatmentForm"
+                :treatment="treatmentForm.subject"
+                :is-open="treatmentForm.isOpen"
+                :disabled="treatmentForm.isPending"
+                :error="treatmentForm.error"
+                @submit="saveTreatment"
+                @close="treatmentForm.close"
             />
-            <BaseModal
+            <ConfirmModal
                 title="Delete Treatment"
                 :text="treatmentDeleteText"
-                :is-open="treatmentToDelete !== null"
-                :disabled="isTreatmentDeleting"
-                @on-resolve="deleteTreatment"
-                @on-reject="closeTreatmentDelete"
+                :is-open="treatmentDelete.isOpen"
+                :disabled="treatmentDelete.isPending"
+                @confirm="deleteTreatment"
+                @close="treatmentDelete.close"
             />
-            <BaseModal
+            <ConfirmModal
                 title="Delete Dog"
                 :text="dogDeleteText"
-                :is-open="dogToDelete !== null"
-                :disabled="isDogDeleting"
-                @on-resolve="deleteDog"
-                @on-reject="closeDogDelete"
+                :is-open="dogDelete.isOpen"
+                :disabled="dogDelete.isPending"
+                @confirm="deleteDog"
+                @close="dogDelete.close"
             />
         </div>
     `,

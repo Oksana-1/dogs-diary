@@ -1,4 +1,6 @@
-let modalId = 0;
+import ModalDialog from './ModalDialog.js';
+
+let formId = 0;
 
 function localDate() {
     const today = new Date();
@@ -22,6 +24,10 @@ function treatmentDraft(treatment) {
 export default {
     name: 'TreatmentFormModal',
 
+    components: {
+        ModalDialog,
+    },
+
     props: {
         treatment: { type: Object, default: null },
         isOpen: { type: Boolean, default: false },
@@ -29,14 +35,13 @@ export default {
         error: { type: String, default: null },
     },
 
-    emits: ['onResolve', 'onReject'],
+    emits: ['submit', 'close'],
 
     data() {
-        modalId += 1;
-        const id = modalId;
+        formId += 1;
+        const id = formId;
 
         return {
-            titleId: `treatment-form-modal-title-${id}`,
             fieldPrefix: `treatment-form-${id}`,
             draft: treatmentDraft(this.treatment),
         };
@@ -57,12 +62,12 @@ export default {
     },
 
     methods: {
-        onResolve() {
+        submit() {
             if (this.disabled) {
                 return;
             }
 
-            this.$emit('onResolve', {
+            this.$emit('submit', {
                 types: [...this.draft.types],
                 productName: this.draft.productName.trim(),
                 treatmentDate: this.draft.treatmentDate,
@@ -71,9 +76,9 @@ export default {
             });
         },
 
-        onReject() {
+        close() {
             if (!this.disabled) {
-                this.$emit('onReject');
+                this.$emit('close');
             }
         },
 
@@ -85,18 +90,13 @@ export default {
     },
 
     template: /*language=HTML*/ `
-        <Teleport to="body">
-            <div v-if="isOpen"
-                 class="modal modal-open"
-                 style="display: flex"
-                 role="dialog"
-                 aria-modal="true"
-                 :aria-labelledby="titleId"
-                 @click.self="onReject"
-                 @keydown.esc.prevent="onReject">
-                <div class="modal-content">
-                    <h2 :id="titleId">{{ title }}</h2>
-                    <form @submit.prevent="onResolve">
+        <ModalDialog
+            :title="title"
+            :is-open="isOpen"
+            :disabled="disabled"
+            @close="close"
+        >
+            <form @submit.prevent="submit">
                         <div class="form-group">
                             <label :for="fieldPrefix + '-types'">Treatment types</label>
                             <select :id="fieldPrefix + '-types'" v-model="draft.types" required multiple size="2" autofocus>
@@ -123,16 +123,14 @@ export default {
                         </div>
                         <p v-if="error" class="modal-error" role="alert">{{ error }}</p>
                         <div class="modal-actions">
-                            <button type="button" class="btn-secondary" :disabled="disabled" @click="onReject">
+                            <button type="button" class="btn-secondary" :disabled="disabled" @click="close">
                                 Cancel
                             </button>
                             <button type="submit" class="btn-primary" :disabled="disabled">
                                 {{ disabled ? 'Saving…' : 'Save' }}
                             </button>
                         </div>
-                    </form>
-                </div>
-            </div>
-        </Teleport>
+            </form>
+        </ModalDialog>
     `,
 };
