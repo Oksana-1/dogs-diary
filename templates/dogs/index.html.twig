@@ -1,4 +1,10 @@
 {% extends 'base.html.twig' %}
 {% block body %}
-    {{ vue_island('AppDogDetail', { dog: dog }, { class: 'bg-light' }, 'section') }}
+    <section
+        id="dog-detail-app"
+        class="bg-light"
+        data-props="{{ { dog: dog }|json_encode|e('html_attr') }}"
+    >
+        <span class="vue-loading">Loading dog details…</span>
+    </section>
 {% endblock %}

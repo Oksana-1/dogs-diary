@@ -644,9 +644,9 @@ body {
     background-color: #b71c1c;
 }
 
-/* Vue islands ------------------------------------------------------------- */
+/* Vue apps ---------------------------------------------------------------- */
 
-.island-loading {
+.vue-loading {
     color: var(--text-muted, #777);
     font-size: 0.88rem;
 }

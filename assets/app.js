@@ -1,10 +1,29 @@
-/*
- * Welcome to your app's main JavaScript file!
- *
- * This file will be included onto the page via the importmap() Twig function,
- * which should already be in your base.html.twig.
- */
+import { createApp } from 'vue';
+import AppDogList from './js/modules/dogsDiary/view/AppDogList.js';
+import AppDogDetail from './js/modules/dogsDiary/view/AppDogDetail.js';
 import './styles/app.css';
-import { startVueIslands } from './js/islands.js';
 
-startVueIslands();
+const APPS = [
+    {
+        id: 'dog-list-app',
+        component: AppDogList,
+    },
+    {
+        id: 'dog-detail-app',
+        component: AppDogDetail,
+    },
+];
+
+for (const { id, component } of APPS) {
+    const root = document.getElementById(id);
+
+    if (!root) {
+        continue;
+    }
+
+    const props = root.dataset.props
+        ? JSON.parse(root.dataset.props)
+        : {};
+
+    createApp(component, props).mount(root);
+}

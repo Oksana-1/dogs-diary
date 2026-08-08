@@ -7,7 +7,7 @@ Small Symfony 7.4 LTS app for tracking dogs and their treatments.
 - PHP 8.2+
 - Symfony 7.4 LTS
 - Twig (server-rendered pages)
-- Vue 3 islands for interactive features
+- Vue 3 apps for interactive pages
 - Doctrine ORM + Doctrine Migrations
 - PostgreSQL (via Docker Compose)
 - AssetMapper (no Webpack/Vite)
@@ -20,7 +20,7 @@ Small Symfony 7.4 LTS app for tracking dogs and their treatments.
 - `src/Entity` - Doctrine entities (`Dog`, `Treatment`).
 - `src/Repository` - Doctrine repositories.
 - `templates` - Twig page shells and shared server-rendered layout.
-- `assets` - AssetMapper JS/CSS entrypoints and Vue islands.
+- `assets` - AssetMapper JS/CSS entrypoints and Vue apps.
 - `migrations` - Doctrine migration files.
 
 ## Local Run
@@ -70,8 +70,10 @@ Small Symfony 7.4 LTS app for tracking dogs and their treatments.
 - API payload validation is handled by:
   - `App\Controller\Api\Dto\CreateDogPayload`
   - `App\Controller\Api\Dto\UpdateDogPayload`
-- Treatment CRUD is exposed through the nested dog API and owned by the `DogDetail` Vue island.
-- The dog detail Twig template only provides the `DogDetail` island mount point; Vue owns its interactive DOM.
+- Treatment CRUD is exposed through the nested dog API and owned by the dog-detail Vue app.
+- `assets/app.js` mounts `AppDogList` or `AppDogDetail` when the matching `#dog-list-app` or `#dog-detail-app` element is present.
+- Twig provides the Vue mount elements and initial dog-detail props; Vue owns the interactive DOM inside each root.
+- Pages use normal full-document navigation, so there is no Turbo-specific mounting lifecycle.
 - Vue is the only frontend interaction layer; Stimulus is not installed.
 - Dog data is Doctrine-backed; there is no legacy in-memory dog repository in this checkout.
 
