@@ -28,6 +28,10 @@ export default function useDogTreatments(getDogId, initialTreatments, repository
         formModal.open(treatment);
     }
 
+    function replace(nextTreatments) {
+        treatments.value = [...(nextTreatments ?? [])];
+    }
+
     async function save(data) {
         await formModal.execute(async (selectedTreatment) => {
             if (selectedTreatment) {
@@ -66,6 +70,7 @@ export default function useDogTreatments(getDogId, initialTreatments, repository
         deleteText,
         openCreate,
         openEdit,
+        replace,
         save,
         remove,
     });

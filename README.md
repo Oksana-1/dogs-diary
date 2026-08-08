@@ -72,7 +72,7 @@ Small Symfony 7.4 LTS app for tracking dogs and their treatments.
   - `App\Controller\Api\Dto\UpdateDogPayload`
 - Treatment CRUD is exposed through the nested dog API and owned by the dog-detail Vue app.
 - `assets/app.js` mounts `AppDogList` or `AppDogDetail` when the matching `#dog-list-app` or `#dog-detail-app` element is present.
-- Twig provides the Vue mount elements and initial dog-detail props; Vue owns the interactive DOM inside each root.
+- Twig provides the Vue mount elements and dog ID; the detail app loads its dog through the JSON API.
 - Pages use normal full-document navigation, so there is no Turbo-specific mounting lifecycle.
 - Vue is the only frontend interaction layer; Stimulus is not installed.
 - Dog data is Doctrine-backed; there is no legacy in-memory dog repository in this checkout.

@@ -1,8 +1,10 @@
 import { computed, reactive, ref } from 'vue';
 import useAsyncModal from './useAsyncModal.js';
 
-export default function useDogDetails(initialDog, repository) {
-    const dog = ref({ ...initialDog });
+export default function useDogDetails(dogId, repository) {
+    const dog = ref(null);
+    const isLoading = ref(false);
+    const loadError = ref(null);
     const editModal = useAsyncModal({
         fallbackError: 'Unable to update the dog. Please try again.',
     });
@@ -19,6 +21,23 @@ export default function useDogDetails(initialDog, repository) {
             ? `Are you sure you want to delete “${name}”?`
             : 'Are you sure you want to delete this dog?';
     });
+
+    async function load() {
+        isLoading.value = true;
+        loadError.value = null;
+
+        try {
+            dog.value = await repository.find(dogId);
+
+            return dog.value;
+        } catch (error) {
+            loadError.value = error?.message || 'Unable to load the dog. Please try again.';
+
+            return null;
+        } finally {
+            isLoading.value = false;
+        }
+    }
 
     function openEdit() {
         editModal.open(dog.value);
@@ -60,9 +79,12 @@ export default function useDogDetails(initialDog, repository) {
 
     return reactive({
         dog,
+        isLoading,
+        loadError,
         editModal,
         deleteModal,
         deleteText,
+        load,
         openEdit,
         update,
         remove,

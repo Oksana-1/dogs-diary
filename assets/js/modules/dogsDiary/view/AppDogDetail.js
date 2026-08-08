@@ -22,16 +22,26 @@ export default {
     },
 
     props: {
-        dog: { type: Object, required: true },
+        dogId: { type: Number, required: true },
     },
 
     setup(props) {
-        const dogDetails = useDogDetails(props.dog, dogRepository);
+        const dogDetails = useDogDetails(props.dogId, dogRepository);
         const treatmentDetails = useDogTreatments(
-            () => dogDetails.dog.id,
-            props.dog.treatments,
+            () => props.dogId,
+            [],
             treatmentRepository,
         );
+
+        async function loadDog() {
+            const dog = await dogDetails.load();
+
+            if (dog) {
+                treatmentDetails.replace(dog.treatments);
+            }
+        }
+
+        void loadDog();
 
         return {
             dogDetails,
@@ -41,6 +51,11 @@ export default {
 
     template: /*language=HTML*/ `
         <div class="container">
+            <p v-if="dogDetails.isLoading">Loading dog details…</p>
+            <p v-else-if="dogDetails.loadError" role="alert">
+                Unable to load dog details: {{ dogDetails.loadError }}
+            </p>
+            <template v-else-if="dogDetails.dog">
             <div class="dog-header">
                 <div class="dog-avatar">
                     <img v-if="dogDetails.dog.avatar && dogDetails.dog.avatar.startsWith('images/')"
@@ -112,6 +127,7 @@ export default {
                 @confirm="dogDetails.remove"
                 @close="dogDetails.deleteModal.close"
             />
+            </template>
         </div>
     `,
 };
