@@ -123,10 +123,10 @@ export default {
                         </div>
                         <p v-if="error" class="modal-error" role="alert">{{ error }}</p>
                         <div class="modal-actions">
-                            <button type="button" class="btn-secondary" :disabled="disabled" @click="close">
+                            <button type="button" class="btn btn-white" :disabled="disabled" @click="close">
                                 Cancel
                             </button>
-                            <button type="submit" class="btn-primary" :disabled="disabled">
+                            <button type="submit" class="btn btn-black" :disabled="disabled">
                                 {{ disabled ? 'Saving…' : 'Save' }}
                             </button>
                         </div>

@@ -83,7 +83,7 @@ export default {
                 </div>
             </div>
             <div class="button-line">
-                <button type="button" class="btn-outline" @click="treatmentDetails.openCreate">Add treatment</button>
+                <button type="button" class="btn btn-white" @click="treatmentDetails.openCreate">Add treatment</button>
             </div>
 
             <TreatmentTable
@@ -92,7 +92,7 @@ export default {
                 @delete="treatmentDetails.deleteModal.open"
             />
             <div class="btn-row">
-                <button type="button" class="btn-auth btn-signup"
+                <button type="button" class="btn btn-black"
                         @click="dogDetails.deleteModal.open(dogDetails.dog)">Delete dog</button>
             </div>
             <DogCreateUpdateModal

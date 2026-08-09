@@ -35,14 +35,14 @@ export default {
         >
             <div class="modal-actions">
                 <button type="button"
-                        class="btn-secondary"
+                        class="btn btn-white"
                         :disabled="disabled"
                         autofocus
                         @click="$emit('close')">
                     Cancel
                 </button>
                 <button type="button"
-                        class="btn-primary"
+                        class="btn btn-black"
                         :disabled="disabled"
                         @click="confirm">
                     Confirm

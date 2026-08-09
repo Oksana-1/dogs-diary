@@ -76,7 +76,7 @@ export default {
                     <div v-else>No dogs found.</div>
                 </template>
                 <div class="btn-row">
-                    <button class="btn-auth btn-signup" @click="dogCreate.open(emptyDog)">Add dog</button>
+                    <button type="button" class="btn btn-black" @click="dogCreate.open(emptyDog)">Add dog</button>
                 </div>
             </div>
             <DogCreateUpdateModal
