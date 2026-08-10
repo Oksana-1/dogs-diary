@@ -103,6 +103,10 @@ body {
 }
 
 .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
     padding: 1rem 2rem;
     font-size: 13px;
     letter-spacing: 0.3px;
@@ -302,8 +306,17 @@ body {
     background: #fff;
     color: var(--text-info);
     cursor: pointer;
-    font-size: 18px;
-    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.button-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex: 0 0 auto;
+    fill: currentColor;
 }
 
 .icon-button:hover {
@@ -319,6 +332,126 @@ body {
     display: flex;
     justify-content: flex-end;
     margin-top: 10px;
+}
+
+/* Dog details page --------------------------------------------------------- */
+
+.dog-detail-message {
+    padding: 3rem 1.5rem;
+}
+
+.dog-profile {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    width: 100%;
+}
+
+.dog-profile-media {
+    aspect-ratio: 1;
+    min-width: 0;
+    overflow: hidden;
+    background-color: var(--bg-card);
+}
+
+.dog-profile-video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.dog-profile-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    padding: clamp(2rem, 5vw, 5rem);
+    background-color: var(--bg-light);
+}
+
+.dog-profile-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: clamp(2rem, 4vw, 4rem);
+}
+
+.dog-profile-heading h1 {
+    min-width: 0;
+    font-size: clamp(2.5rem, 5vw, 5rem);
+    font-weight: 600;
+    line-height: 1;
+    overflow-wrap: anywhere;
+}
+
+.dog-profile-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+}
+
+.dog-profile-action-button {
+    width: 3rem;
+    height: 3rem;
+    padding: 0;
+}
+
+.dog-profile-cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(1rem, 2vw, 2rem);
+}
+
+.dog-profile-card {
+    padding: clamp(1.5rem, 2.5vw, 2.5rem);
+    background-color: var(--bg-main);
+    border-radius: 1.5rem;
+}
+
+.dog-profile-field + .dog-profile-field {
+    margin-top: 1.5rem;
+}
+
+.dog-profile-field dt {
+    margin-bottom: 0.35rem;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+.dog-profile-field dd {
+    font-size: clamp(1rem, 1.5vw, 1.25rem);
+    font-weight: 500;
+    overflow-wrap: anywhere;
+}
+
+.dog-detail-content {
+    padding: 2rem 1.5rem 0;
+}
+
+@media (max-width: 900px) {
+    .dog-profile {
+        grid-template-columns: 1fr;
+    }
+
+    .dog-profile-content {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 560px) {
+    .dog-profile-content {
+        padding: 2rem 1.25rem;
+    }
+
+    .dog-profile-heading {
+        margin-bottom: 2rem;
+    }
+
+    .dog-profile-cards {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* Modal Styles */

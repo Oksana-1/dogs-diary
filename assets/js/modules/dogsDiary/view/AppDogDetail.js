@@ -7,6 +7,7 @@ import useDogTreatments from './composables/useDogTreatments.js';
 import DogRepository from '../repositories/DogRepository.js';
 import TreatmentRepository from '../repositories/TreatmentRepository.js';
 import api from '../../../core/api/ApiClient.js';
+import { mdiCircleEditOutline, mdiDeleteCircleOutline } from '@mdi/js';
 
 const dogRepository = new DogRepository(api);
 const treatmentRepository = new TreatmentRepository(api);
@@ -23,6 +24,7 @@ export default {
 
     props: {
         dogId: { type: Number, required: true },
+        mediaUrl: { type: String, required: true },
     },
 
     setup(props) {
@@ -46,42 +48,91 @@ export default {
         return {
             dogDetails,
             treatmentDetails,
+            mdiCircleEditOutline,
+            mdiDeleteCircleOutline,
         };
     },
 
     template: /*language=HTML*/ `
-        <div class="container">
-            <p v-if="dogDetails.isLoading">Loading dog details…</p>
-            <p v-else-if="dogDetails.loadError" role="alert">
+        <div>
+            <p v-if="dogDetails.isLoading" class="container dog-detail-message">Loading dog details…</p>
+            <p v-else-if="dogDetails.loadError" class="container dog-detail-message" role="alert">
                 Unable to load dog details: {{ dogDetails.loadError }}
             </p>
             <template v-else-if="dogDetails.dog">
-            <div class="dog-header">
-                <div class="dog-avatar">
-                    <img v-if="dogDetails.dog.avatar && dogDetails.dog.avatar.startsWith('images/')"
-                         :src="dogDetails.avatarUrl(dogDetails.dog.avatar)" :alt="dogDetails.dog.name + ' avatar'">
-                    <span v-else-if="dogDetails.dog.avatar">{{ dogDetails.dog.avatar }}</span>
-                    <span v-else>🐶</span>
+            <section class="dog-profile" aria-labelledby="dog-profile-title">
+                <div class="dog-profile-media">
+                    <video
+                        class="dog-profile-video"
+                        :src="mediaUrl"
+                        :aria-label="'Video of ' + (dogDetails.dog.name || 'the dog')"
+                        autoplay
+                        muted
+                        loop
+                        playsinline
+                    ></video>
                 </div>
-                <div class="dog-info">
-                    <div class="dog-info-header">
-                        <h1>{{ dogDetails.dog.name || 'Unnamed dog' }}</h1>
-                        <button type="button" class="icon-button dog-edit-button"
-                                :title="'Edit ' + (dogDetails.dog.name || 'dog')"
-                                :aria-label="'Edit ' + (dogDetails.dog.name || 'dog')"
-                                @click="dogDetails.openEdit">✏️</button>
+                <div class="dog-profile-content">
+                    <div class="dog-profile-heading">
+                        <h1 id="dog-profile-title">{{ dogDetails.dog.name || 'Unnamed dog' }}</h1>
+                        <div class="dog-profile-actions">
+                            <button type="button" class="btn btn-white dog-profile-action-button"
+                                    :title="'Edit ' + (dogDetails.dog.name || 'dog')"
+                                    :aria-label="'Edit ' + (dogDetails.dog.name || 'dog')"
+                                    @click="dogDetails.openEdit">
+                                <svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path :d="mdiCircleEditOutline"></path>
+                                </svg>
+                            </button>
+                            <button type="button" class="btn btn-white dog-profile-action-button"
+                                    :title="'Delete ' + (dogDetails.dog.name || 'dog')"
+                                    :aria-label="'Delete ' + (dogDetails.dog.name || 'dog')"
+                                    @click="dogDetails.deleteModal.open(dogDetails.dog)">
+                                <svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path :d="mdiDeleteCircleOutline"></path>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
-                    <span class="breed-tag">{{ dogDetails.dog.status ?? 'No status' }}</span>
-                    <dl class="dog-details">
-                        <div><dt>Gender</dt><dd>{{ dogDetails.formatGender(dogDetails.dog.gender) }}</dd></div>
-                        <div><dt>Born</dt><dd>{{ dogDetails.formatDate(dogDetails.dog.birthDate) }}</dd></div>
-                        <div><dt>Adopted</dt><dd>{{ dogDetails.formatDate(dogDetails.dog.adoptDate) }}</dd></div>
-                        <div><dt>Weight</dt><dd>{{ dogDetails.dog.weight ?? 'Unknown' }}<span v-if="dogDetails.dog.weight !== null && dogDetails.dog.weight !== undefined"> kg</span></dd></div>
-                        <div><dt>Height</dt><dd>{{ dogDetails.dog.height ?? 'Unknown' }}<span v-if="dogDetails.dog.height !== null && dogDetails.dog.height !== undefined"> cm</span></dd></div>
-                        <div><dt>Status</dt><dd>{{ dogDetails.dog.status ?? 'No status' }}</dd></div>
-                    </dl>
+
+                    <div class="dog-profile-cards">
+                        <dl class="dog-profile-card">
+                            <div class="dog-profile-field">
+                                <dt>Status</dt>
+                                <dd>{{ dogDetails.dog.status || '—' }}</dd>
+                            </div>
+                            <div class="dog-profile-field">
+                                <dt>Date of birth</dt>
+                                <dd>{{ dogDetails.formatDate(dogDetails.dog.birthDate) }}</dd>
+                            </div>
+                            <div class="dog-profile-field">
+                                <dt>Date of adoption</dt>
+                                <dd>{{ dogDetails.formatDate(dogDetails.dog.adoptDate) }}</dd>
+                            </div>
+                        </dl>
+
+                        <dl class="dog-profile-card">
+                            <div class="dog-profile-field">
+                                <dt>Gender</dt>
+                                <dd>{{ dogDetails.formatGender(dogDetails.dog.gender) }}</dd>
+                            </div>
+                            <div class="dog-profile-field">
+                                <dt>Height</dt>
+                                <dd>
+                                    {{ dogDetails.dog.height ?? '—' }}<span v-if="dogDetails.dog.height !== null && dogDetails.dog.height !== undefined"> cm</span>
+                                </dd>
+                            </div>
+                            <div class="dog-profile-field">
+                                <dt>Weight</dt>
+                                <dd>
+                                    {{ dogDetails.dog.weight ?? '—' }}<span v-if="dogDetails.dog.weight !== null && dogDetails.dog.weight !== undefined"> kg</span>
+                                </dd>
+                            </div>
+                        </dl>
+                    </div>
                 </div>
-            </div>
+            </section>
+            <div class="container dog-detail-content">
             <div class="button-line">
                 <button type="button" class="btn btn-white" @click="treatmentDetails.openCreate">Add treatment</button>
             </div>
@@ -91,10 +142,6 @@ export default {
                 @edit="treatmentDetails.openEdit"
                 @delete="treatmentDetails.deleteModal.open"
             />
-            <div class="btn-row">
-                <button type="button" class="btn btn-black"
-                        @click="dogDetails.deleteModal.open(dogDetails.dog)">Delete dog</button>
-            </div>
             <DogCreateUpdateModal
                 :dog="dogDetails.editModal.subject || dogDetails.dog"
                 :is-open="dogDetails.editModal.isOpen"
@@ -127,6 +174,7 @@ export default {
                 @confirm="dogDetails.remove"
                 @close="dogDetails.deleteModal.close"
             />
+            </div>
             </template>
         </div>
     `,

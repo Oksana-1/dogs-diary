@@ -70,11 +70,11 @@ export default function useDogDetails(dogId, repository) {
     }
 
     function formatDate(value, options = { year: 'numeric', month: 'long', day: 'numeric' }) {
-        return value ? new Date(`${value}T00:00:00`).toLocaleDateString('en-US', options) : 'Unknown';
+        return value ? new Date(`${value}T00:00:00`).toLocaleDateString('en-US', options) : '—';
     }
 
     function formatGender(gender) {
-        return gender ? gender.charAt(0).toUpperCase() + gender.slice(1) : 'Unknown';
+        return gender ? gender.charAt(0).toUpperCase() + gender.slice(1) : '—';
     }
 
     return reactive({

@@ -26,4 +26,7 @@ return [
         'version' => '3.5.40',
         'package_specifier' => 'vue/dist/vue.esm-browser.js',
     ],
+    '@mdi/js' => [
+        'version' => '7.4.47',
+    ],
 ];

@@ -77,6 +77,45 @@ Small Symfony 7.4 LTS app for tracking dogs and their treatments.
 - Vue is the only frontend interaction layer; Stimulus is not installed.
 - Dog data is Doctrine-backed; there is no legacy in-memory dog repository in this checkout.
 
+## Dog Details Page
+
+The dog details page must include a full-width dog information section.
+
+### Layout
+
+- Use a two-column desktop layout.
+- The left column occupies `40%` of the section width.
+- The right column occupies the remaining `60%`.
+- On smaller screens, stack the media and information columns vertically.
+
+### Media Column
+
+- Keep the media container at a `1:1` aspect ratio.
+- For now, display `assets/images/rusty.mp4`.
+- The video must cover the entire container without distortion.
+- The video should autoplay, loop, remain muted, and play inline.
+
+### Information Column
+
+- Use `var(--bg-light)` as the column background.
+- Display the dog's name as the section title.
+- Place two white information cards below the title.
+- Display the cards side by side on desktop and stack them on smaller screens.
+
+The first card contains:
+
+- Status
+- Date of birth
+- Date of adoption
+
+The second card contains:
+
+- Gender
+- Height
+- Weight
+
+- Display `—` when a value is unavailable.
+
 ## Useful Commands
 
 Run code style checks:
