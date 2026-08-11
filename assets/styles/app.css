@@ -116,10 +116,6 @@ body {
     border-radius: 9999px;
 }
 
-.btn:hover {
-    opacity: 0.7;
-}
-
 .btn:disabled {
     cursor: not-allowed;
     opacity: 0.5;
@@ -129,12 +125,18 @@ body {
     background-color: #fff;
     color: var(--text-dark);
     border: 1px solid var(--border-light);
+    &:hover {
+        border-color: var(--text-dark);
+    }
 }
 
 .btn-black {
     background-color: var(--text-dark);
     color: var(--bg-main);
     border: 1px solid var(--text-dark);
+    &:hover {
+        opacity: 0.7;
+    }
 }
 .full-screen-banner {
     position: relative;
@@ -328,12 +330,6 @@ body {
     flex-shrink: 0;
 }
 
-.button-line {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 10px;
-}
-
 /* Dog details page --------------------------------------------------------- */
 
 .dog-detail-message {
@@ -392,7 +388,7 @@ body {
     flex-shrink: 0;
 }
 
-.dog-profile-action-button {
+.action-icon-button {
     width: 3rem;
     height: 3rem;
     padding: 0;
@@ -651,33 +647,37 @@ body {
 .treatments-section {
     margin-top: 2rem;
     padding: 1.5rem;
-    background-color: var(--bg-card);
-    border-radius: 1rem;
 }
 
-.treatments-section h2 {
-    font-size: 18px;
+.h2 {
+    font-size: 2em;
     font-weight: 600;
+}
+
+.treatments-heading {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
     margin-bottom: 1rem;
-    color: var(--text-dark);
 }
 
 .treatments-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 14px;
-}
-
-.treatments-table thead {
-    background-color: var(--bg-info);
+    .treatment-actions {
+        text-align: center;
+        .btn {
+            margin: 0 10px;
+        }
+    }
 }
 
 .treatments-table th {
     padding: 12px;
     text-align: left;
     font-weight: 600;
-    color: var(--text-info);
-    border-bottom: 2px solid var(--border-light);
+    border-bottom: 1px solid var(--border-light);
 }
 
 .treatments-table td {
@@ -700,44 +700,7 @@ body {
     margin-right: 4px;
 }
 
-.treatment-actions {
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-}
 
-.action-button {
-    width: 32px;
-    height: 32px;
-    border: 1px solid var(--border-light);
-    border-radius: 6px;
-    background: #fff;
-    cursor: pointer;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-    padding: 0;
-}
-
-.action-button:hover {
-    background-color: var(--bg-info);
-    border-color: var(--text-info);
-}
-
-.action-edit {
-    color: var(--text-info);
-}
-
-.action-delete {
-    color: #d32f2f;
-}
-
-.action-delete:hover {
-    border-color: #d32f2f;
-    background-color: rgba(211, 47, 47, 0.1);
-}
 
 .modal-content-confirm {
     text-align: center;

@@ -76,7 +76,7 @@ export default {
                     <div class="dog-profile-heading">
                         <h1 id="dog-profile-title">{{ dogDetails.dog.name || 'Unnamed dog' }}</h1>
                         <div class="dog-profile-actions">
-                            <button type="button" class="btn btn-white dog-profile-action-button"
+                            <button type="button" class="btn btn-white action-icon-button"
                                     :title="'Edit ' + (dogDetails.dog.name || 'dog')"
                                     :aria-label="'Edit ' + (dogDetails.dog.name || 'dog')"
                                     @click="dogDetails.openEdit">
@@ -84,7 +84,7 @@ export default {
                                     <path :d="mdiCircleEditOutline"></path>
                                 </svg>
                             </button>
-                            <button type="button" class="btn btn-white dog-profile-action-button"
+                            <button type="button" class="btn btn-white action-icon-button"
                                     :title="'Delete ' + (dogDetails.dog.name || 'dog')"
                                     :aria-label="'Delete ' + (dogDetails.dog.name || 'dog')"
                                     @click="dogDetails.deleteModal.open(dogDetails.dog)">
@@ -133,12 +133,9 @@ export default {
                 </div>
             </section>
             <div class="container dog-detail-content">
-            <div class="button-line">
-                <button type="button" class="btn btn-white" @click="treatmentDetails.openCreate">Add treatment</button>
-            </div>
-
             <TreatmentTable
                 :treatments="treatmentDetails.treatments"
+                @add="treatmentDetails.openCreate"
                 @edit="treatmentDetails.openEdit"
                 @delete="treatmentDetails.deleteModal.open"
             />
