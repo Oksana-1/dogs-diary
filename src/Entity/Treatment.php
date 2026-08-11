@@ -4,12 +4,16 @@ namespace App\Entity;
 
 use App\Enum\TreatmentTypeEnum;
 use App\Repository\TreatmentRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: TreatmentRepository::class)]
 class Treatment
 {
+    public const MAX_MEDIA_COUNT = 5;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -34,6 +38,18 @@ class Treatment
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $note = null;
+
+    /**
+     * @var Collection<int, TreatmentMedia>
+     */
+    #[ORM\OneToMany(targetEntity: TreatmentMedia::class, mappedBy: 'treatment', cascade: ['remove'])]
+    #[ORM\OrderBy(['position' => 'ASC'])]
+    private Collection $media;
+
+    public function __construct()
+    {
+        $this->media = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -116,5 +132,48 @@ class Treatment
         $this->note = $note;
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, TreatmentMedia>
+     */
+    public function getMedia(): Collection
+    {
+        return $this->media;
+    }
+
+    public function addMedia(TreatmentMedia $media): static
+    {
+        if ($media->getTreatment() !== $this) {
+            throw new \DomainException('Media cannot be attached to a different treatment.');
+        }
+
+        foreach ($this->media as $existingMedia) {
+            if ($existingMedia !== $media && $existingMedia->getPosition() === $media->getPosition()) {
+                throw new \DomainException('The treatment media position is already occupied.');
+            }
+        }
+
+        if (!$this->media->contains($media)) {
+            $this->media->add($media);
+        }
+
+        return $this;
+    }
+
+    public function nextMediaPosition(): ?int
+    {
+        $occupiedPositions = [];
+        foreach ($this->media as $media) {
+            $occupiedPositions[$media->getPosition()] = true;
+        }
+
+        for ($position = 1; $position <= self::MAX_MEDIA_COUNT; ++$position) {
+            if (!isset($occupiedPositions[$position])) {
+                return $position;
+            }
+        }
+
+        return null;
     }
 }

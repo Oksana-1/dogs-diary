@@ -2,13 +2,14 @@
 
 namespace App\Entity;
 
+use App\Enum\GenderTypeEnum;
+use App\Enum\MediaTypeEnum;
 use App\Repository\DogRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
-use Doctrine\DBAL\Types\Types;
-use App\Enum\GenderTypeEnum;
 
 #[ORM\Entity(repositoryClass: DogRepository::class)]
 class Dog
@@ -54,9 +55,17 @@ class Dog
     #[ORM\OneToMany(targetEntity: Treatment::class, mappedBy: 'dog', cascade: ['remove'])]
     private Collection $treatments;
 
+    /**
+     * @var Collection<int, DogMedia>
+     */
+    #[ORM\OneToMany(targetEntity: DogMedia::class, mappedBy: 'dog', cascade: ['remove'])]
+    #[ORM\OrderBy(['createdAt' => 'DESC', 'id' => 'DESC'])]
+    private Collection $media;
+
     public function __construct()
     {
         $this->treatments = new ArrayCollection();
+        $this->media = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -75,6 +84,7 @@ class Dog
 
         return $this;
     }
+
     public function getGender(): ?GenderTypeEnum
     {
         return $this->gender;
@@ -86,6 +96,7 @@ class Dog
 
         return $this;
     }
+
     public function getBirthDate(): ?\DateTimeImmutable
     {
         return $this->birthDate;
@@ -183,5 +194,98 @@ class Dog
         }
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, DogMedia>
+     */
+    public function getMedia(): Collection
+    {
+        return $this->media;
+    }
+
+    public function addMedia(DogMedia $media): static
+    {
+        if ($media->getDog() !== $this) {
+            throw new \DomainException('Media cannot be attached to a different dog.');
+        }
+
+        if (!$this->media->contains($media)) {
+            $this->media->add($media);
+        }
+
+        return $this;
+    }
+
+    public function selectThumbnailMedia(DogMedia $selectedMedia): static
+    {
+        $this->assertOwnsMedia($selectedMedia);
+        if (MediaTypeEnum::IMAGE !== $selectedMedia->getType()) {
+            throw new \DomainException('Only an image can be used as a thumbnail.');
+        }
+
+        foreach ($this->media as $media) {
+            $media->setThumbnail($media === $selectedMedia);
+        }
+
+        return $this;
+    }
+
+    public function clearThumbnailMedia(): static
+    {
+        foreach ($this->media as $media) {
+            $media->setThumbnail(false);
+        }
+
+        return $this;
+    }
+
+    public function selectProfileMedia(DogMedia $selectedMedia): static
+    {
+        $this->assertOwnsMedia($selectedMedia);
+
+        foreach ($this->media as $media) {
+            $media->setProfile($media === $selectedMedia);
+        }
+
+        return $this;
+    }
+
+    public function clearProfileMedia(): static
+    {
+        foreach ($this->media as $media) {
+            $media->setProfile(false);
+        }
+
+        return $this;
+    }
+
+    public function getThumbnailMedia(): ?DogMedia
+    {
+        foreach ($this->media as $media) {
+            if ($media->isThumbnail()) {
+                return $media;
+            }
+        }
+
+        return null;
+    }
+
+    public function getProfileMedia(): ?DogMedia
+    {
+        foreach ($this->media as $media) {
+            if ($media->isProfile()) {
+                return $media;
+            }
+        }
+
+        return null;
+    }
+
+    private function assertOwnsMedia(DogMedia $media): void
+    {
+        if ($media->getDog() !== $this || !$this->media->contains($media)) {
+            throw new \DomainException('The selected media does not belong to this dog.');
+        }
     }
 }

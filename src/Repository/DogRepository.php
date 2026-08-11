@@ -16,6 +16,30 @@ class DogRepository extends ServiceEntityRepository
         parent::__construct($registry, Dog::class);
     }
 
+    /**
+     * @return Dog[]
+     */
+    public function findAllWithMedia(): array
+    {
+        return $this->createQueryBuilder('dog')
+            ->leftJoin('dog.media', 'media')
+            ->addSelect('media')
+            ->orderBy('dog.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findWithMedia(int $id): ?Dog
+    {
+        return $this->createQueryBuilder('dog')
+            ->leftJoin('dog.media', 'media')
+            ->addSelect('media')
+            ->andWhere('dog.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     //    /**
     //     * @return Dog[] Returns an array of Dog objects
     //     */

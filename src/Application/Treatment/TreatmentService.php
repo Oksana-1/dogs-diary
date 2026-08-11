@@ -2,12 +2,14 @@
 
 namespace App\Application\Treatment;
 
+use App\Application\Media\MediaStorageInterface;
 use App\Application\Treatment\Data\CreateTreatmentData;
 use App\Application\Treatment\Data\UpdateTreatmentData;
 use App\Entity\Treatment;
 use App\Repository\DogRepository;
 use App\Repository\TreatmentRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 
 final readonly class TreatmentService
 {
@@ -15,6 +17,8 @@ final readonly class TreatmentService
         private DogRepository $dogRepository,
         private TreatmentRepository $treatmentRepository,
         private EntityManagerInterface $em,
+        private MediaStorageInterface $mediaStorage,
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -87,8 +91,24 @@ final readonly class TreatmentService
             return false;
         }
 
+        $storageKeys = $treatment->getMedia()
+            ->map(static fn ($media): string => $media->getStorageKey())
+            ->toArray();
+
         $this->em->remove($treatment);
         $this->em->flush();
+
+        foreach ($storageKeys as $storageKey) {
+            try {
+                $this->mediaStorage->delete($storageKey);
+            } catch (\Throwable $exception) {
+                $this->logger->error('Failed to delete a media file after deleting its treatment.', [
+                    'treatmentId' => $id,
+                    'storageKey' => $storageKey,
+                    'exception' => $exception,
+                ]);
+            }
+        }
 
         return true;
     }

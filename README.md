@@ -62,6 +62,14 @@ Small Symfony 7.4 LTS app for tracking dogs and their treatments.
 - `POST /api/dogs/{dogId}/treatments` - Create a treatment.
 - `PUT /api/dogs/{dogId}/treatments/{id}` - Update a treatment.
 - `DELETE /api/dogs/{dogId}/treatments/{id}` - Delete a treatment.
+- `GET /api/dogs/{dogId}/media` - List a dog's images and videos.
+- `POST /api/dogs/{dogId}/media` - Upload a JPEG, PNG, WebP, MP4, or WebM file using multipart field `file`.
+- `DELETE /api/dogs/{dogId}/media/{id}` - Delete one media item.
+- `PUT`, `DELETE /api/dogs/{dogId}/media/thumbnail` - Select or clear the dog's image thumbnail.
+- `PUT`, `DELETE /api/dogs/{dogId}/media/profile` - Select or clear the dog's image/video profile media.
+- `GET /api/dogs/{dogId}/treatments/{treatmentId}/media` - List a treatment's images.
+- `POST /api/dogs/{dogId}/treatments/{treatmentId}/media` - Upload an image using multipart field `file` (maximum five per treatment).
+- `DELETE /api/dogs/{dogId}/treatments/{treatmentId}/media/{id}` - Delete a treatment image.
 
 ## Current Architecture Notes
 
@@ -134,3 +142,11 @@ Reassemble assets
 ```bash
 php bin/console asset-map:compile
 ```
+
+Audit media storage without changing files:
+
+```bash
+php bin/console app:media:audit
+```
+
+Pass `--delete-orphans` only when orphaned stored files should be removed.

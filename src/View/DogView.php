@@ -2,16 +2,20 @@
 
 namespace App\View;
 
+use App\Application\Media\MediaStorageInterface;
 use App\Entity\Dog;
-use App\View\TreatmentView;
 
 final readonly class DogView extends AbstractView
 {
-    public function __construct(private Dog $dog) {}
+    public function __construct(
+        private Dog $dog,
+        private MediaStorageInterface $storage,
+    ) {
+    }
 
-    public static function from(Dog $dog): self
+    public static function from(Dog $dog, MediaStorageInterface $storage): self
     {
-        return new self($dog);
+        return new self($dog, $storage);
     }
 
     /**
@@ -19,6 +23,9 @@ final readonly class DogView extends AbstractView
      */
     public function toArray(): array
     {
+        $thumbnail = $this->dog->getThumbnailMedia();
+        $profileMedia = $this->dog->getProfileMedia();
+
         return [
             'id' => $this->dog->getId(),
             'name' => $this->dog->getName(),
@@ -28,7 +35,15 @@ final readonly class DogView extends AbstractView
             'weight' => $this->dog->getWeight(),
             'height' => $this->dog->getHeight(),
             'status' => $this->dog->getStatus(),
-            'avatar' => $this->dog->getAvatar(),
+            'avatar' => $thumbnail
+                ? $this->storage->publicUrl($thumbnail->getStorageKey())
+                : $this->dog->getAvatar(),
+            'thumbnail' => $thumbnail
+                ? DogMediaView::from($thumbnail, $this->storage)->toArray()
+                : null,
+            'profileMedia' => $profileMedia
+                ? DogMediaView::from($profileMedia, $this->storage)->toArray()
+                : null,
             'treatments' => $this->dog->getTreatments()->map(
                 static fn ($treatment) => TreatmentView::from($treatment)->toArray()
             )->toArray(),

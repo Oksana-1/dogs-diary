@@ -16,6 +16,17 @@ class TreatmentRepository extends ServiceEntityRepository
         parent::__construct($registry, Treatment::class);
     }
 
+    public function findOneForDog(int $dogId, int $treatmentId): ?Treatment
+    {
+        return $this->createQueryBuilder('treatment')
+            ->andWhere('treatment.id = :treatmentId')
+            ->andWhere('IDENTITY(treatment.dog) = :dogId')
+            ->setParameter('treatmentId', $treatmentId)
+            ->setParameter('dogId', $dogId)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     //    /**
     //     * @return Treatment[] Returns an array of Treatment objects
     //     */

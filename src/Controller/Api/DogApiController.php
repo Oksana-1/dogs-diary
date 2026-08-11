@@ -5,6 +5,7 @@ namespace App\Controller\Api;
 use App\Application\Dog\Data\CreateDogData;
 use App\Application\Dog\Data\UpdateDogData;
 use App\Application\Dog\DogService;
+use App\Application\Media\MediaStorageInterface;
 use App\Controller\Api\Dto\CreateDogPayload;
 use App\Controller\Api\Dto\UpdateDogPayload;
 use App\View\DogView;
@@ -16,11 +17,15 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/api/dogs')]
 class DogApiController extends AbstractController
 {
+    public function __construct(private readonly MediaStorageInterface $mediaStorage)
+    {
+    }
+
     #[Route('', methods: ['GET'])]
     public function getCollection(DogService $dogService): Response
     {
         return $this->json(array_map(
-            fn ($dog) => DogView::from($dog)->toArray(),
+            fn ($dog) => DogView::from($dog, $this->mediaStorage)->toArray(),
             $dogService->list(),
         ));
     }
@@ -33,7 +38,7 @@ class DogApiController extends AbstractController
             throw $this->createNotFoundException('Dog not found');
         }
 
-        return $this->json(DogView::from($dog)->toArray());
+        return $this->json(DogView::from($dog, $this->mediaStorage)->toArray());
     }
 
     #[Route('/{id<\d+>}', methods: ['PUT'])]
@@ -57,7 +62,7 @@ class DogApiController extends AbstractController
             throw $this->createNotFoundException('Dog not found');
         }
 
-        return $this->json(DogView::from($dog)->toArray());
+        return $this->json(DogView::from($dog, $this->mediaStorage)->toArray());
     }
 
     #[Route('', methods: ['POST'])]
@@ -76,7 +81,7 @@ class DogApiController extends AbstractController
             height: $payload->height,
         ));
 
-        return $this->json(DogView::from($dog)->toArray(), 201);
+        return $this->json(DogView::from($dog, $this->mediaStorage)->toArray(), 201);
     }
 
     #[Route('/{id<\d+>}', methods: ['DELETE'])]

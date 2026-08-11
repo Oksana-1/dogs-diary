@@ -4,16 +4,20 @@ namespace App\Application\Dog;
 
 use App\Application\Dog\Data\CreateDogData;
 use App\Application\Dog\Data\UpdateDogData;
-use App\Enum\GenderTypeEnum;
+use App\Application\Media\MediaStorageInterface;
 use App\Entity\Dog;
+use App\Enum\GenderTypeEnum;
 use App\Repository\DogRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 
 final readonly class DogService
 {
     public function __construct(
         private DogRepository $dogRepository,
         private EntityManagerInterface $em,
+        private MediaStorageInterface $mediaStorage,
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -22,12 +26,12 @@ final readonly class DogService
      */
     public function list(): array
     {
-        return $this->dogRepository->findAll();
+        return $this->dogRepository->findAllWithMedia();
     }
 
     public function get(int $id): ?Dog
     {
-        return $this->dogRepository->find($id);
+        return $this->dogRepository->findWithMedia($id);
     }
 
     public function create(CreateDogData $data): Dog
@@ -81,8 +85,29 @@ final readonly class DogService
             return false;
         }
 
+        $storageKeys = $dog->getMedia()
+            ->map(static fn ($media): string => $media->getStorageKey())
+            ->toArray();
+        foreach ($dog->getTreatments() as $treatment) {
+            foreach ($treatment->getMedia() as $media) {
+                $storageKeys[] = $media->getStorageKey();
+            }
+        }
+
         $this->em->remove($dog);
         $this->em->flush();
+
+        foreach ($storageKeys as $storageKey) {
+            try {
+                $this->mediaStorage->delete($storageKey);
+            } catch (\Throwable $exception) {
+                $this->logger->error('Failed to delete a media file after deleting its dog.', [
+                    'dogId' => $id,
+                    'storageKey' => $storageKey,
+                    'exception' => $exception,
+                ]);
+            }
+        }
 
         return true;
     }
@@ -100,7 +125,7 @@ final readonly class DogService
     ): Dog {
         $dog->setName($name);
         $dog->setBirthDate($birthDate);
-        $dog->setGender($gender !== null ? GenderTypeEnum::from($gender) : null);
+        $dog->setGender(null !== $gender ? GenderTypeEnum::from($gender) : null);
         $dog->setAdoptDate($adoptDate);
         $dog->setStatus($status);
         $dog->setAvatar($avatar);
@@ -112,7 +137,7 @@ final readonly class DogService
 
     private function parseDateOrNull(?string $date): ?\DateTimeImmutable
     {
-        if ($date === null || $date === '') {
+        if (null === $date || '' === $date) {
             return null;
         }
 
