@@ -11,7 +11,6 @@ final readonly class UpdateDogData
         public ?string $gender = null,
         public ?string $adoptDate = null,
         public ?string $status = null,
-        public ?string $avatar = null,
         public ?int $weight = null,
         public ?int $height = null,
     ) {

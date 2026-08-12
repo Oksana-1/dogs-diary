@@ -54,7 +54,6 @@ class DogApiController extends AbstractController
             gender: $payload->gender,
             adoptDate: $payload->adoptDate,
             status: $payload->status,
-            avatar: $payload->avatar,
             weight: $payload->weight,
             height: $payload->height,
         ));
@@ -76,7 +75,6 @@ class DogApiController extends AbstractController
             gender: $payload->gender,
             adoptDate: $payload->adoptDate,
             status: $payload->status,
-            avatar: $payload->avatar,
             weight: $payload->weight,
             height: $payload->height,
         ));

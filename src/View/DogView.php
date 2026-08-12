@@ -35,9 +35,6 @@ final readonly class DogView extends AbstractView
             'weight' => $this->dog->getWeight(),
             'height' => $this->dog->getHeight(),
             'status' => $this->dog->getStatus(),
-            'avatar' => $thumbnail
-                ? $this->storage->publicUrl($thumbnail->getStorageKey())
-                : $this->dog->getAvatar(),
             'thumbnail' => $thumbnail
                 ? DogMediaView::from($thumbnail, $this->storage)->toArray()
                 : null,

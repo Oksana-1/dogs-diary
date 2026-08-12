@@ -2,8 +2,8 @@
 
 namespace App\Controller\Api\Dto;
 
-use Symfony\Component\Validator\Constraints as Assert;
 use App\Enum\GenderTypeEnum;
+use Symfony\Component\Validator\Constraints as Assert;
 
 final readonly class CreateDogPayload
 {
@@ -20,8 +20,6 @@ final readonly class CreateDogPayload
         public ?string $adoptDate = null,
         #[Assert\Length(max: 100)]
         public ?string $status = null,
-        #[Assert\Length(max: 255)]
-        public ?string $avatar = null,
         #[Assert\Positive]
         public ?int $weight = null,
         #[Assert\Positive]

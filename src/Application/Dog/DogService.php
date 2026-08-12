@@ -43,7 +43,6 @@ final readonly class DogService
             $data->gender,
             $this->parseDateOrNull($data->adoptDate),
             $data->status,
-            $data->avatar,
             $data->weight,
             $data->height,
         );
@@ -68,7 +67,6 @@ final readonly class DogService
             $data->gender,
             $this->parseDateOrNull($data->adoptDate),
             $data->status,
-            $data->avatar,
             $data->weight,
             $data->height,
         );
@@ -119,7 +117,6 @@ final readonly class DogService
         ?string $gender,
         ?\DateTimeImmutable $adoptDate,
         ?string $status,
-        ?string $avatar,
         ?int $weight,
         ?int $height,
     ): Dog {
@@ -128,7 +125,6 @@ final readonly class DogService
         $dog->setGender(null !== $gender ? GenderTypeEnum::from($gender) : null);
         $dog->setAdoptDate($adoptDate);
         $dog->setStatus($status);
-        $dog->setAvatar($avatar);
         $dog->setWeight($weight);
         $dog->setHeight($height);
 

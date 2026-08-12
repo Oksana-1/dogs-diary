@@ -8,7 +8,6 @@ export default class Dog {
         this.weight = dog.weight;
         this.height = dog.height;
         this.status = dog.status;
-        this.avatar = dog.avatar;
         this.thumbnail = dog.thumbnail;
         this.profileMedia = dog.profileMedia;
         this.treatments = dog.treatments;

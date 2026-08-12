@@ -9,9 +9,6 @@ function dogDraft(dog) {
         gender: dog.gender ?? '',
         adoptDate: dog.adoptDate ?? '',
         status: dog.status ?? '',
-        // Retain the compatibility value while the backend still owns the
-        // legacy field, but do not expose it as editable UI.
-        avatar: dog.avatar ?? null,
         weight: dog.weight ?? '',
         height: dog.height ?? '',
     };
@@ -68,7 +65,6 @@ export default {
                 gender: this.optionalString(this.draft.gender),
                 adoptDate: this.optionalString(this.draft.adoptDate),
                 status: this.optionalString(this.draft.status),
-                avatar: this.draft.avatar,
                 weight: this.optionalNumber(this.draft.weight),
                 height: this.optionalNumber(this.draft.height),
             });

@@ -7,27 +7,18 @@ export default {
     },
     data() {
         return {
-            avatarFailed: false,
+            thumbnailFailed: false,
         };
-    },
-    methods: {
-        mediaUrl(avatar) {
-            if (avatar.startsWith('/') || avatar.startsWith('http://') || avatar.startsWith('https://')) {
-                return avatar;
-            }
-
-            return avatar.startsWith('images/') ? `/assets/${avatar}` : avatar;
-        },
     },
     template: `
         <div class="dog-card dog-card-row">
             <a :href="'/dog/' + dog.id" class="dog-card-link dog-card-main">
-            <div class="dog-avatar-column">
-                <div class="dog-avatar">
-                    <img v-if="(dog.thumbnail?.url || dog.avatar) && !avatarFailed"
-                         :src="mediaUrl(dog.thumbnail?.url || dog.avatar)"
+            <div class="dog-thumbnail-column">
+                <div class="dog-thumbnail">
+                    <img v-if="dog.thumbnail?.url && !thumbnailFailed"
+                         :src="dog.thumbnail.url"
                          :alt="'Photo of ' + (dog.name || 'dog')"
-                         @error="avatarFailed = true" />
+                         @error="thumbnailFailed = true" />
                     <div v-else class="image-placeholder" aria-hidden="true"></div>
                 </div>
             </div>

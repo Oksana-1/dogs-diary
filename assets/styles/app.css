@@ -196,10 +196,10 @@ body {
     display: flex;
     width: 100%;
 }
-.dog-avatar-column {
+.dog-thumbnail-column {
     padding: 1rem;
 }
-.dog-avatar {
+.dog-thumbnail {
     width: 164px;
     height: 164px;
     border-radius: 1rem;
@@ -213,13 +213,13 @@ body {
 .image-placeholder {
     width: 100%;
     height: 100%;
-    background-image: url('../images/dogAvatarPlaceholder.jpg');
+    background-image: url('../images/dogThumbnailPlaceholder.jpg');
     background-position: center;
     background-size: cover;
     filter: grayscale(1);
 }
 
-.dog-avatar img {
+.dog-thumbnail img {
     width: 100%;
     height: 100%;
     object-fit: cover;

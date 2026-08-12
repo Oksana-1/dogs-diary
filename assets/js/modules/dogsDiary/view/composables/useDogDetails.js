@@ -65,10 +65,6 @@ export default function useDogDetails(dogId, repository) {
         }
     }
 
-    function avatarUrl(avatar) {
-        return avatar?.startsWith('images/') ? `/assets/${avatar}` : avatar;
-    }
-
     function formatDate(value, options = { year: 'numeric', month: 'long', day: 'numeric' }) {
         return value ? new Date(`${value}T00:00:00`).toLocaleDateString('en-US', options) : '—';
     }
@@ -88,7 +84,6 @@ export default function useDogDetails(dogId, repository) {
         openEdit,
         update,
         remove,
-        avatarUrl,
         formatDate,
         formatGender,
     });
