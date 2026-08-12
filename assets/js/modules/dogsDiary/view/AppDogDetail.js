@@ -1,16 +1,21 @@
 import TreatmentTable from './islands/dogDetailPage/TreatmentTable.js';
+import DogProfileMedia from './islands/dogDetailPage/DogProfileMedia.js';
+import DogMediaLibrary from './islands/dogDetailPage/DogMediaLibrary.js';
 import DogCreateUpdateModal from './ui/modals/DogCreateUpdateModal.js';
 import TreatmentFormModal from './ui/modals/TreatmentFormModal.js';
 import ConfirmModal from './ui/modals/ConfirmModal.js';
 import useDogDetails from './composables/useDogDetails.js';
 import useDogTreatments from './composables/useDogTreatments.js';
+import useDogMedia from './composables/useDogMedia.js';
 import DogRepository from '../repositories/DogRepository.js';
 import TreatmentRepository from '../repositories/TreatmentRepository.js';
+import DogMediaRepository from '../repositories/DogMediaRepository.js';
 import api from '../../../core/api/ApiClient.js';
 import { mdiCircleEditOutline, mdiDeleteCircleOutline } from '@mdi/js';
 
 const dogRepository = new DogRepository(api);
 const treatmentRepository = new TreatmentRepository(api);
+const mediaRepository = new DogMediaRepository(api);
 
 export default {
     name: 'AppDogDetail',
@@ -20,15 +25,21 @@ export default {
         DogCreateUpdateModal,
         TreatmentFormModal,
         TreatmentTable,
+        DogProfileMedia,
+        DogMediaLibrary,
     },
 
     props: {
         dogId: { type: Number, required: true },
-        mediaUrl: { type: String, required: true },
     },
 
     setup(props) {
         const dogDetails = useDogDetails(props.dogId, dogRepository);
+        const mediaDetails = useDogMedia(
+            props.dogId,
+            mediaRepository,
+            () => dogDetails.dog,
+        );
         const treatmentDetails = useDogTreatments(
             () => props.dogId,
             [],
@@ -40,6 +51,7 @@ export default {
 
             if (dog) {
                 treatmentDetails.replace(dog.treatments);
+                await mediaDetails.load();
             }
         }
 
@@ -48,6 +60,7 @@ export default {
         return {
             dogDetails,
             treatmentDetails,
+            mediaDetails,
             mdiCircleEditOutline,
             mdiDeleteCircleOutline,
         };
@@ -61,17 +74,7 @@ export default {
             </p>
             <template v-else-if="dogDetails.dog">
             <section class="dog-profile" aria-labelledby="dog-profile-title">
-                <div class="dog-profile-media">
-                    <video
-                        class="dog-profile-video"
-                        :src="mediaUrl"
-                        :aria-label="'Video of ' + (dogDetails.dog.name || 'the dog')"
-                        autoplay
-                        muted
-                        loop
-                        playsinline
-                    ></video>
-                </div>
+                <DogProfileMedia :media="dogDetails.dog.profileMedia" :dog-name="dogDetails.dog.name" />
                 <div class="dog-profile-content">
                     <div class="dog-profile-heading">
                         <h1 id="dog-profile-title">{{ dogDetails.dog.name || 'Unnamed dog' }}</h1>
@@ -139,6 +142,7 @@ export default {
                 @edit="treatmentDetails.openEdit"
                 @delete="treatmentDetails.deleteModal.open"
             />
+            <DogMediaLibrary :dog-name="dogDetails.dog.name" :state="mediaDetails" />
             <DogCreateUpdateModal
                 :dog="dogDetails.editModal.subject || dogDetails.dog"
                 :is-open="dogDetails.editModal.isOpen"

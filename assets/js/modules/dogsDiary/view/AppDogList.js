@@ -12,7 +12,6 @@ const emptyDog = Object.freeze({
     gender: '',
     adoptDate: '',
     status: '',
-    avatar: '',
     weight: '',
     height: '',
 });

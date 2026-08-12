@@ -9,7 +9,9 @@ function dogDraft(dog) {
         gender: dog.gender ?? '',
         adoptDate: dog.adoptDate ?? '',
         status: dog.status ?? '',
-        avatar: dog.avatar ?? '',
+        // Retain the compatibility value while the backend still owns the
+        // legacy field, but do not expose it as editable UI.
+        avatar: dog.avatar ?? null,
         weight: dog.weight ?? '',
         height: dog.height ?? '',
     };
@@ -66,7 +68,7 @@ export default {
                 gender: this.optionalString(this.draft.gender),
                 adoptDate: this.optionalString(this.draft.adoptDate),
                 status: this.optionalString(this.draft.status),
-                avatar: this.optionalString(this.draft.avatar),
+                avatar: this.draft.avatar,
                 weight: this.optionalNumber(this.draft.weight),
                 height: this.optionalNumber(this.draft.height),
             });
@@ -123,10 +125,6 @@ export default {
                     <div class="form-group">
                         <label :for="fieldPrefix + '-status'">Status</label>
                         <input :id="fieldPrefix + '-status'" v-model="draft.status" type="text" maxlength="100">
-                    </div>
-                    <div class="form-group">
-                        <label :for="fieldPrefix + '-avatar'">Avatar</label>
-                        <input :id="fieldPrefix + '-avatar'" v-model="draft.avatar" type="text" maxlength="255">
                     </div>
                     <div class="form-group">
                         <label :for="fieldPrefix + '-weight'">Weight, kg</label>

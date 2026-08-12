@@ -11,7 +11,7 @@ export default {
         };
     },
     methods: {
-        avatarUrl(avatar) {
+        mediaUrl(avatar) {
             if (avatar.startsWith('/') || avatar.startsWith('http://') || avatar.startsWith('https://')) {
                 return avatar;
             }
@@ -24,9 +24,9 @@ export default {
             <a :href="'/dog/' + dog.id" class="dog-card-link dog-card-main">
             <div class="dog-avatar-column">
                 <div class="dog-avatar">
-                    <img v-if="dog.avatar && !avatarFailed"
-                         :src="avatarUrl(dog.avatar)"
-                         :alt="dog.name"
+                    <img v-if="(dog.thumbnail?.url || dog.avatar) && !avatarFailed"
+                         :src="mediaUrl(dog.thumbnail?.url || dog.avatar)"
+                         :alt="'Photo of ' + (dog.name || 'dog')"
                          @error="avatarFailed = true" />
                     <div v-else class="image-placeholder" aria-hidden="true"></div>
                 </div>
