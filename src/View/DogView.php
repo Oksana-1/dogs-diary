@@ -42,7 +42,7 @@ final readonly class DogView extends AbstractView
                 ? DogMediaView::from($profileMedia, $this->storage)->toArray()
                 : null,
             'treatments' => $this->dog->getTreatments()->map(
-                static fn ($treatment) => TreatmentView::from($treatment)->toArray()
+                fn ($treatment) => TreatmentView::from($treatment, $this->storage)->toArray()
             )->toArray(),
         ];
     }

@@ -1,4 +1,4 @@
-import { mdiCircleEditOutline, mdiDeleteCircleOutline, mdiPlusCircleOutline } from '@mdi/js';
+import { mdiCircleEditOutline, mdiDeleteCircleOutline, mdiImageOutline, mdiPlusCircleOutline } from '@mdi/js';
 
 export default {
     name: 'TreatmentTable',
@@ -7,12 +7,13 @@ export default {
         treatments: { type: Array, default: () => [] },
     },
 
-    emits: ['add', 'edit', 'delete'],
+    emits: ['add', 'edit', 'delete', 'view-photo'],
 
     data() {
         return {
             mdiCircleEditOutline,
             mdiDeleteCircleOutline,
+            mdiImageOutline,
             mdiPlusCircleOutline,
         };
     },
@@ -51,6 +52,7 @@ export default {
                     <th>Date</th>
                     <th>Next Due</th>
                     <th style="width: 20%">Notes</th>
+                    <th class="treatment-photo-column">Photo</th>
                     <th class="treatment-actions">Actions</th>
                 </tr>
                 </thead>
@@ -63,6 +65,19 @@ export default {
                     <td>{{ treatment.treatmentDate }}</td>
                     <td>{{ treatment.dueDate ?? '—' }}</td>
                     <td>{{ treatment.note ?? '—' }}</td>
+                    <td class="treatment-photo-column">
+                        <button v-if="treatment.photo"
+                                type="button"
+                                class="btn btn-white action-icon-button treatment-photo-button"
+                                title="View treatment photo"
+                                :aria-label="'View photo for ' + treatment.productName"
+                                @click="$emit('view-photo', treatment.photo)">
+                            <svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                <path :d="mdiImageOutline"></path>
+                            </svg>
+                        </button>
+                        <span v-else aria-label="No treatment photo">—</span>
+                    </td>
                     <td class="treatment-actions">
                         <button type="button" class="btn btn-white action-icon-button"
                                 @click="$emit('edit', treatment)"

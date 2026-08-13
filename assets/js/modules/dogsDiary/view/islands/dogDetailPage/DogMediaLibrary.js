@@ -1,4 +1,5 @@
 import ConfirmModal from '../../ui/modals/ConfirmModal.js';
+import { mdiUpload } from '@mdi/js';
 
 let inputId = 0;
 
@@ -14,7 +15,10 @@ export default {
 
     data() {
         inputId += 1;
-        return { fileInputId: `dog-media-upload-${inputId}` };
+        return {
+            fileInputId: `dog-media-upload-${inputId}`,
+            mdiUpload,
+        };
     },
 
     methods: {
@@ -39,9 +43,12 @@ export default {
                     <h2 id="dog-media-library-title" class="h2">Media library</h2>
                     <p>Upload a photo or video, then choose how it appears for {{ dogName || 'this dog' }}.</p>
                 </div>
-                <div class="dog-media-upload">
-                    <label :for="fileInputId" class="btn btn-black">
-                        {{ state.isUploading ? 'Uploading…' : 'Upload media' }}
+                <div class="dog-media-upload media-upload-control">
+                    <label :for="fileInputId" class="btn btn-black media-upload-button">
+                        <svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path :d="mdiUpload"></path>
+                        </svg>
+                        <span>{{ state.isUploading ? 'Uploading…' : 'Upload media' }}</span>
                     </label>
                     <input :id="fileInputId" type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm"
                            :disabled="state.isUploading || Boolean(state.pendingAction)" @change="selectFile">

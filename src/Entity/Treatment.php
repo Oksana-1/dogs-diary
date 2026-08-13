@@ -12,7 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: TreatmentRepository::class)]
 class Treatment
 {
-    public const MAX_MEDIA_COUNT = 5;
+    public const MAX_MEDIA_COUNT = 1;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -140,6 +140,13 @@ class Treatment
     public function getMedia(): Collection
     {
         return $this->media;
+    }
+
+    public function getPhoto(): ?TreatmentMedia
+    {
+        $photo = $this->media->first();
+
+        return false === $photo ? null : $photo;
     }
 
     public function addMedia(TreatmentMedia $media): static

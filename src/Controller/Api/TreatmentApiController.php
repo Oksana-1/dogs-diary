@@ -2,6 +2,7 @@
 
 namespace App\Controller\Api;
 
+use App\Application\Media\MediaStorageInterface;
 use App\Application\Treatment\Data\CreateTreatmentData;
 use App\Application\Treatment\Data\UpdateTreatmentData;
 use App\Application\Treatment\TreatmentService;
@@ -17,6 +18,10 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/api/dogs/{dogId}/treatments')]
 class TreatmentApiController extends AbstractController
 {
+    public function __construct(private readonly MediaStorageInterface $mediaStorage)
+    {
+    }
+
     #[Route('', methods: ['GET'])]
     public function getCollection(int $dogId, TreatmentService $treatmentService): Response
     {
@@ -26,7 +31,7 @@ class TreatmentApiController extends AbstractController
         }
 
         return $this->json(array_map(
-            fn ($treatment) => TreatmentView::from($treatment)->toArray(),
+            fn ($treatment) => TreatmentView::from($treatment, $this->mediaStorage)->toArray(),
             $treatments,
         ));
     }
@@ -39,7 +44,7 @@ class TreatmentApiController extends AbstractController
             throw $this->createNotFoundException('Treatment not found');
         }
 
-        return $this->json(TreatmentView::from($treatment)->toArray());
+        return $this->json(TreatmentView::from($treatment, $this->mediaStorage)->toArray());
     }
 
     #[Route('', methods: ['POST'])]
@@ -63,7 +68,7 @@ class TreatmentApiController extends AbstractController
             throw $this->createNotFoundException('Dog not found');
         }
 
-        return $this->json(TreatmentView::from($treatment)->toArray(), 201);
+        return $this->json(TreatmentView::from($treatment, $this->mediaStorage)->toArray(), 201);
     }
 
     #[Route('/{id<\d+>}', methods: ['PUT'])]
@@ -93,7 +98,7 @@ class TreatmentApiController extends AbstractController
             throw $this->createNotFoundException('Treatment not found');
         }
 
-        return $this->json(TreatmentView::from($treatment)->toArray());
+        return $this->json(TreatmentView::from($treatment, $this->mediaStorage)->toArray());
     }
 
     #[Route('/{id<\d+>}', methods: ['DELETE'])]
@@ -112,4 +117,3 @@ class TreatmentApiController extends AbstractController
         return new Response(null, 204);
     }
 }
-

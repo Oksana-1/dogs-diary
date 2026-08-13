@@ -1,7 +1,7 @@
 import { computed, reactive, ref } from 'vue';
 import useAsyncModal from './useAsyncModal.js';
 
-export default function useDogTreatments(getDogId, initialTreatments, repository) {
+export default function useDogTreatments(getDogId, initialTreatments, repository, mediaRepository) {
     const treatments = ref([...(initialTreatments ?? [])]);
     const formModal = useAsyncModal({
         fallbackError: 'Unable to save the treatment. Please try again.',
@@ -32,23 +32,42 @@ export default function useDogTreatments(getDogId, initialTreatments, repository
         treatments.value = [...(nextTreatments ?? [])];
     }
 
-    async function save(data) {
+    async function save({ data, photoFile = null, removePhoto = false }) {
         await formModal.execute(async (selectedTreatment) => {
+            let treatment;
+
             if (selectedTreatment) {
-                const treatment = await repository.update(
+                treatment = await repository.update(
                     getDogId(),
                     selectedTreatment.id,
                     data,
                 );
-                treatments.value = treatments.value.map(
-                    (current) => current.id === treatment.id ? treatment : current,
-                );
+            } else {
+                treatment = await repository.create(getDogId(), data);
 
-                return;
+                // If the following photo upload fails, keep the newly created
+                // treatment as the modal subject so retrying performs an update
+                // instead of creating a duplicate treatment.
+                formModal.subject = treatment;
+                treatments.value = [treatment, ...treatments.value];
             }
 
-            const treatment = await repository.create(getDogId(), data);
-            treatments.value = [treatment, ...treatments.value];
+            if (photoFile) {
+                treatment.photo = await mediaRepository.upload(
+                    getDogId(),
+                    treatment.id,
+                    photoFile,
+                );
+            } else if (removePhoto && treatment.photo) {
+                await mediaRepository.delete(getDogId(), treatment.id, treatment.photo.id);
+                treatment.photo = null;
+            }
+
+            treatments.value = treatments.value.map(
+                (current) => current.id === treatment.id ? treatment : current,
+            );
+
+            return treatment;
         });
     }
 

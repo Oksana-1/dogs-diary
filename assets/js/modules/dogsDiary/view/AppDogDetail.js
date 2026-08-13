@@ -3,18 +3,22 @@ import DogProfileMedia from './islands/dogDetailPage/DogProfileMedia.js';
 import DogMediaLibrary from './islands/dogDetailPage/DogMediaLibrary.js';
 import DogCreateUpdateModal from './ui/modals/DogCreateUpdateModal.js';
 import TreatmentFormModal from './ui/modals/TreatmentFormModal.js';
+import TreatmentPhotoModal from './ui/modals/TreatmentPhotoModal.js';
 import ConfirmModal from './ui/modals/ConfirmModal.js';
 import useDogDetails from './composables/useDogDetails.js';
 import useDogTreatments from './composables/useDogTreatments.js';
 import useDogMedia from './composables/useDogMedia.js';
 import DogRepository from '../repositories/DogRepository.js';
 import TreatmentRepository from '../repositories/TreatmentRepository.js';
+import TreatmentMediaRepository from '../repositories/TreatmentMediaRepository.js';
 import DogMediaRepository from '../repositories/DogMediaRepository.js';
 import api from '../../../core/api/ApiClient.js';
+import { ref } from 'vue';
 import { mdiCircleEditOutline, mdiDeleteCircleOutline } from '@mdi/js';
 
 const dogRepository = new DogRepository(api);
 const treatmentRepository = new TreatmentRepository(api);
+const treatmentMediaRepository = new TreatmentMediaRepository(api);
 const mediaRepository = new DogMediaRepository(api);
 
 export default {
@@ -24,6 +28,7 @@ export default {
         ConfirmModal,
         DogCreateUpdateModal,
         TreatmentFormModal,
+        TreatmentPhotoModal,
         TreatmentTable,
         DogProfileMedia,
         DogMediaLibrary,
@@ -44,7 +49,17 @@ export default {
             () => props.dogId,
             [],
             treatmentRepository,
+            treatmentMediaRepository,
         );
+        const treatmentPhoto = ref(null);
+
+        function viewTreatmentPhoto(photo) {
+            treatmentPhoto.value = photo;
+        }
+
+        function closeTreatmentPhoto() {
+            treatmentPhoto.value = null;
+        }
 
         async function loadDog() {
             const dog = await dogDetails.load();
@@ -61,6 +76,9 @@ export default {
             dogDetails,
             treatmentDetails,
             mediaDetails,
+            treatmentPhoto,
+            viewTreatmentPhoto,
+            closeTreatmentPhoto,
             mdiCircleEditOutline,
             mdiDeleteCircleOutline,
         };
@@ -141,6 +159,7 @@ export default {
                 @add="treatmentDetails.openCreate"
                 @edit="treatmentDetails.openEdit"
                 @delete="treatmentDetails.deleteModal.open"
+                @view-photo="viewTreatmentPhoto"
             />
             <DogMediaLibrary :dog-name="dogDetails.dog.name" :state="mediaDetails" />
             <DogCreateUpdateModal
@@ -158,6 +177,11 @@ export default {
                 :error="treatmentDetails.formModal.error"
                 @submit="treatmentDetails.save"
                 @close="treatmentDetails.formModal.close"
+            />
+            <TreatmentPhotoModal
+                :photo="treatmentPhoto"
+                :is-open="Boolean(treatmentPhoto)"
+                @close="closeTreatmentPhoto"
             />
             <ConfirmModal
                 title="Delete Treatment"

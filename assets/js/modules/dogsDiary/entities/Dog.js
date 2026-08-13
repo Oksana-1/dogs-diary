@@ -1,3 +1,5 @@
+import Treatment from './Treatment.js';
+
 export default class Dog {
     constructor(dog) {
         this.id = dog.id;
@@ -10,6 +12,6 @@ export default class Dog {
         this.status = dog.status;
         this.thumbnail = dog.thumbnail;
         this.profileMedia = dog.profileMedia;
-        this.treatments = dog.treatments;
+        this.treatments = (dog.treatments ?? []).map(treatment => new Treatment(treatment));
     }
 }

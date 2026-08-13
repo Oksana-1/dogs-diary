@@ -457,7 +457,14 @@ body {
     margin-top: 0.4rem;
 }
 
-.dog-media-upload input {
+.media-upload-control {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.media-upload-control input {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -466,12 +473,21 @@ body {
     white-space: nowrap;
 }
 
-.dog-media-upload:focus-within label {
+.media-upload-button {
+    min-height: 44px;
+    padding: 0.7rem 1rem;
+    border-radius: 0.75rem;
+    white-space: nowrap;
+}
+
+.media-upload-control:focus-within .media-upload-button,
+.media-upload-control:focus-within .treatment-photo-action {
     outline: 3px solid var(--text-info);
     outline-offset: 3px;
 }
 
-.dog-media-upload:has(input:disabled) label {
+.media-upload-control:has(input:disabled) .media-upload-button,
+.media-upload-control:has(input:disabled) .treatment-photo-action {
     cursor: not-allowed;
     opacity: 0.5;
 }
@@ -622,6 +638,15 @@ textarea:focus-visible {
     .dog-media-upload label {
         width: 100%;
     }
+
+    .media-upload-control {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .media-upload-button {
+        width: 100%;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -670,6 +695,12 @@ textarea:focus-visible {
     max-width: 760px;
 }
 
+.modal-content-treatment-form {
+    max-width: 640px;
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+}
+
 .dog-form-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -714,6 +745,69 @@ textarea:focus-visible {
     margin-top: 1rem;
     color: #b71c1c;
     font-size: 14px;
+}
+
+.treatment-photo-field {
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-light);
+}
+
+.treatment-photo-label {
+    margin-bottom: 0.5rem;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.treatment-photo-preview {
+    width: min(100%, 320px);
+    aspect-ratio: 4 / 3;
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+    border: 1px solid var(--border-light);
+    border-radius: 0.75rem;
+    background: var(--bg-card);
+}
+
+.treatment-photo-preview img,
+.treatment-photo-full {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.treatment-photo-help {
+    margin-bottom: 0.65rem;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.treatment-photo-help {
+    margin-top: 0.5rem;
+}
+
+.treatment-photo-control {
+    width: fit-content;
+}
+
+.form-group .treatment-photo-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+    margin-bottom: 0;
+    padding: 0;
+    border-radius: 0.75rem;
+}
+
+.modal-content-treatment-photo {
+    max-width: min(900px, calc(100vw - 2rem));
+}
+
+.treatment-photo-full {
+    max-height: calc(100vh - 12rem);
 }
 
 @media (max-width: 640px) {
@@ -868,6 +962,17 @@ textarea:focus-visible {
 
 .treatments-table tbody tr:hover {
     background-color: rgba(0, 0, 0, 0.02);
+}
+
+.treatment-photo-column {
+    width: 5rem;
+    text-align: center !important;
+}
+
+.treatment-photo-button {
+    width: 2.5rem;
+    height: 2.5rem;
+    margin: 0 !important;
 }
 
 .treatment-badge {

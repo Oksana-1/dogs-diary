@@ -1,4 +1,5 @@
 import ModalDialog from './ModalDialog.js';
+import { mdiDeleteOutline, mdiUpload } from '@mdi/js';
 
 let formId = 0;
 
@@ -44,6 +45,11 @@ export default {
         return {
             fieldPrefix: `treatment-form-${id}`,
             draft: treatmentDraft(this.treatment),
+            photoFile: null,
+            removePhoto: false,
+            localPreviewUrl: null,
+            mdiDeleteOutline,
+            mdiUpload,
         };
     },
 
@@ -51,14 +57,28 @@ export default {
         title() {
             return this.treatment ? 'Edit Treatment' : 'Add Treatment';
         },
+
+        photoPreviewUrl() {
+            if (this.localPreviewUrl) {
+                return this.localPreviewUrl;
+            }
+
+            return this.removePhoto ? null : this.treatment?.photo?.url ?? null;
+        },
+
     },
 
     watch: {
         isOpen(isOpen) {
             if (isOpen) {
                 this.draft = treatmentDraft(this.treatment);
+                this.resetPhotoDraft();
             }
         },
+    },
+
+    beforeUnmount() {
+        this.revokeLocalPreview();
     },
 
     methods: {
@@ -68,12 +88,54 @@ export default {
             }
 
             this.$emit('submit', {
-                types: [...this.draft.types],
-                productName: this.draft.productName.trim(),
-                treatmentDate: this.draft.treatmentDate,
-                dueDate: this.optionalString(this.draft.dueDate),
-                note: this.optionalString(this.draft.note),
+                data: {
+                    types: [...this.draft.types],
+                    productName: this.draft.productName.trim(),
+                    treatmentDate: this.draft.treatmentDate,
+                    dueDate: this.optionalString(this.draft.dueDate),
+                    note: this.optionalString(this.draft.note),
+                },
+                photoFile: this.photoFile,
+                removePhoto: this.removePhoto,
             });
+        },
+
+        selectPhoto(event) {
+            const [file] = event.target.files ?? [];
+            this.revokeLocalPreview();
+            this.photoFile = file ?? null;
+            this.removePhoto = false;
+
+            if (file) {
+                this.localPreviewUrl = URL.createObjectURL(file);
+            }
+        },
+
+        removeSelectedPhoto() {
+            this.revokeLocalPreview();
+            this.photoFile = null;
+            this.removePhoto = Boolean(this.treatment?.photo);
+
+            if (this.$refs.photoInput) {
+                this.$refs.photoInput.value = '';
+            }
+        },
+
+        resetPhotoDraft() {
+            this.revokeLocalPreview();
+            this.photoFile = null;
+            this.removePhoto = false;
+
+            if (this.$refs.photoInput) {
+                this.$refs.photoInput.value = '';
+            }
+        },
+
+        revokeLocalPreview() {
+            if (this.localPreviewUrl) {
+                URL.revokeObjectURL(this.localPreviewUrl);
+                this.localPreviewUrl = null;
+            }
         },
 
         close() {
@@ -94,6 +156,7 @@ export default {
             :title="title"
             :is-open="isOpen"
             :disabled="disabled"
+            content-class="modal-content-treatment-form"
             @close="close"
         >
             <form @submit.prevent="submit">
@@ -120,6 +183,41 @@ export default {
                         <div class="form-group">
                             <label :for="fieldPrefix + '-note'">Notes</label>
                             <textarea :id="fieldPrefix + '-note'" v-model="draft.note" rows="3" maxlength="255"></textarea>
+                        </div>
+                        <div class="form-group treatment-photo-field">
+                            <p class="treatment-photo-label">Treatment photo</p>
+                            <div v-if="photoPreviewUrl" class="treatment-photo-preview">
+                                <img :src="photoPreviewUrl" alt="Treatment photo preview">
+                            </div>
+                            <div class="media-upload-control treatment-photo-control">
+                                <label v-if="!photoPreviewUrl"
+                                       :for="fieldPrefix + '-photo'"
+                                       class="btn btn-black action-icon-button treatment-photo-action"
+                                       title="Choose treatment photo"
+                                       aria-label="Choose treatment photo">
+                                    <svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path :d="mdiUpload"></path>
+                                    </svg>
+                                </label>
+                                <button v-else
+                                        type="button"
+                                        class="btn btn-black action-icon-button treatment-photo-action"
+                                        title="Remove treatment photo"
+                                        aria-label="Remove treatment photo"
+                                        :disabled="disabled"
+                                        @click="removeSelectedPhoto">
+                                    <svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path :d="mdiDeleteOutline"></path>
+                                    </svg>
+                                </button>
+                                <input :id="fieldPrefix + '-photo'"
+                                       ref="photoInput"
+                                       type="file"
+                                       accept="image/jpeg,image/png,image/webp"
+                                       :disabled="disabled"
+                                       @change="selectPhoto">
+                            </div>
+                            <p class="treatment-photo-help">One JPEG, PNG, or WebP image up to 10 MB.</p>
                         </div>
                         <p v-if="error" class="modal-error" role="alert">{{ error }}</p>
                         <div class="modal-actions">

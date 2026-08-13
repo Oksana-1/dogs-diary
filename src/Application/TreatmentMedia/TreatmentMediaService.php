@@ -52,22 +52,19 @@ final readonly class TreatmentMediaService
         }
 
         $storageKey = null;
+        $replacedStorageKey = null;
         try {
-            return $this->em->wrapInTransaction(function () use (
+            $media = $this->em->wrapInTransaction(function () use (
                 $dogId,
                 $treatmentId,
                 $file,
                 $metadata,
                 &$storageKey,
+                &$replacedStorageKey,
             ): ?TreatmentMedia {
                 $treatment = $this->em->find(Treatment::class, $treatmentId, LockMode::PESSIMISTIC_WRITE);
                 if (!$treatment || $treatment->getDog()?->getId() !== $dogId) {
                     return null;
-                }
-
-                $position = $treatment->nextMediaPosition();
-                if (null === $position) {
-                    throw new MediaValidationException('A treatment can have at most five images.');
                 }
 
                 $storageKey = $this->storage->store(
@@ -76,6 +73,22 @@ final readonly class TreatmentMediaService
                     $file,
                     $metadata->extension,
                 );
+
+                $existingMedia = $this->mediaRepository->findForTreatment($treatmentId)[0] ?? null;
+                if ($existingMedia) {
+                    $replacedStorageKey = $existingMedia->getStorageKey();
+                    $existingMedia->replaceFile(
+                        storageKey: $storageKey,
+                        originalName: $metadata->originalName,
+                        mimeType: $metadata->mimeType,
+                        sizeBytes: $metadata->sizeBytes,
+                        width: $metadata->width,
+                        height: $metadata->height,
+                    );
+
+                    return $existingMedia;
+                }
+
                 $media = new TreatmentMedia(
                     treatment: $treatment,
                     storageKey: $storageKey,
@@ -84,7 +97,7 @@ final readonly class TreatmentMediaService
                     sizeBytes: $metadata->sizeBytes,
                     width: $metadata->width,
                     height: $metadata->height,
-                    position: $position,
+                    position: 1,
                 );
                 $this->em->persist($media);
 
@@ -104,6 +117,12 @@ final readonly class TreatmentMediaService
 
             throw $exception;
         }
+
+        if (null !== $replacedStorageKey) {
+            $this->deleteStoredFile($replacedStorageKey, 'replacing');
+        }
+
+        return $media;
     }
 
     public function delete(int $dogId, int $treatmentId, int $mediaId): bool
@@ -129,15 +148,20 @@ final readonly class TreatmentMediaService
             return false;
         }
 
+        $this->deleteStoredFile($storageKey, 'deleting');
+
+        return true;
+    }
+
+    private function deleteStoredFile(string $storageKey, string $operation): void
+    {
         try {
             $this->storage->delete($storageKey);
         } catch (\Throwable $exception) {
-            $this->logger->error('Failed to delete a treatment media file after removing its database row.', [
+            $this->logger->error('Failed to delete a treatment media file after '.$operation.' its database record.', [
                 'storageKey' => $storageKey,
                 'exception' => $exception,
             ]);
         }
-
-        return true;
     }
 }

@@ -2,15 +2,20 @@
 
 namespace App\View;
 
+use App\Application\Media\MediaStorageInterface;
 use App\Entity\Treatment;
 
 final readonly class TreatmentView extends AbstractView
 {
-    public function __construct(private Treatment $treatment) {}
+    public function __construct(
+        private Treatment $treatment,
+        private MediaStorageInterface $storage,
+    ) {
+    }
 
-    public static function from(Treatment $treatment): self
+    public static function from(Treatment $treatment, MediaStorageInterface $storage): self
     {
-        return new self($treatment);
+        return new self($treatment, $storage);
     }
 
     /**
@@ -18,6 +23,8 @@ final readonly class TreatmentView extends AbstractView
      */
     public function toArray(): array
     {
+        $photo = $this->treatment->getPhoto();
+
         return [
             'id' => $this->treatment->getId(),
             'dogId' => $this->treatment->getDog()?->getId(),
@@ -26,6 +33,9 @@ final readonly class TreatmentView extends AbstractView
             'treatmentDate' => $this->treatment->getTreatmentDate()?->format('Y-m-d'),
             'dueDate' => $this->treatment->getDueDate()?->format('Y-m-d'),
             'note' => $this->treatment->getNote(),
+            'photo' => $photo
+                ? TreatmentMediaView::from($photo, $this->storage)->toArray()
+                : null,
         ];
     }
 }

@@ -127,6 +127,34 @@ class TreatmentMedia
         return $this->createdAt;
     }
 
+    public function replaceFile(
+        string $storageKey,
+        string $originalName,
+        string $mimeType,
+        int $sizeBytes,
+        int $width,
+        int $height,
+    ): void {
+        self::assertMetadataIsValid(
+            $storageKey,
+            $originalName,
+            $mimeType,
+            $sizeBytes,
+            $width,
+            $height,
+            1,
+        );
+
+        $this->storageKey = $storageKey;
+        $this->originalName = $originalName;
+        $this->mimeType = $mimeType;
+        $this->sizeBytes = $sizeBytes;
+        $this->width = $width;
+        $this->height = $height;
+        $this->position = 1;
+        $this->createdAt = new \DateTimeImmutable();
+    }
+
     private static function assertMetadataIsValid(
         string $storageKey,
         string $originalName,
@@ -152,8 +180,8 @@ class TreatmentMedia
             throw new \DomainException('Treatment image size and dimensions must be positive.');
         }
 
-        if ($position < 1 || $position > Treatment::MAX_MEDIA_COUNT) {
-            throw new \DomainException('Treatment media position must be between 1 and 5.');
+        if (1 !== $position) {
+            throw new \DomainException('A treatment photo must use position 1.');
         }
     }
 }

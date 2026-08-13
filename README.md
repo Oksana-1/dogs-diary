@@ -10,7 +10,7 @@ The UI is server-rendered with Twig and enhanced by Vue 3 islands. Data is expos
 - Record treatments and their due dates, notes, and treatment types.
 - Upload images and videos to a dog's media library.
 - Choose separate thumbnail and profile media for each dog.
-- Attach up to five images to each treatment.
+- Attach one photo to each treatment and view it from the treatment table.
 
 ## Technology
 
@@ -119,7 +119,7 @@ Dog media supports JPEG, PNG, and WebP images up to 10 MB, plus MP4 and WebM vid
 - `POST /api/dogs/{dogId}/treatments/{treatmentId}/media` — upload an image using the multipart field `file`.
 - `DELETE /api/dogs/{dogId}/treatments/{treatmentId}/media/{id}` — delete a treatment image.
 
-Treatment media supports JPEG, PNG, and WebP images up to 10 MB, with a maximum of five images per treatment.
+Treatment media supports one JPEG, PNG, or WebP image up to 10 MB per treatment. Uploading another image replaces the existing treatment photo.
 
 ## Media Storage
 
