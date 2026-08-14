@@ -1,6 +1,7 @@
 import TreatmentTable from './islands/dogDetailPage/TreatmentTable.js';
 import DogProfileMedia from './islands/dogDetailPage/DogProfileMedia.js';
 import DogMediaLibrary from './islands/dogDetailPage/DogMediaLibrary.js';
+import BirthdayCelebration from './ui/BirthdayCelebration.js';
 import DogCreateUpdateModal from './ui/modals/DogCreateUpdateModal.js';
 import TreatmentFormModal from './ui/modals/TreatmentFormModal.js';
 import TreatmentPhotoModal from './ui/modals/TreatmentPhotoModal.js';
@@ -25,6 +26,7 @@ export default {
     name: 'AppDogDetail',
 
     components: {
+        BirthdayCelebration,
         ConfirmModal,
         DogCreateUpdateModal,
         TreatmentFormModal,
@@ -94,6 +96,10 @@ export default {
             <section class="dog-profile" aria-labelledby="dog-profile-title">
                 <DogProfileMedia :media="dogDetails.dog.profileMedia" :dog-name="dogDetails.dog.name" />
                 <div class="dog-profile-content">
+                    <BirthdayCelebration
+                        :birth-date="dogDetails.dog.birthDate"
+                        :dogs-name="dogDetails.dog.name"
+                    />
                     <div class="dog-profile-heading">
                         <h1 id="dog-profile-title">{{ dogDetails.dog.name || 'Unnamed dog' }}</h1>
                         <div class="dog-profile-actions">
