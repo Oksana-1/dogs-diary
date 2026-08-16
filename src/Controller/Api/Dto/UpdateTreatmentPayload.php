@@ -2,9 +2,11 @@
 
 namespace App\Controller\Api\Dto;
 
+use App\Controller\Api\Validation\TreatmentBusinessDates;
 use App\Enum\TreatmentTypeEnum;
 use Symfony\Component\Validator\Constraints as Assert;
 
+#[TreatmentBusinessDates]
 final readonly class UpdateTreatmentPayload
 {
     public function __construct(

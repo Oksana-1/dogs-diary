@@ -126,8 +126,7 @@ final readonly class TreatmentService
     ): Treatment {
         $treatment->setType($types);
         $treatment->setProductName($productName);
-        $treatment->setTreatmentDate($treatmentDate);
-        $treatment->setDueDate($dueDate);
+        $treatment->setBusinessDates($treatmentDate, $dueDate);
         $treatment->setNote($note);
 
         return $treatment;

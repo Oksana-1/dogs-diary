@@ -121,9 +121,8 @@ final readonly class DogService
         ?int $height,
     ): Dog {
         $dog->setName($name);
-        $dog->setBirthDate($birthDate);
+        $dog->setBusinessDates($birthDate, $adoptDate);
         $dog->setGender(null !== $gender ? GenderTypeEnum::from($gender) : null);
-        $dog->setAdoptDate($adoptDate);
         $dog->setStatus($status);
         $dog->setWeight($weight);
         $dog->setHeight($height);

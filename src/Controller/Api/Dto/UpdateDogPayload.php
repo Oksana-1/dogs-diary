@@ -2,9 +2,11 @@
 
 namespace App\Controller\Api\Dto;
 
+use App\Controller\Api\Validation\DogBusinessDates;
 use App\Enum\GenderTypeEnum;
 use Symfony\Component\Validator\Constraints as Assert;
 
+#[DogBusinessDates]
 final readonly class UpdateDogPayload
 {
     public function __construct(

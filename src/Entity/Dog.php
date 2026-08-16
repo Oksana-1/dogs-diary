@@ -100,7 +100,21 @@ class Dog
 
     public function setBirthDate(\DateTimeImmutable $birthDate): static
     {
+        return $this->setBusinessDates($birthDate, $this->adoptDate);
+    }
+
+    public function setBusinessDates(\DateTimeImmutable $birthDate, ?\DateTimeImmutable $adoptDate): static
+    {
+        if ($birthDate > new \DateTimeImmutable('today')) {
+            throw new \DomainException('Birth date cannot be in the future.');
+        }
+
+        if (null !== $adoptDate && $adoptDate < $birthDate) {
+            throw new \DomainException('Adoption date cannot be before birth date.');
+        }
+
         $this->birthDate = $birthDate;
+        $this->adoptDate = $adoptDate;
 
         return $this;
     }
@@ -112,6 +126,10 @@ class Dog
 
     public function setAdoptDate(?\DateTimeImmutable $adoptDate): static
     {
+        if (null !== $this->birthDate) {
+            return $this->setBusinessDates($this->birthDate, $adoptDate);
+        }
+
         $this->adoptDate = $adoptDate;
 
         return $this;

@@ -105,7 +105,17 @@ class Treatment
 
     public function setTreatmentDate(\DateTime $treatmentDate): static
     {
+        return $this->setBusinessDates($treatmentDate, $this->dueDate);
+    }
+
+    public function setBusinessDates(\DateTime $treatmentDate, ?\DateTime $dueDate): static
+    {
+        if (null !== $dueDate && $dueDate < $treatmentDate) {
+            throw new \DomainException('Due date cannot be before treatment date.');
+        }
+
         $this->treatmentDate = $treatmentDate;
+        $this->dueDate = $dueDate;
 
         return $this;
     }
@@ -117,6 +127,10 @@ class Treatment
 
     public function setDueDate(?\DateTime $dueDate): static
     {
+        if (null !== $this->treatmentDate) {
+            return $this->setBusinessDates($this->treatmentDate, $dueDate);
+        }
+
         $this->dueDate = $dueDate;
 
         return $this;
