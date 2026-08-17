@@ -141,7 +141,7 @@ final readonly class DogMediaService
             }
 
             if ($thumbnail && MediaTypeEnum::IMAGE !== $media->getType()) {
-                throw new MediaValidationException('Only an image can be used as a thumbnail.');
+                throw new MediaValidationException('Only an image can be used as a thumbnail.', field: 'mediaId');
             }
 
             if ($thumbnail) {

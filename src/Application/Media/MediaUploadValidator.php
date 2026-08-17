@@ -30,18 +30,18 @@ final readonly class MediaUploadValidator
                 ? 413
                 : 422;
 
-            throw new MediaValidationException('The media upload did not complete successfully.', $statusCode);
+            throw new MediaValidationException('The media upload did not complete successfully.', $statusCode, 'file');
         }
 
         $path = $file->getPathname();
         $size = filesize($path);
         if (false === $size || 0 === $size) {
-            throw new MediaValidationException('The uploaded file is empty.');
+            throw new MediaValidationException('The uploaded file is empty.', field: 'file');
         }
 
         $mimeType = (new \finfo(\FILEINFO_MIME_TYPE))->file($path);
         if (!is_string($mimeType) || !isset(self::MIME_CONFIGURATION[$mimeType])) {
-            throw new MediaValidationException('Only JPEG, PNG, WebP, MP4, and WebM files are supported.');
+            throw new MediaValidationException('Only JPEG, PNG, WebP, MP4, and WebM files are supported.', 415, 'file');
         }
 
         [$type, $extension] = self::MIME_CONFIGURATION[$mimeType];
@@ -49,7 +49,7 @@ final readonly class MediaUploadValidator
         if ($size > $limit) {
             $limitMb = (int) ceil($limit / 1024 / 1024);
 
-            throw new MediaValidationException(sprintf('The uploaded %s must not exceed %d MB.', $type->value, $limitMb), 413);
+            throw new MediaValidationException(sprintf('The uploaded %s must not exceed %d MB.', $type->value, $limitMb), 413, 'file');
         }
 
         [$width, $height] = MediaTypeEnum::IMAGE === $type
@@ -74,7 +74,7 @@ final readonly class MediaUploadValidator
     {
         $image = @getimagesize($path);
         if (false === $image) {
-            throw new MediaValidationException('The uploaded image is corrupt or unreadable.');
+            throw new MediaValidationException('The uploaded image is corrupt or unreadable.', field: 'file');
         }
 
         $expectedTypes = [
@@ -83,7 +83,7 @@ final readonly class MediaUploadValidator
             'image/webp' => \IMAGETYPE_WEBP,
         ];
         if (($image[2] ?? null) !== $expectedTypes[$mimeType]) {
-            throw new MediaValidationException('The uploaded image content does not match its media type.');
+            throw new MediaValidationException('The uploaded image content does not match its media type.', field: 'file');
         }
 
         return [(int) $image[0], (int) $image[1]];
@@ -98,13 +98,13 @@ final readonly class MediaUploadValidator
     {
         $header = file_get_contents($path, false, null, 0, 12);
         if (false === $header) {
-            throw new MediaValidationException('The uploaded video is unreadable.');
+            throw new MediaValidationException('The uploaded video is unreadable.', field: 'file');
         }
 
         $isMp4 = 'video/mp4' === $mimeType && 'ftyp' === substr($header, 4, 4);
         $isWebm = 'video/webm' === $mimeType && str_starts_with($header, "\x1A\x45\xDF\xA3");
         if (!$isMp4 && !$isWebm) {
-            throw new MediaValidationException('The uploaded video container is invalid or unsupported.');
+            throw new MediaValidationException('The uploaded video container is invalid or unsupported.', field: 'file');
         }
 
         return [null, null];

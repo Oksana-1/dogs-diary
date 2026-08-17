@@ -54,5 +54,7 @@ export class HttpError extends Error {
         this.name = "HttpError";
         this.status = status;
         this.body = body;
+        this.code = body?.error?.code ?? null;
+        this.violations = body?.error?.violations ?? [];
     }
 }

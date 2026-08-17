@@ -48,7 +48,7 @@ final readonly class TreatmentMediaService
 
         $metadata = $this->uploadValidator->validate($file);
         if (MediaTypeEnum::IMAGE !== $metadata->type) {
-            throw new MediaValidationException('Treatments support image uploads only.');
+            throw new MediaValidationException('Treatments support image uploads only.', 415, 'file');
         }
 
         $storageKey = null;

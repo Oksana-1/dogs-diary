@@ -11,17 +11,20 @@ import CanceledError from "./CancelledError.js";
  */
 function errorMessage(status, statusText, body) {
 
-    if (statusText) {
-        return statusText;
-    }
-
     if (body && typeof body === "object") {
+        if (typeof body.error?.message === "string" && body.error.message) {
+            return body.error.message;
+        }
         if (typeof body.message === "string" && body.message) {
             return body.message;
         }
         if (typeof body.msg === "string" && body.msg) {
             return body.msg;
         }
+    }
+
+    if (statusText) {
+        return statusText;
     }
 
     if (typeof body === "string" && body.trim()) {

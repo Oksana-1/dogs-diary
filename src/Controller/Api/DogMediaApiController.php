@@ -43,14 +43,10 @@ final class DogMediaApiController extends AbstractController
     ): Response {
         $file = $request->files->get('file');
         if (!$file instanceof UploadedFile) {
-            return $this->json(['message' => 'A multipart file field named "file" is required.'], 422);
+            throw new MediaValidationException('A multipart file field named "file" is required.', field: 'file');
         }
 
-        try {
-            $media = $mediaService->upload($dogId, $file);
-        } catch (MediaValidationException $exception) {
-            return $this->json(['message' => $exception->getMessage()], $exception->getStatusCode());
-        }
+        $media = $mediaService->upload($dogId, $file);
 
         if (null === $media) {
             throw $this->createNotFoundException('Dog not found');
@@ -79,11 +75,7 @@ final class DogMediaApiController extends AbstractController
         DogMediaService $mediaService,
         MediaStorageInterface $storage,
     ): Response {
-        try {
-            $media = $mediaService->selectThumbnail($dogId, $payload->mediaId);
-        } catch (MediaValidationException $exception) {
-            return $this->json(['message' => $exception->getMessage()], $exception->getStatusCode());
-        }
+        $media = $mediaService->selectThumbnail($dogId, $payload->mediaId);
 
         if (null === $media) {
             throw $this->createNotFoundException('Dog media not found');

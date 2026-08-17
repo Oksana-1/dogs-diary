@@ -43,14 +43,10 @@ final class TreatmentMediaApiController extends AbstractController
     ): Response {
         $file = $request->files->get('file');
         if (!$file instanceof UploadedFile) {
-            return $this->json(['message' => 'A multipart file field named "file" is required.'], 422);
+            throw new MediaValidationException('A multipart file field named "file" is required.', field: 'file');
         }
 
-        try {
-            $media = $mediaService->upload($dogId, $treatmentId, $file);
-        } catch (MediaValidationException $exception) {
-            return $this->json(['message' => $exception->getMessage()], $exception->getStatusCode());
-        }
+        $media = $mediaService->upload($dogId, $treatmentId, $file);
 
         if (null === $media) {
             throw $this->createNotFoundException('Treatment not found');
