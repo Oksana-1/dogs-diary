@@ -114,6 +114,7 @@ body {
     font-weight: 600;
     transition: opacity 0.2s cubic-bezier(.4, 0, .2, 1);
     border-radius: 9999px;
+    text-decoration: none;
 }
 
 .btn:disabled {
@@ -1122,4 +1123,235 @@ textarea:focus-visible {
     color: var(--error-red);
     margin: 2rem 0;
     text-align: center;
+}
+
+/* Authentication pages --------------------------------------------------- */
+
+.main:has(.auth-page) {
+    min-height: 100%;
+    padding-top: 0;
+}
+
+.auth-page {
+    display: flex;
+    min-height: 100vh;
+    padding: clamp(2rem, 6vw, 5rem) 1.5rem;
+    background:
+        radial-gradient(circle at 15% 15%, var(--bg-info) 0, transparent 28rem),
+        var(--bg-light);
+}
+
+.auth-card {
+    width: min(100%, 520px);
+    margin: auto;
+    padding: clamp(2rem, 5vw, 3.5rem);
+    border-radius: 2rem;
+    background-color: var(--bg-main);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.08);
+}
+
+.auth-heading {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.auth-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 4rem;
+    height: 4rem;
+    margin-bottom: 1.25rem;
+    border-radius: 50%;
+    background-color: var(--bg-info);
+    color: var(--text-info);
+}
+
+.auth-icon-svg {
+    width: 2rem;
+    height: 2rem;
+    fill: currentColor;
+}
+
+.auth-icon-emoji {
+    font-size: 2rem;
+}
+
+.auth-eyebrow {
+    margin-bottom: 0.5rem;
+    color: var(--text-info);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.auth-heading h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    line-height: 1.05;
+}
+
+.auth-heading > p:last-child {
+    max-width: 390px;
+    margin: 1rem auto 0;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.auth-field + .auth-field {
+    margin-top: 1.25rem;
+}
+
+.auth-field label,
+.auth-label-row a {
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.auth-field > label,
+.auth-label-row {
+    display: flex;
+    margin-bottom: 0.55rem;
+}
+
+.auth-label-row {
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.auth-label-row a,
+.auth-switch a {
+    color: var(--text-info);
+    text-decoration: none;
+}
+
+.auth-label-row a:hover,
+.auth-switch a:hover {
+    text-decoration: underline;
+}
+
+.auth-field input {
+    width: 100%;
+    min-height: 3.25rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--border-light);
+    border-radius: 0.85rem;
+    background: var(--bg-main);
+    color: var(--text-dark);
+    font-size: 0.9rem;
+}
+
+.auth-field input::placeholder {
+    color: var(--text-muted);
+}
+
+.auth-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    margin-top: 1.25rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+.auth-check input {
+    width: 1rem;
+    height: 1rem;
+    margin-top: 0.05rem;
+    accent-color: var(--text-dark);
+    flex: 0 0 auto;
+}
+
+.auth-submit {
+    width: 100%;
+    margin-top: 1.75rem;
+    text-decoration: none;
+}
+
+.auth-switch {
+    margin-top: 1.75rem;
+    padding-top: 1.75rem;
+    border-top: 1px solid var(--border-light);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+.auth-switch a {
+    font-weight: 600;
+}
+
+.auth-back {
+    display: inline-flex;
+    margin-bottom: 1.75rem;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.auth-back:hover {
+    color: var(--text-dark);
+}
+
+.auth-heading-spacious {
+    margin-bottom: 2.5rem;
+}
+
+.auth-notice {
+    padding: 1rem 1.25rem;
+    border-radius: 1rem;
+    background-color: var(--bg-info);
+    color: var(--text-info);
+    font-size: 0.82rem;
+    line-height: 1.6;
+}
+
+.auth-help {
+    margin-top: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+@media (max-width: 700px) {
+    .header-container {
+        gap: 1rem;
+    }
+
+    .header-nav {
+        display: none;
+    }
+
+    .header-auth {
+        justify-content: flex-end;
+    }
+
+    .header-auth .btn {
+        padding: 0.75rem 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-page {
+        padding: 1rem;
+    }
+
+    .auth-card {
+        padding: 1.5rem;
+        border-radius: 1.5rem;
+    }
+
+    .header-logo {
+        width: 52px;
+        height: 52px;
+    }
+
+    .header-logo .logo {
+        font-size: 34px;
+    }
 }

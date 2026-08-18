@@ -1,0 +1,19 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Login | Dogs Diary{% endblock %}
+
+{% block header %}{% endblock %}
+
+{% block body %}
+    <div
+        id="login-app"
+        data-props="{{ {
+            forgotPasswordUrl: path('app_forgot_password_request'),
+            signUpUrl: path('app_sign_up')
+        }|json_encode|e('html_attr') }}"
+    >
+        <span class="vue-loading">Loading login…</span>
+    </div>
+{% endblock %}
+
+{% block footer %}{% endblock %}
