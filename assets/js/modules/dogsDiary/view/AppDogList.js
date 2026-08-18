@@ -67,7 +67,7 @@ export default {
         <section class="dogs-section">
             <div class="dogs-container">
                 <div v-if="isLoading">Is loading...</div>
-                <div v-else-if="error" role="alert">{{ error }}</div>
+                <div v-else-if="error" role="alert" class="api-error">{{ error }}</div>
                 <template v-else>
                      <div v-if="dogs.length">
                         <DogItem v-for="dog in dogs" :dog="dog" :key="dog.id"/>

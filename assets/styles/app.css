@@ -14,10 +14,10 @@ html, body {
 body {
     background-color: var(--bg-main);
     color: var(--text-dark);
-    padding-top: 60px;
 }
 .main {
     min-height: calc(100% - var(--header-height));
+    padding-top: var(--header-height);
 }
 .h1 {
     font-family: "Montserrat", sans-serif;
@@ -599,7 +599,7 @@ body {
 }
 
 .dog-media-error {
-    color: #b71c1c;
+    color: var(--error-red);
 }
 
 .dog-media-grid {
@@ -684,7 +684,7 @@ body {
 }
 
 .dog-media-delete {
-    color: #9b1c1c;
+    color: var(--error-red);
 }
 
 .dog-media-empty {
@@ -853,7 +853,7 @@ textarea:focus-visible {
 
 .modal-error {
     margin-top: 1rem;
-    color: #b71c1c;
+    color: var(--error-red);
     font-size: 14px;
 }
 
@@ -1117,4 +1117,9 @@ textarea:focus-visible {
 .btn-row {
     display: flex;
     justify-content: center;
+}
+.api-error {
+    color: var(--error-red);
+    margin: 2rem 0;
+    text-align: center;
 }

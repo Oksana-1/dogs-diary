@@ -89,7 +89,7 @@ export default {
     template: /*language=HTML*/ `
         <div>
             <p v-if="dogDetails.isLoading" class="container dog-detail-message">Loading dog details…</p>
-            <p v-else-if="dogDetails.loadError" class="container dog-detail-message" role="alert">
+            <p v-else-if="dogDetails.loadError" class="container api-error" role="alert">
                 Unable to load dog details: {{ dogDetails.loadError }}
             </p>
             <template v-else-if="dogDetails.dog">
