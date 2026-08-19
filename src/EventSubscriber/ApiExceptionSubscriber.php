@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
 
 final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
@@ -30,6 +31,11 @@ final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
         }
 
         $exception = $event->getThrowable();
+        if ($exception instanceof AccessDeniedException) {
+            // Let the security exception listener invoke the configured entry point.
+            return;
+        }
+
         $status = $this->statusCode($exception);
         $error = [
             'code' => $this->errorCode($status),

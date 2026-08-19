@@ -22,3 +22,8 @@
 ###< symfony/asset-mapper ###
 
 .idea
+
+###> phpunit/phpunit ###
+/phpunit.xml
+/.phpunit.cache/
+###< phpunit/phpunit ###

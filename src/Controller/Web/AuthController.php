@@ -8,10 +8,16 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class AuthController extends AbstractController
 {
-    #[Route('/login', name: 'app_login', methods: ['GET'])]
+    #[Route('/login', name: 'app_login', methods: ['GET', 'POST'])]
     public function login(): Response
     {
         return $this->render('auth/login.html.twig');
+    }
+
+    #[Route('/logout', name: 'app_logout', methods: ['POST'])]
+    public function logout(): never
+    {
+        throw new \LogicException('The firewall intercepts logout requests before this controller is called.');
     }
 
     #[Route('/sign-up', name: 'app_sign_up', methods: ['GET'])]
