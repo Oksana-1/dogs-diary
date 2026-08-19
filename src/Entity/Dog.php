@@ -46,6 +46,15 @@ class Dog
     private ?string $status = null;
 
     /**
+     * @var Collection<int, User>
+     */
+    #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'dogs')]
+    #[ORM\JoinTable(name: 'dog_owner')]
+    #[ORM\JoinColumn(name: 'dog_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\InverseJoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+    private Collection $owners;
+
+    /**
      * @var Collection<int, Treatment>
      */
     #[ORM\OneToMany(targetEntity: Treatment::class, mappedBy: 'dog', cascade: ['remove'])]
@@ -60,6 +69,7 @@ class Dog
 
     public function __construct()
     {
+        $this->owners = new ArrayCollection();
         $this->treatments = new ArrayCollection();
         $this->media = new ArrayCollection();
     }
@@ -167,6 +177,33 @@ class Dog
     public function setStatus(?string $status): static
     {
         $this->status = $status;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, User>
+     */
+    public function getOwners(): Collection
+    {
+        return $this->owners;
+    }
+
+    public function addOwner(User $owner): static
+    {
+        if (!$this->owners->contains($owner)) {
+            $this->owners->add($owner);
+            $owner->addDog($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOwner(User $owner): static
+    {
+        if ($this->owners->removeElement($owner)) {
+            $owner->removeDog($this);
+        }
 
         return $this;
     }
