@@ -9,8 +9,16 @@
             <span class="logo">🐾</span>
         </a>
         <div class="header-auth">
-            <a href="{{ path('app_login') }}" class="btn btn-white">Login</a>
-            <a href="{{ path('app_sign_up') }}" class="btn btn-black">Sign Up</a>
+            {% if app.user %}
+                <span class="header-user">{{ app.user.name ?: app.user.userIdentifier }}</span>
+                <form class="header-logout" action="{{ path('app_logout') }}" method="post">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
+                    <button class="btn btn-black" type="submit">Logout</button>
+                </form>
+            {% else %}
+                <a href="{{ path('app_login') }}" class="btn btn-white">Login</a>
+                <a href="{{ path('app_sign_up') }}" class="btn btn-black">Sign Up</a>
+            {% endif %}
         </div>
     </div>
 </header>

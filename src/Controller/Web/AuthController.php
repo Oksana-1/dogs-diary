@@ -13,14 +13,24 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class AuthController extends AbstractController
 {
     #[Route('/login', name: 'app_login', methods: ['GET', 'POST'])]
-    public function login(): Response
+    public function login(AuthenticationUtils $authenticationUtils): Response
     {
-        return $this->render('auth/login.html.twig');
+        if (null !== $this->getUser()) {
+            return $this->redirectToRoute('app_main');
+        }
+
+        return $this->render('auth/login.html.twig', [
+            'last_email' => User::normalizeEmail($authenticationUtils->getLastUsername()),
+            'login_error' => null !== $authenticationUtils->getLastAuthenticationError()
+                ? 'Invalid email or password.'
+                : null,
+        ]);
     }
 
     #[Route('/logout', name: 'app_logout', methods: ['POST'])]

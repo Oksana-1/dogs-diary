@@ -37,6 +37,8 @@ security:
                 path: app_logout
                 target: /login
                 enable_csrf: true
+                csrf_token_id: logout
+                csrf_parameter: _csrf_token
 
     access_control:
         - { path: ^/login$, roles: PUBLIC_ACCESS }

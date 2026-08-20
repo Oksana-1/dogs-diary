@@ -8,11 +8,58 @@
     <div
         id="login-app"
         data-props="{{ {
+            formAction: path('app_login'),
             forgotPasswordUrl: path('app_forgot_password_request'),
-            signUpUrl: path('app_sign_up')
+            signUpUrl: path('app_sign_up'),
+            csrfToken: csrf_token('authenticate'),
+            lastEmail: last_email,
+            error: login_error
         }|json_encode|e('html_attr') }}"
     >
-        <span class="vue-loading">Loading login…</span>
+        <section class="auth-page" aria-labelledby="login-title">
+            <div class="auth-card">
+                <div class="auth-heading">
+                    <span class="auth-icon auth-icon-emoji" aria-hidden="true">🐾</span>
+                    <p class="auth-eyebrow">Welcome back</p>
+                    <h1 id="login-title">Login to Dogs Diary</h1>
+                    <p>Keep every walk, treatment, and happy memory close at hand.</p>
+                </div>
+
+                <form class="auth-form" action="{{ path('app_login') }}" method="post">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                    {% if login_error %}
+                        <div id="login-error" class="auth-errors" role="alert"><p>{{ login_error }}</p></div>
+                    {% endif %}
+
+                    <div class="auth-field">
+                        <label for="login-email">Email address</label>
+                        <input id="login-email" name="email" type="email" autocomplete="email"
+                               placeholder="you@example.com" value="{{ last_email }}" required autofocus
+                               {% if login_error %}aria-invalid="true" aria-describedby="login-error"{% endif %}>
+                    </div>
+
+                    <div class="auth-field">
+                        <div class="auth-label-row">
+                            <label for="login-password">Password</label>
+                            <a href="{{ path('app_forgot_password_request') }}">Forgot password?</a>
+                        </div>
+                        <input id="login-password" name="password" type="password" autocomplete="current-password"
+                               placeholder="Enter your password" required
+                               {% if login_error %}aria-invalid="true" aria-describedby="login-error"{% endif %}>
+                    </div>
+
+                    <label class="auth-check">
+                        <input name="remember_me" type="checkbox" value="1">
+                        <span>Remember me</span>
+                    </label>
+
+                    <button class="btn btn-black auth-submit" type="submit">Login</button>
+                </form>
+
+                <p class="auth-switch">New to Dogs Diary? <a href="{{ path('app_sign_up') }}">Create an account</a></p>
+            </div>
+        </section>
     </div>
 {% endblock %}
 
