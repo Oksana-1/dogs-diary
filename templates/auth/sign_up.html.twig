@@ -8,10 +8,76 @@
     <div
         id="sign-up-app"
         data-props="{{ {
-            loginUrl: path('app_login')
+            formAction: path('app_sign_up'),
+            loginUrl: path('app_login'),
+            csrfToken: csrf_token('registration'),
+            values: registration_values,
+            errors: registration_errors
         }|json_encode|e('html_attr') }}"
     >
-        <span class="vue-loading">Loading sign up…</span>
+        <section class="auth-page" aria-labelledby="sign-up-title">
+            <div class="auth-card">
+                <div class="auth-heading">
+                    <span class="auth-icon auth-icon-emoji" aria-hidden="true">🐾</span>
+                    <p class="auth-eyebrow">Join the pack</p>
+                    <h1 id="sign-up-title">Create your account</h1>
+                    <p>Start one simple diary for your dog's health and happiest days.</p>
+                </div>
+
+                <form class="auth-form" action="{{ path('app_sign_up') }}" method="post">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('registration') }}">
+
+                    {% if registration_errors.global is defined %}
+                        <div class="auth-errors" role="alert">
+                            {% for error in registration_errors.global %}<p>{{ error }}</p>{% endfor %}
+                        </div>
+                    {% endif %}
+
+                    {% for input in [
+                        ['name', 'Name', 'text', 'name', 'Your name'],
+                        ['email', 'Email address', 'email', 'email', 'you@example.com']
+                    ] %}
+                        <div class="auth-field">
+                            <label for="sign-up-{{ input[0] }}">{{ input[1] }}</label>
+                            <input id="sign-up-{{ input[0] }}" name="{{ input[0] }}" type="{{ input[2] }}"
+                                   autocomplete="{{ input[3] }}" placeholder="{{ input[4] }}"
+                                   value="{{ attribute(registration_values, input[0]) }}" required
+                                   {% if attribute(registration_errors, input[0]) is defined %}aria-invalid="true" aria-describedby="sign-up-{{ input[0]|replace({'_': '-'}) }}-error"{% endif %}>
+                            {% if attribute(registration_errors, input[0]) is defined %}
+                                <p id="sign-up-{{ input[0]|replace({'_': '-'}) }}-error" class="auth-field-error">{{ attribute(registration_errors, input[0])|first }}</p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+
+                    {% for input in [
+                        ['password', 'Password', 'Create a password'],
+                        ['password_confirmation', 'Confirm password', 'Repeat your password']
+                    ] %}
+                        <div class="auth-field">
+                            <label for="sign-up-{{ input[0]|replace({'_': '-'}) }}">{{ input[1] }}</label>
+                            <input id="sign-up-{{ input[0]|replace({'_': '-'}) }}" name="{{ input[0] }}" type="password"
+                                   autocomplete="new-password" placeholder="{{ input[2] }}" required minlength="12"
+                                   {% if attribute(registration_errors, input[0]) is defined %}aria-invalid="true" aria-describedby="sign-up-{{ input[0]|replace({'_': '-'}) }}-error"{% endif %}>
+                            {% if attribute(registration_errors, input[0]) is defined %}
+                                <p id="sign-up-{{ input[0]|replace({'_': '-'}) }}-error" class="auth-field-error">{{ attribute(registration_errors, input[0])|first }}</p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+
+                    <label class="auth-check">
+                        <input name="terms" type="checkbox" value="1" required {% if registration_values.terms %}checked{% endif %}>
+                        <span>I agree to the Terms of Service and Privacy Policy.</span>
+                    </label>
+                    {% if registration_errors.terms is defined %}
+                        <p class="auth-field-error">{{ registration_errors.terms|first }}</p>
+                    {% endif %}
+
+                    <button class="btn btn-black auth-submit" type="submit">Create account</button>
+                </form>
+
+                <p class="auth-switch">Already have an account? <a href="{{ path('app_login') }}">Login</a></p>
+            </div>
+        </section>
     </div>
 {% endblock %}
 

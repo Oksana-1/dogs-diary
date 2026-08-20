@@ -1248,6 +1248,27 @@ textarea:focus-visible {
     color: var(--text-muted);
 }
 
+.auth-field input[aria-invalid="true"] {
+    border-color: var(--error-red);
+}
+
+.auth-errors {
+    margin-bottom: 1.25rem;
+    padding: 0.85rem 1rem;
+    border-radius: 0.85rem;
+    background: color-mix(in srgb, var(--error-red) 10%, transparent);
+    color: var(--error-red);
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
+.auth-field-error {
+    margin-top: 0.45rem;
+    color: var(--error-red);
+    font-size: 0.76rem;
+    line-height: 1.4;
+}
+
 .auth-check {
     display: flex;
     align-items: flex-start;
