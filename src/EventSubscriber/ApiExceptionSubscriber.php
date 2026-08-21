@@ -32,7 +32,7 @@ final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
 
         $exception = $event->getThrowable();
         if ($exception instanceof AccessDeniedException) {
-            // Let the security exception listener invoke the configured entry point.
+            // Let Security invoke the request-aware entry point or access-denied handler.
             return;
         }
 

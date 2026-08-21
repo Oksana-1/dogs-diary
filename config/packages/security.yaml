@@ -14,6 +14,8 @@ security:
         main:
             lazy: true
             provider: app_user_provider
+            entry_point: App\Security\RequestAwareSecurityHandler
+            access_denied_handler: App\Security\RequestAwareSecurityHandler
             form_login:
                 login_path: app_login
                 check_path: app_login
@@ -44,6 +46,8 @@ security:
         - { path: ^/login$, roles: PUBLIC_ACCESS }
         - { path: ^/sign-up$, roles: PUBLIC_ACCESS }
         - { path: ^/reset-password(?:/|$), roles: PUBLIC_ACCESS }
+        - { path: ^/api(?:/|$), roles: ROLE_USER }
+        - { path: ^/dog(?:/|$), roles: ROLE_USER }
         - { path: ^/, roles: ROLE_USER }
 
 when@test:
