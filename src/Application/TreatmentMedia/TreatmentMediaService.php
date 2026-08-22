@@ -5,8 +5,8 @@ namespace App\Application\TreatmentMedia;
 use App\Application\Media\Exception\MediaValidationException;
 use App\Application\Media\MediaStorageInterface;
 use App\Application\Media\MediaUploadValidator;
-use App\Entity\Treatment;
 use App\Entity\TreatmentMedia;
+use App\Entity\User;
 use App\Enum\MediaOwnerTypeEnum;
 use App\Enum\MediaTypeEnum;
 use App\Repository\TreatmentMediaRepository;
@@ -31,18 +31,18 @@ final readonly class TreatmentMediaService
     /**
      * @return TreatmentMedia[]|null
      */
-    public function listForTreatment(int $dogId, int $treatmentId): ?array
+    public function listForTreatment(int $dogId, int $treatmentId, User $owner): ?array
     {
-        if (!$this->treatmentRepository->findOneForDog($dogId, $treatmentId)) {
+        if (!$this->treatmentRepository->findOneForDogAndOwner($dogId, $treatmentId, $owner)) {
             return null;
         }
 
-        return $this->mediaRepository->findForTreatment($treatmentId);
+        return $this->mediaRepository->findForTreatmentAndOwner($dogId, $treatmentId, $owner);
     }
 
-    public function upload(int $dogId, int $treatmentId, UploadedFile $file): ?TreatmentMedia
+    public function upload(int $dogId, int $treatmentId, UploadedFile $file, User $owner): ?TreatmentMedia
     {
-        if (!$this->treatmentRepository->findOneForDog($dogId, $treatmentId)) {
+        if (!$this->treatmentRepository->findOneForDogAndOwner($dogId, $treatmentId, $owner)) {
             return null;
         }
 
@@ -59,11 +59,17 @@ final readonly class TreatmentMediaService
                 $treatmentId,
                 $file,
                 $metadata,
+                $owner,
                 &$storageKey,
                 &$replacedStorageKey,
             ): ?TreatmentMedia {
-                $treatment = $this->em->find(Treatment::class, $treatmentId, LockMode::PESSIMISTIC_WRITE);
-                if (!$treatment || $treatment->getDog()?->getId() !== $dogId) {
+                $treatment = $this->treatmentRepository->findOneForDogAndOwner(
+                    $dogId,
+                    $treatmentId,
+                    $owner,
+                    LockMode::PESSIMISTIC_WRITE,
+                );
+                if (!$treatment) {
                     return null;
                 }
 
@@ -74,7 +80,8 @@ final readonly class TreatmentMediaService
                     $metadata->extension,
                 );
 
-                $existingMedia = $this->mediaRepository->findForTreatment($treatmentId)[0] ?? null;
+                $existingMedia = $this->mediaRepository
+                    ->findForTreatmentAndOwner($dogId, $treatmentId, $owner)[0] ?? null;
                 if ($existingMedia) {
                     $replacedStorageKey = $existingMedia->getStorageKey();
                     $existingMedia->replaceFile(
@@ -125,15 +132,25 @@ final readonly class TreatmentMediaService
         return $media;
     }
 
-    public function delete(int $dogId, int $treatmentId, int $mediaId): bool
+    public function delete(int $dogId, int $treatmentId, int $mediaId, User $owner): bool
     {
-        $storageKey = $this->em->wrapInTransaction(function () use ($dogId, $treatmentId, $mediaId): ?string {
-            $treatment = $this->em->find(Treatment::class, $treatmentId, LockMode::PESSIMISTIC_WRITE);
-            if (!$treatment || $treatment->getDog()?->getId() !== $dogId) {
+        $storageKey = $this->em->wrapInTransaction(function () use ($dogId, $treatmentId, $mediaId, $owner): ?string {
+            $treatment = $this->treatmentRepository->findOneForDogAndOwner(
+                $dogId,
+                $treatmentId,
+                $owner,
+                LockMode::PESSIMISTIC_WRITE,
+            );
+            if (!$treatment) {
                 return null;
             }
 
-            $media = $this->mediaRepository->findOneForTreatment($treatmentId, $mediaId);
+            $media = $this->mediaRepository->findOneForTreatmentAndOwner(
+                $dogId,
+                $treatmentId,
+                $mediaId,
+                $owner,
+            );
             if (!$media) {
                 return null;
             }

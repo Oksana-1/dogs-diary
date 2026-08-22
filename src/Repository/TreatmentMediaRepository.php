@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\TreatmentMedia;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -19,23 +20,41 @@ final class TreatmentMediaRepository extends ServiceEntityRepository
     /**
      * @return TreatmentMedia[]
      */
-    public function findForTreatment(int $treatmentId): array
+    public function findForTreatmentAndOwner(int $dogId, int $treatmentId, User $owner): array
     {
         return $this->createQueryBuilder('media')
-            ->andWhere('IDENTITY(media.treatment) = :treatmentId')
+            ->innerJoin('media.treatment', 'treatment')
+            ->innerJoin('treatment.dog', 'dog')
+            ->innerJoin('dog.owners', 'owner')
+            ->andWhere('treatment.id = :treatmentId')
+            ->andWhere('dog.id = :dogId')
+            ->andWhere('owner = :owner')
+            ->setParameter('dogId', $dogId)
             ->setParameter('treatmentId', $treatmentId)
+            ->setParameter('owner', $owner)
             ->orderBy('media.position', 'ASC')
             ->getQuery()
             ->getResult();
     }
 
-    public function findOneForTreatment(int $treatmentId, int $mediaId): ?TreatmentMedia
-    {
+    public function findOneForTreatmentAndOwner(
+        int $dogId,
+        int $treatmentId,
+        int $mediaId,
+        User $owner,
+    ): ?TreatmentMedia {
         return $this->createQueryBuilder('media')
+            ->innerJoin('media.treatment', 'treatment')
+            ->innerJoin('treatment.dog', 'dog')
+            ->innerJoin('dog.owners', 'owner')
             ->andWhere('media.id = :mediaId')
-            ->andWhere('IDENTITY(media.treatment) = :treatmentId')
+            ->andWhere('treatment.id = :treatmentId')
+            ->andWhere('dog.id = :dogId')
+            ->andWhere('owner = :owner')
             ->setParameter('mediaId', $mediaId)
+            ->setParameter('dogId', $dogId)
             ->setParameter('treatmentId', $treatmentId)
+            ->setParameter('owner', $owner)
             ->getQuery()
             ->getOneOrNullResult();
     }

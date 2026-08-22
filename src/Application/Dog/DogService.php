@@ -6,6 +6,7 @@ use App\Application\Dog\Data\CreateDogData;
 use App\Application\Dog\Data\UpdateDogData;
 use App\Application\Media\MediaStorageInterface;
 use App\Entity\Dog;
+use App\Entity\User;
 use App\Enum\GenderTypeEnum;
 use App\Repository\DogRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -24,17 +25,17 @@ final readonly class DogService
     /**
      * @return array<int, Dog>
      */
-    public function list(): array
+    public function list(User $owner): array
     {
-        return $this->dogRepository->findAllWithMedia();
+        return $this->dogRepository->findAllWithMediaForOwner($owner);
     }
 
-    public function get(int $id): ?Dog
+    public function get(int $id, User $owner): ?Dog
     {
-        return $this->dogRepository->findWithMedia($id);
+        return $this->dogRepository->findWithMediaForOwner($id, $owner);
     }
 
-    public function create(CreateDogData $data): Dog
+    public function create(CreateDogData $data, User $owner): Dog
     {
         $dog = $this->hydrateDog(
             new Dog(),
@@ -46,6 +47,7 @@ final readonly class DogService
             $data->weight,
             $data->height,
         );
+        $dog->addOwner($owner);
 
         $this->em->persist($dog);
         $this->em->flush();
@@ -53,9 +55,9 @@ final readonly class DogService
         return $dog;
     }
 
-    public function update(UpdateDogData $data): ?Dog
+    public function update(UpdateDogData $data, User $owner): ?Dog
     {
-        $dog = $this->dogRepository->find($data->id);
+        $dog = $this->dogRepository->findForOwner($data->id, $owner);
         if (!$dog) {
             return null;
         }
@@ -76,9 +78,9 @@ final readonly class DogService
         return $dog;
     }
 
-    public function delete(int $id): bool
+    public function delete(int $id, User $owner): bool
     {
-        $dog = $this->dogRepository->find($id);
+        $dog = $this->dogRepository->findForOwner($id, $owner);
         if (!$dog) {
             return false;
         }

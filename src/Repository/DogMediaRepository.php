@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\DogMedia;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -19,24 +20,32 @@ final class DogMediaRepository extends ServiceEntityRepository
     /**
      * @return DogMedia[]
      */
-    public function findForDog(int $dogId): array
+    public function findForDogAndOwner(int $dogId, User $owner): array
     {
         return $this->createQueryBuilder('media')
-            ->andWhere('IDENTITY(media.dog) = :dogId')
+            ->innerJoin('media.dog', 'dog')
+            ->innerJoin('dog.owners', 'owner')
+            ->andWhere('dog.id = :dogId')
+            ->andWhere('owner = :owner')
             ->setParameter('dogId', $dogId)
+            ->setParameter('owner', $owner)
             ->orderBy('media.createdAt', 'DESC')
             ->addOrderBy('media.id', 'DESC')
             ->getQuery()
             ->getResult();
     }
 
-    public function findOneForDog(int $dogId, int $mediaId): ?DogMedia
+    public function findOneForDogAndOwner(int $dogId, int $mediaId, User $owner): ?DogMedia
     {
         return $this->createQueryBuilder('media')
+            ->innerJoin('media.dog', 'dog')
+            ->innerJoin('dog.owners', 'owner')
             ->andWhere('media.id = :mediaId')
-            ->andWhere('IDENTITY(media.dog) = :dogId')
+            ->andWhere('dog.id = :dogId')
+            ->andWhere('owner = :owner')
             ->setParameter('mediaId', $mediaId)
             ->setParameter('dogId', $dogId)
+            ->setParameter('owner', $owner)
             ->getQuery()
             ->getOneOrNullResult();
     }

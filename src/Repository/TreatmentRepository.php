@@ -3,7 +3,9 @@
 namespace App\Repository;
 
 use App\Entity\Treatment;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\LockMode;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -16,39 +18,46 @@ class TreatmentRepository extends ServiceEntityRepository
         parent::__construct($registry, Treatment::class);
     }
 
-    public function findOneForDog(int $dogId, int $treatmentId): ?Treatment
+    /**
+     * @return Treatment[]
+     */
+    public function findForDogAndOwner(int $dogId, User $owner): array
     {
         return $this->createQueryBuilder('treatment')
-            ->andWhere('treatment.id = :treatmentId')
-            ->andWhere('IDENTITY(treatment.dog) = :dogId')
-            ->setParameter('treatmentId', $treatmentId)
+            ->innerJoin('treatment.dog', 'dog')
+            ->innerJoin('dog.owners', 'owner')
+            ->leftJoin('treatment.media', 'media')
+            ->addSelect('media')
+            ->andWhere('dog.id = :dogId')
+            ->andWhere('owner = :owner')
             ->setParameter('dogId', $dogId)
+            ->setParameter('owner', $owner)
+            ->orderBy('treatment.treatmentDate', 'DESC')
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getResult();
     }
 
-    //    /**
-    //     * @return Treatment[] Returns an array of Treatment objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('t')
-    //            ->andWhere('t.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('t.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function findOneForDogAndOwner(
+        int $dogId,
+        int $treatmentId,
+        User $owner,
+        ?LockMode $lockMode = null,
+    ): ?Treatment {
+        $query = $this->createQueryBuilder('treatment')
+            ->innerJoin('treatment.dog', 'dog')
+            ->innerJoin('dog.owners', 'owner')
+            ->andWhere('treatment.id = :treatmentId')
+            ->andWhere('dog.id = :dogId')
+            ->andWhere('owner = :owner')
+            ->setParameter('treatmentId', $treatmentId)
+            ->setParameter('dogId', $dogId)
+            ->setParameter('owner', $owner)
+            ->getQuery();
 
-    //    public function findOneBySomeField($value): ?Treatment
-    //    {
-    //        return $this->createQueryBuilder('t')
-    //            ->andWhere('t.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        if (null !== $lockMode) {
+            $query->setLockMode($lockMode);
+        }
+
+        return $query->getOneOrNullResult();
+    }
 }

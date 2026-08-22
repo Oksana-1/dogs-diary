@@ -3,7 +3,9 @@
 namespace App\Repository;
 
 use App\Entity\Dog;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\LockMode;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -19,49 +21,47 @@ class DogRepository extends ServiceEntityRepository
     /**
      * @return Dog[]
      */
-    public function findAllWithMedia(): array
+    public function findAllWithMediaForOwner(User $owner): array
     {
         return $this->createQueryBuilder('dog')
+            ->innerJoin('dog.owners', 'owner')
             ->leftJoin('dog.media', 'media')
             ->addSelect('media')
+            ->andWhere('owner = :owner')
+            ->setParameter('owner', $owner)
             ->orderBy('dog.id', 'ASC')
             ->getQuery()
             ->getResult();
     }
 
-    public function findWithMedia(int $id): ?Dog
+    public function findWithMediaForOwner(int $id, User $owner): ?Dog
     {
         return $this->createQueryBuilder('dog')
+            ->innerJoin('dog.owners', 'owner')
             ->leftJoin('dog.media', 'media')
             ->addSelect('media')
             ->andWhere('dog.id = :id')
+            ->andWhere('owner = :owner')
             ->setParameter('id', $id)
+            ->setParameter('owner', $owner)
             ->getQuery()
             ->getOneOrNullResult();
     }
 
-    //    /**
-    //     * @return Dog[] Returns an array of Dog objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('d')
-    //            ->andWhere('d.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('d.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function findForOwner(int $id, User $owner, ?LockMode $lockMode = null): ?Dog
+    {
+        $query = $this->createQueryBuilder('dog')
+            ->innerJoin('dog.owners', 'owner')
+            ->andWhere('dog.id = :id')
+            ->andWhere('owner = :owner')
+            ->setParameter('id', $id)
+            ->setParameter('owner', $owner)
+            ->getQuery();
 
-    //    public function findOneBySomeField($value): ?Dog
-    //    {
-    //        return $this->createQueryBuilder('d')
-    //            ->andWhere('d.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        if (null !== $lockMode) {
+            $query->setLockMode($lockMode);
+        }
+
+        return $query->getOneOrNullResult();
+    }
 }

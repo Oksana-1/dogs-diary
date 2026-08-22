@@ -6,6 +6,7 @@ use App\Application\Media\MediaStorageInterface;
 use App\Application\Treatment\Data\CreateTreatmentData;
 use App\Application\Treatment\Data\UpdateTreatmentData;
 use App\Entity\Treatment;
+use App\Entity\User;
 use App\Repository\DogRepository;
 use App\Repository\TreatmentRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -25,24 +26,24 @@ final readonly class TreatmentService
     /**
      * @return array<int, Treatment>|null
      */
-    public function listForDog(int $dogId): ?array
+    public function listForDog(int $dogId, User $owner): ?array
     {
-        $dog = $this->dogRepository->find($dogId);
+        $dog = $this->dogRepository->findForOwner($dogId, $owner);
         if (!$dog) {
             return null;
         }
 
-        return $this->treatmentRepository->findBy(['dog' => $dog], ['treatmentDate' => 'DESC']);
+        return $this->treatmentRepository->findForDogAndOwner($dogId, $owner);
     }
 
-    public function get(int $id): ?Treatment
+    public function get(int $dogId, int $id, User $owner): ?Treatment
     {
-        return $this->treatmentRepository->find($id);
+        return $this->treatmentRepository->findOneForDogAndOwner($dogId, $id, $owner);
     }
 
-    public function create(CreateTreatmentData $data): ?Treatment
+    public function create(CreateTreatmentData $data, User $owner): ?Treatment
     {
-        $dog = $this->dogRepository->find($data->dogId);
+        $dog = $this->dogRepository->findForOwner($data->dogId, $owner);
         if (!$dog) {
             return null;
         }
@@ -63,9 +64,9 @@ final readonly class TreatmentService
         return $treatment;
     }
 
-    public function update(UpdateTreatmentData $data): ?Treatment
+    public function update(int $dogId, UpdateTreatmentData $data, User $owner): ?Treatment
     {
-        $treatment = $this->treatmentRepository->find($data->id);
+        $treatment = $this->treatmentRepository->findOneForDogAndOwner($dogId, $data->id, $owner);
         if (!$treatment) {
             return null;
         }
@@ -84,9 +85,9 @@ final readonly class TreatmentService
         return $treatment;
     }
 
-    public function delete(int $id): bool
+    public function delete(int $dogId, int $id, User $owner): bool
     {
-        $treatment = $this->treatmentRepository->find($id);
+        $treatment = $this->treatmentRepository->findOneForDogAndOwner($dogId, $id, $owner);
         if (!$treatment) {
             return false;
         }

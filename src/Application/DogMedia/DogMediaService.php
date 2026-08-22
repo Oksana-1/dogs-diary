@@ -5,8 +5,8 @@ namespace App\Application\DogMedia;
 use App\Application\Media\Exception\MediaValidationException;
 use App\Application\Media\MediaStorageInterface;
 use App\Application\Media\MediaUploadValidator;
-use App\Entity\Dog;
 use App\Entity\DogMedia;
+use App\Entity\User;
 use App\Enum\MediaOwnerTypeEnum;
 use App\Enum\MediaTypeEnum;
 use App\Repository\DogMediaRepository;
@@ -31,18 +31,18 @@ final readonly class DogMediaService
     /**
      * @return DogMedia[]|null
      */
-    public function listForDog(int $dogId): ?array
+    public function listForDog(int $dogId, User $owner): ?array
     {
-        if (!$this->dogRepository->find($dogId)) {
+        if (!$this->dogRepository->findForOwner($dogId, $owner)) {
             return null;
         }
 
-        return $this->mediaRepository->findForDog($dogId);
+        return $this->mediaRepository->findForDogAndOwner($dogId, $owner);
     }
 
-    public function upload(int $dogId, UploadedFile $file): ?DogMedia
+    public function upload(int $dogId, UploadedFile $file, User $owner): ?DogMedia
     {
-        $dog = $this->dogRepository->find($dogId);
+        $dog = $this->dogRepository->findForOwner($dogId, $owner);
         if (!$dog) {
             return null;
         }
@@ -79,15 +79,15 @@ final readonly class DogMediaService
         return $media;
     }
 
-    public function delete(int $dogId, int $mediaId): bool
+    public function delete(int $dogId, int $mediaId, User $owner): bool
     {
-        $storageKey = $this->em->wrapInTransaction(function () use ($dogId, $mediaId): ?string {
-            $dog = $this->em->find(Dog::class, $dogId, LockMode::PESSIMISTIC_WRITE);
+        $storageKey = $this->em->wrapInTransaction(function () use ($dogId, $mediaId, $owner): ?string {
+            $dog = $this->dogRepository->findForOwner($dogId, $owner, LockMode::PESSIMISTIC_WRITE);
             if (!$dog) {
                 return null;
             }
 
-            $media = $this->mediaRepository->findOneForDog($dogId, $mediaId);
+            $media = $this->mediaRepository->findOneForDogAndOwner($dogId, $mediaId, $owner);
             if (!$media) {
                 return null;
             }
@@ -107,35 +107,35 @@ final readonly class DogMediaService
         return true;
     }
 
-    public function selectThumbnail(int $dogId, int $mediaId): ?DogMedia
+    public function selectThumbnail(int $dogId, int $mediaId, User $owner): ?DogMedia
     {
-        return $this->selectRole($dogId, $mediaId, true);
+        return $this->selectRole($dogId, $mediaId, $owner, true);
     }
 
-    public function selectProfile(int $dogId, int $mediaId): ?DogMedia
+    public function selectProfile(int $dogId, int $mediaId, User $owner): ?DogMedia
     {
-        return $this->selectRole($dogId, $mediaId, false);
+        return $this->selectRole($dogId, $mediaId, $owner, false);
     }
 
-    public function clearThumbnail(int $dogId): bool
+    public function clearThumbnail(int $dogId, User $owner): bool
     {
-        return $this->clearRole($dogId, true);
+        return $this->clearRole($dogId, $owner, true);
     }
 
-    public function clearProfile(int $dogId): bool
+    public function clearProfile(int $dogId, User $owner): bool
     {
-        return $this->clearRole($dogId, false);
+        return $this->clearRole($dogId, $owner, false);
     }
 
-    private function selectRole(int $dogId, int $mediaId, bool $thumbnail): ?DogMedia
+    private function selectRole(int $dogId, int $mediaId, User $owner, bool $thumbnail): ?DogMedia
     {
-        return $this->em->wrapInTransaction(function () use ($dogId, $mediaId, $thumbnail): ?DogMedia {
-            $dog = $this->em->find(Dog::class, $dogId, LockMode::PESSIMISTIC_WRITE);
+        return $this->em->wrapInTransaction(function () use ($dogId, $mediaId, $owner, $thumbnail): ?DogMedia {
+            $dog = $this->dogRepository->findForOwner($dogId, $owner, LockMode::PESSIMISTIC_WRITE);
             if (!$dog) {
                 return null;
             }
 
-            $media = $this->mediaRepository->findOneForDog($dogId, $mediaId);
+            $media = $this->mediaRepository->findOneForDogAndOwner($dogId, $mediaId, $owner);
             if (!$media) {
                 return null;
             }
@@ -154,10 +154,10 @@ final readonly class DogMediaService
         });
     }
 
-    private function clearRole(int $dogId, bool $thumbnail): bool
+    private function clearRole(int $dogId, User $owner, bool $thumbnail): bool
     {
-        return $this->em->wrapInTransaction(function () use ($dogId, $thumbnail): bool {
-            $dog = $this->em->find(Dog::class, $dogId, LockMode::PESSIMISTIC_WRITE);
+        return $this->em->wrapInTransaction(function () use ($dogId, $owner, $thumbnail): bool {
+            $dog = $this->dogRepository->findForOwner($dogId, $owner, LockMode::PESSIMISTIC_WRITE);
             if (!$dog) {
                 return false;
             }

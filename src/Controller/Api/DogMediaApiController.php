@@ -6,6 +6,7 @@ use App\Application\DogMedia\DogMediaService;
 use App\Application\Media\Exception\MediaValidationException;
 use App\Application\Media\MediaStorageInterface;
 use App\Controller\Api\Dto\SelectDogMediaPayload;
+use App\Entity\User;
 use App\View\DogMediaView;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -13,6 +14,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 #[Route('/api/dogs/{dogId<\d+>}/media')]
 final class DogMediaApiController extends AbstractController
@@ -20,10 +22,11 @@ final class DogMediaApiController extends AbstractController
     #[Route('', methods: ['GET'])]
     public function getCollection(
         int $dogId,
+        #[CurrentUser] User $owner,
         DogMediaService $mediaService,
         MediaStorageInterface $storage,
     ): Response {
-        $media = $mediaService->listForDog($dogId);
+        $media = $mediaService->listForDog($dogId, $owner);
         if (null === $media) {
             throw $this->createNotFoundException('Dog not found');
         }
@@ -37,6 +40,7 @@ final class DogMediaApiController extends AbstractController
     #[Route('', methods: ['POST'])]
     public function upload(
         int $dogId,
+        #[CurrentUser] User $owner,
         Request $request,
         DogMediaService $mediaService,
         MediaStorageInterface $storage,
@@ -46,7 +50,7 @@ final class DogMediaApiController extends AbstractController
             throw new MediaValidationException('A multipart file field named "file" is required.', field: 'file');
         }
 
-        $media = $mediaService->upload($dogId, $file);
+        $media = $mediaService->upload($dogId, $file, $owner);
 
         if (null === $media) {
             throw $this->createNotFoundException('Dog not found');
@@ -59,9 +63,10 @@ final class DogMediaApiController extends AbstractController
     public function delete(
         int $dogId,
         int $id,
+        #[CurrentUser] User $owner,
         DogMediaService $mediaService,
     ): Response {
-        if (!$mediaService->delete($dogId, $id)) {
+        if (!$mediaService->delete($dogId, $id, $owner)) {
             throw $this->createNotFoundException('Dog media not found');
         }
 
@@ -71,11 +76,12 @@ final class DogMediaApiController extends AbstractController
     #[Route('/thumbnail', methods: ['PUT'])]
     public function selectThumbnail(
         int $dogId,
+        #[CurrentUser] User $owner,
         #[MapRequestPayload] SelectDogMediaPayload $payload,
         DogMediaService $mediaService,
         MediaStorageInterface $storage,
     ): Response {
-        $media = $mediaService->selectThumbnail($dogId, $payload->mediaId);
+        $media = $mediaService->selectThumbnail($dogId, $payload->mediaId, $owner);
 
         if (null === $media) {
             throw $this->createNotFoundException('Dog media not found');
@@ -85,9 +91,12 @@ final class DogMediaApiController extends AbstractController
     }
 
     #[Route('/thumbnail', methods: ['DELETE'])]
-    public function clearThumbnail(int $dogId, DogMediaService $mediaService): Response
-    {
-        if (!$mediaService->clearThumbnail($dogId)) {
+    public function clearThumbnail(
+        int $dogId,
+        #[CurrentUser] User $owner,
+        DogMediaService $mediaService,
+    ): Response {
+        if (!$mediaService->clearThumbnail($dogId, $owner)) {
             throw $this->createNotFoundException('Dog not found');
         }
 
@@ -97,11 +106,12 @@ final class DogMediaApiController extends AbstractController
     #[Route('/profile', methods: ['PUT'])]
     public function selectProfile(
         int $dogId,
+        #[CurrentUser] User $owner,
         #[MapRequestPayload] SelectDogMediaPayload $payload,
         DogMediaService $mediaService,
         MediaStorageInterface $storage,
     ): Response {
-        $media = $mediaService->selectProfile($dogId, $payload->mediaId);
+        $media = $mediaService->selectProfile($dogId, $payload->mediaId, $owner);
         if (null === $media) {
             throw $this->createNotFoundException('Dog media not found');
         }
@@ -110,9 +120,12 @@ final class DogMediaApiController extends AbstractController
     }
 
     #[Route('/profile', methods: ['DELETE'])]
-    public function clearProfile(int $dogId, DogMediaService $mediaService): Response
-    {
-        if (!$mediaService->clearProfile($dogId)) {
+    public function clearProfile(
+        int $dogId,
+        #[CurrentUser] User $owner,
+        DogMediaService $mediaService,
+    ): Response {
+        if (!$mediaService->clearProfile($dogId, $owner)) {
             throw $this->createNotFoundException('Dog not found');
         }
 

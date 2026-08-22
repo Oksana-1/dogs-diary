@@ -8,12 +8,14 @@ use App\Application\Treatment\Data\UpdateTreatmentData;
 use App\Application\Treatment\TreatmentService;
 use App\Controller\Api\Dto\CreateTreatmentPayload;
 use App\Controller\Api\Dto\UpdateTreatmentPayload;
+use App\Entity\User;
 use App\Enum\TreatmentTypeEnum;
 use App\View\TreatmentView;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 #[Route('/api/dogs/{dogId}/treatments')]
 class TreatmentApiController extends AbstractController
@@ -23,9 +25,12 @@ class TreatmentApiController extends AbstractController
     }
 
     #[Route('', methods: ['GET'])]
-    public function getCollection(int $dogId, TreatmentService $treatmentService): Response
-    {
-        $treatments = $treatmentService->listForDog($dogId);
+    public function getCollection(
+        int $dogId,
+        #[CurrentUser] User $owner,
+        TreatmentService $treatmentService,
+    ): Response {
+        $treatments = $treatmentService->listForDog($dogId, $owner);
         if (null === $treatments) {
             throw $this->createNotFoundException('Dog not found');
         }
@@ -37,10 +42,14 @@ class TreatmentApiController extends AbstractController
     }
 
     #[Route('/{id<\d+>}', methods: ['GET'])]
-    public function getItem(int $dogId, int $id, TreatmentService $treatmentService): Response
-    {
-        $treatment = $treatmentService->get($id);
-        if (!$treatment || $treatment->getDog()?->getId() !== $dogId) {
+    public function getItem(
+        int $dogId,
+        int $id,
+        #[CurrentUser] User $owner,
+        TreatmentService $treatmentService,
+    ): Response {
+        $treatment = $treatmentService->get($dogId, $id, $owner);
+        if (!$treatment) {
             throw $this->createNotFoundException('Treatment not found');
         }
 
@@ -50,6 +59,7 @@ class TreatmentApiController extends AbstractController
     #[Route('', methods: ['POST'])]
     public function createItem(
         int $dogId,
+        #[CurrentUser] User $owner,
         #[MapRequestPayload] CreateTreatmentPayload $payload,
         TreatmentService $treatmentService,
     ): Response {
@@ -63,7 +73,7 @@ class TreatmentApiController extends AbstractController
             treatmentDate: $payload->treatmentDate,
             dueDate: $payload->dueDate,
             note: $payload->note,
-        ));
+        ), $owner);
         if (null === $treatment) {
             throw $this->createNotFoundException('Dog not found');
         }
@@ -75,15 +85,11 @@ class TreatmentApiController extends AbstractController
     public function updateItem(
         int $dogId,
         int $id,
+        #[CurrentUser] User $owner,
         #[MapRequestPayload] UpdateTreatmentPayload $payload,
         TreatmentService $treatmentService,
     ): Response {
-        $existingTreatment = $treatmentService->get($id);
-        if (!$existingTreatment || $existingTreatment->getDog()?->getId() !== $dogId) {
-            throw $this->createNotFoundException('Treatment not found');
-        }
-
-        $treatment = $treatmentService->update(new UpdateTreatmentData(
+        $treatment = $treatmentService->update($dogId, new UpdateTreatmentData(
             id: $id,
             types: array_map(
                 static fn (string $type): TreatmentTypeEnum => TreatmentTypeEnum::from($type),
@@ -93,7 +99,7 @@ class TreatmentApiController extends AbstractController
             treatmentDate: $payload->treatmentDate,
             dueDate: $payload->dueDate,
             note: $payload->note,
-        ));
+        ), $owner);
         if (null === $treatment) {
             throw $this->createNotFoundException('Treatment not found');
         }
@@ -105,14 +111,12 @@ class TreatmentApiController extends AbstractController
     public function deleteItem(
         int $dogId,
         int $id,
+        #[CurrentUser] User $owner,
         TreatmentService $treatmentService,
     ): Response {
-        $existingTreatment = $treatmentService->get($id);
-        if (!$existingTreatment || $existingTreatment->getDog()?->getId() !== $dogId) {
+        if (!$treatmentService->delete($dogId, $id, $owner)) {
             throw $this->createNotFoundException('Treatment not found');
         }
-
-        $treatmentService->delete($id);
 
         return new Response(null, 204);
     }
