@@ -62,6 +62,11 @@ final class OwnershipIsolationTest extends WebTestCase
 
         $this->client->loginUser($this->alice);
         $this->client->disableReboot();
+
+        $crawler = $this->client->request('GET', '/');
+        $csrfToken = $crawler->filter('meta[name="csrf-token"]')->attr('content');
+        self::assertNotSame('', $csrfToken);
+        $this->client->setServerParameter('HTTP_X_CSRF_TOKEN', $csrfToken);
     }
 
     protected function tearDown(): void
@@ -108,8 +113,8 @@ final class OwnershipIsolationTest extends WebTestCase
         $createdId = $this->jsonResponse()['id'];
         $createdDog = $this->entityManager->find(Dog::class, $createdId);
         self::assertInstanceOf(Dog::class, $createdDog);
-        self::assertTrue($createdDog->getOwners()->contains($this->alice));
         self::assertCount(1, $createdDog->getOwners());
+        self::assertSame($this->id($this->alice), $this->id($createdDog->getOwners()->first()));
 
         $this->client->jsonRequest('PUT', '/api/dogs/'.$createdId, $this->dogPayload('Updated Dog'));
         self::assertResponseIsSuccessful();

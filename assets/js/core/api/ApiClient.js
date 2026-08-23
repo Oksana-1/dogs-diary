@@ -30,6 +30,7 @@ class ApiClient {
 const apiClient = new ApiClient(
     new FetchClient({
         baseUrl: "/api",
+        csrfToken: document.querySelector('meta[name="csrf-token"]')?.content ?? null,
         timeout: 15000
     })
 );

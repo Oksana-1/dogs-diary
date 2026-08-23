@@ -30,6 +30,7 @@ export default class FetchClient extends HttpClient {
     constructor({
                     baseUrl = "",
                     defaultHeaders = {},
+                    csrfToken = null,
                     timeout = 15000
                 } = {}) {
 
@@ -37,6 +38,7 @@ export default class FetchClient extends HttpClient {
 
         this.baseUrl = baseUrl;
         this.defaultHeaders = defaultHeaders;
+        this.csrfToken = csrfToken;
         this.timeout = timeout;
     }
 
@@ -72,6 +74,8 @@ export default class FetchClient extends HttpClient {
         const hasJsonBody = body !== null
             && body !== undefined
             && !isEncodedBody;
+        const normalizedMethod = method.toUpperCase();
+        const needsCsrfToken = ["POST", "PUT", "PATCH", "DELETE"].includes(normalizedMethod);
 
         try {
 
@@ -83,6 +87,9 @@ export default class FetchClient extends HttpClient {
                         ...this.defaultHeaders,
                         ...(hasJsonBody
                             ? { "Content-Type": "application/json" }
+                            : {}),
+                        ...(needsCsrfToken && this.csrfToken
+                            ? { "X-CSRF-TOKEN": this.csrfToken }
                             : {}),
                         ...headers
                     },
