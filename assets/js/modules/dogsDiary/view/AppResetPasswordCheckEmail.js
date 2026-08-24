@@ -11,6 +11,7 @@ export default {
     props: {
         loginUrl: { type: String, required: true },
         requestPasswordUrl: { type: String, required: true },
+        tokenLifetimeMinutes: { type: Number, required: true },
     },
 
     setup() {
@@ -28,7 +29,7 @@ export default {
                 </div>
 
                 <div class="auth-notice">
-                    <p>The link will expire for your security. Check your spam folder if you don't see the message.</p>
+                    <p>The link expires in {{ tokenLifetimeMinutes }} minutes. Check your spam folder if you don't see the message.</p>
                 </div>
 
                 <a class="btn btn-black auth-submit" :href="loginUrl">Back to login</a>

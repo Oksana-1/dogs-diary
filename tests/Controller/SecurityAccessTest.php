@@ -29,7 +29,6 @@ final class SecurityAccessTest extends WebTestCase
         yield 'registration' => ['/sign-up'];
         yield 'password-reset request' => ['/reset-password'];
         yield 'password-reset confirmation' => ['/reset-password/check-email'];
-        yield 'new password' => ['/reset-password/new'];
     }
 
     #[DataProvider('protectedWebPageProvider')]

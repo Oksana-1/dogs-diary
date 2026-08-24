@@ -8,6 +8,7 @@ export default {
         csrfToken: { type: String, required: true },
         lastEmail: { type: String, default: '' },
         error: { type: String, default: null },
+        notices: { type: Array, default: () => [] },
     },
 
     template: /*language=HTML*/ `
@@ -22,6 +23,10 @@ export default {
 
                 <form class="auth-form" :action="formAction" method="post">
                     <input type="hidden" name="_csrf_token" :value="csrfToken">
+
+                    <div v-if="notices.length" class="auth-notice" role="status">
+                        <p v-for="notice in notices" :key="notice">{{ notice }}</p>
+                    </div>
 
                     <div v-if="error" id="login-error" class="auth-errors" role="alert">
                         <p>{{ error }}</p>

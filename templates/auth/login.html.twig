@@ -13,7 +13,8 @@
             signUpUrl: path('app_sign_up'),
             csrfToken: csrf_token('authenticate'),
             lastEmail: last_email,
-            error: login_error
+            error: login_error,
+            notices: login_notices
         }|json_encode|e('html_attr') }}"
     >
         <section class="auth-page" aria-labelledby="login-title">
@@ -27,6 +28,12 @@
 
                 <form class="auth-form" action="{{ path('app_login') }}" method="post">
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                    {% if login_notices %}
+                        <div class="auth-notice" role="status">
+                            {% for notice in login_notices %}<p>{{ notice }}</p>{% endfor %}
+                        </div>
+                    {% endif %}
 
                     {% if login_error %}
                         <div id="login-error" class="auth-errors" role="alert"><p>{{ login_error }}</p></div>

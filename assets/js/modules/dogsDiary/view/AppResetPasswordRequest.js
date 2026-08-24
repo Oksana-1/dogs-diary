@@ -9,7 +9,11 @@ export default {
     },
 
     props: {
+        formAction: { type: String, required: true },
         loginUrl: { type: String, required: true },
+        csrfToken: { type: String, required: true },
+        email: { type: String, default: '' },
+        errors: { type: Array, default: () => [] },
     },
 
     setup() {
@@ -28,7 +32,13 @@ export default {
                     <p>Enter the email address connected to your account and we'll send you a reset link.</p>
                 </div>
 
-                <form class="auth-form">
+                <form class="auth-form" :action="formAction" method="post">
+                    <input type="hidden" name="_csrf_token" :value="csrfToken">
+
+                    <div v-if="errors.length" class="auth-errors" role="alert">
+                        <p v-for="error in errors" :key="error">{{ error }}</p>
+                    </div>
+
                     <div class="auth-field">
                         <label for="reset-email">Email address</label>
                         <input
@@ -37,10 +47,14 @@ export default {
                             type="email"
                             autocomplete="email"
                             placeholder="you@example.com"
+                            :value="email"
+                            required
+                            autofocus
+                            :aria-invalid="errors.length ? 'true' : undefined"
                         >
                     </div>
 
-                    <button class="btn btn-black auth-submit" type="button">Send reset link</button>
+                    <button class="btn btn-black auth-submit" type="submit">Send reset link</button>
                 </form>
 
                 <p class="auth-switch">

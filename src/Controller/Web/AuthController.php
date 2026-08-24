@@ -19,7 +19,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class AuthController extends AbstractController
 {
     #[Route('/login', name: 'app_login', methods: ['GET', 'POST'])]
-    public function login(AuthenticationUtils $authenticationUtils): Response
+    public function login(AuthenticationUtils $authenticationUtils, Request $request): Response
     {
         if (null !== $this->getUser()) {
             return $this->redirectToRoute('app_main');
@@ -30,6 +30,7 @@ class AuthController extends AbstractController
             'login_error' => null !== $authenticationUtils->getLastAuthenticationError()
                 ? 'Invalid email or password.'
                 : null,
+            'login_notices' => $request->getSession()->getFlashBag()->get('password_reset_success'),
         ]);
     }
 
@@ -121,23 +122,5 @@ class AuthController extends AbstractController
             ],
             'registration_errors' => $errors,
         ], new Response(status: $status));
-    }
-
-    #[Route('/reset-password', name: 'app_forgot_password_request', methods: ['GET'])]
-    public function requestPasswordReset(): Response
-    {
-        return $this->render('auth/reset_password_request.html.twig');
-    }
-
-    #[Route('/reset-password/check-email', name: 'app_check_email', methods: ['GET'])]
-    public function checkEmail(): Response
-    {
-        return $this->render('auth/reset_password_check_email.html.twig');
-    }
-
-    #[Route('/reset-password/new', name: 'app_reset_password', methods: ['GET'])]
-    public function resetPassword(): Response
-    {
-        return $this->render('auth/reset_password.html.twig');
     }
 }
