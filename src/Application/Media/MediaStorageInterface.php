@@ -16,9 +16,12 @@ interface MediaStorageInterface
 
     public function delete(string $storageKey): void;
 
-    public function publicUrl(string $storageKey): string;
-
     public function exists(string $storageKey): bool;
+
+    /**
+     * Returns the absolute path only for an existing, valid storage key.
+     */
+    public function resolvePath(string $storageKey): ?string;
 
     /**
      * @return string[]

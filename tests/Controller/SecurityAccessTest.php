@@ -79,6 +79,8 @@ final class SecurityAccessTest extends WebTestCase
         yield 'dog deletion' => ['DELETE', '/api/dogs/42'];
         yield 'treatment list' => ['GET', '/api/dogs/42/treatments'];
         yield 'dog media upload' => ['POST', '/api/dogs/42/media'];
+        yield 'dog media download' => ['GET', '/api/dogs/42/media/9'];
+        yield 'treatment media download' => ['GET', '/api/dogs/42/treatments/7/media/9'];
         yield 'treatment media deletion' => ['DELETE', '/api/dogs/42/treatments/7/media/9'];
     }
 

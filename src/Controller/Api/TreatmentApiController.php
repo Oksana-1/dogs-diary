@@ -2,7 +2,7 @@
 
 namespace App\Controller\Api;
 
-use App\Application\Media\MediaStorageInterface;
+use App\Application\Media\MediaUrlGenerator;
 use App\Application\Treatment\Data\CreateTreatmentData;
 use App\Application\Treatment\Data\UpdateTreatmentData;
 use App\Application\Treatment\TreatmentService;
@@ -20,7 +20,7 @@ use Symfony\Component\Security\Http\Attribute\CurrentUser;
 #[Route('/api/dogs/{dogId}/treatments')]
 class TreatmentApiController extends AbstractController
 {
-    public function __construct(private readonly MediaStorageInterface $mediaStorage)
+    public function __construct(private readonly MediaUrlGenerator $mediaUrlGenerator)
     {
     }
 
@@ -36,7 +36,7 @@ class TreatmentApiController extends AbstractController
         }
 
         return $this->json(array_map(
-            fn ($treatment) => TreatmentView::from($treatment, $this->mediaStorage)->toArray(),
+            fn ($treatment) => TreatmentView::from($treatment, $this->mediaUrlGenerator)->toArray(),
             $treatments,
         ));
     }
@@ -53,7 +53,7 @@ class TreatmentApiController extends AbstractController
             throw $this->createNotFoundException('Treatment not found');
         }
 
-        return $this->json(TreatmentView::from($treatment, $this->mediaStorage)->toArray());
+        return $this->json(TreatmentView::from($treatment, $this->mediaUrlGenerator)->toArray());
     }
 
     #[Route('', methods: ['POST'])]
@@ -78,7 +78,7 @@ class TreatmentApiController extends AbstractController
             throw $this->createNotFoundException('Dog not found');
         }
 
-        return $this->json(TreatmentView::from($treatment, $this->mediaStorage)->toArray(), 201);
+        return $this->json(TreatmentView::from($treatment, $this->mediaUrlGenerator)->toArray(), 201);
     }
 
     #[Route('/{id<\d+>}', methods: ['PUT'])]
@@ -104,7 +104,7 @@ class TreatmentApiController extends AbstractController
             throw $this->createNotFoundException('Treatment not found');
         }
 
-        return $this->json(TreatmentView::from($treatment, $this->mediaStorage)->toArray());
+        return $this->json(TreatmentView::from($treatment, $this->mediaUrlGenerator)->toArray());
     }
 
     #[Route('/{id<\d+>}', methods: ['DELETE'])]

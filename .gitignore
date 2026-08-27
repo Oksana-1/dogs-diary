@@ -16,8 +16,6 @@
 
 ###> symfony/asset-mapper ###
 /public/assets/
-/public/uploads/*
-!/public/uploads/.gitignore
 /assets/vendor/
 ###< symfony/asset-mapper ###
 

@@ -2,20 +2,20 @@
 
 namespace App\View;
 
-use App\Application\Media\MediaStorageInterface;
+use App\Application\Media\MediaUrlGenerator;
 use App\Entity\TreatmentMedia;
 
 final readonly class TreatmentMediaView extends AbstractView
 {
     public function __construct(
         private TreatmentMedia $media,
-        private MediaStorageInterface $storage,
+        private MediaUrlGenerator $urlGenerator,
     ) {
     }
 
-    public static function from(TreatmentMedia $media, MediaStorageInterface $storage): self
+    public static function from(TreatmentMedia $media, MediaUrlGenerator $urlGenerator): self
     {
-        return new self($media, $storage);
+        return new self($media, $urlGenerator);
     }
 
     /**
@@ -26,7 +26,7 @@ final readonly class TreatmentMediaView extends AbstractView
         return [
             'id' => $this->media->getId(),
             'type' => 'image',
-            'url' => $this->storage->publicUrl($this->media->getStorageKey()),
+            'url' => $this->urlGenerator->forTreatmentMedia($this->media),
             'originalName' => $this->media->getOriginalName(),
             'mimeType' => $this->media->getMimeType(),
             'sizeBytes' => $this->media->getSizeBytes(),

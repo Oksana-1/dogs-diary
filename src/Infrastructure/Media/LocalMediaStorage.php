@@ -13,7 +13,6 @@ final readonly class LocalMediaStorage implements MediaStorageInterface
 
     public function __construct(
         private string $uploadDirectory,
-        private string $publicPrefix,
     ) {
     }
 
@@ -52,16 +51,20 @@ final readonly class LocalMediaStorage implements MediaStorageInterface
         }
     }
 
-    public function publicUrl(string $storageKey): string
-    {
-        $encodedKey = implode('/', array_map('rawurlencode', explode('/', $storageKey)));
-
-        return rtrim($this->publicPrefix, '/').'/'.$encodedKey;
-    }
-
     public function exists(string $storageKey): bool
     {
-        return is_file(rtrim($this->uploadDirectory, '/').'/'.$storageKey);
+        return null !== $this->resolvePath($storageKey);
+    }
+
+    public function resolvePath(string $storageKey): ?string
+    {
+        if (!preg_match(self::STORAGE_KEY_PATTERN, $storageKey)) {
+            return null;
+        }
+
+        $path = rtrim($this->uploadDirectory, '/').'/'.$storageKey;
+
+        return is_file($path) ? $path : null;
     }
 
     public function allStorageKeys(): array

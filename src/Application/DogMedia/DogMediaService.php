@@ -79,6 +79,11 @@ final readonly class DogMediaService
         return $media;
     }
 
+    public function get(int $dogId, int $mediaId, User $owner): ?DogMedia
+    {
+        return $this->mediaRepository->findOneForDogAndOwner($dogId, $mediaId, $owner);
+    }
+
     public function delete(int $dogId, int $mediaId, User $owner): bool
     {
         $storageKey = $this->em->wrapInTransaction(function () use ($dogId, $mediaId, $owner): ?string {

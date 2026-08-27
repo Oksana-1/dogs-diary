@@ -7,8 +7,7 @@ parameters:
     app.base_url: '%env(APP_BASE_URL)%'
     app.mailer.sender_address: '%env(MAILER_FROM_ADDRESS)%'
     app.mailer.sender_name: '%env(MAILER_FROM_NAME)%'
-    app.media.upload_directory: '%kernel.project_dir%/public/uploads'
-    app.media.public_prefix: '/uploads'
+    app.media.upload_directory: '%kernel.project_dir%/var/uploads'
     app.media.max_image_bytes: 10485760
     app.media.max_video_bytes: 104857600
 
@@ -31,7 +30,6 @@ services:
     App\Infrastructure\Media\LocalMediaStorage:
         arguments:
             $uploadDirectory: '%app.media.upload_directory%'
-            $publicPrefix: '%app.media.public_prefix%'
 
     App\Application\Media\MediaStorageInterface:
         alias: App\Infrastructure\Media\LocalMediaStorage

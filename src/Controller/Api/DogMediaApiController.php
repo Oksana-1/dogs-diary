@@ -4,7 +4,8 @@ namespace App\Controller\Api;
 
 use App\Application\DogMedia\DogMediaService;
 use App\Application\Media\Exception\MediaValidationException;
-use App\Application\Media\MediaStorageInterface;
+use App\Application\Media\MediaUrlGenerator;
+use App\Application\Media\PrivateMediaResponseFactory;
 use App\Controller\Api\Dto\SelectDogMediaPayload;
 use App\Entity\User;
 use App\View\DogMediaView;
@@ -24,7 +25,7 @@ final class DogMediaApiController extends AbstractController
         int $dogId,
         #[CurrentUser] User $owner,
         DogMediaService $mediaService,
-        MediaStorageInterface $storage,
+        MediaUrlGenerator $mediaUrlGenerator,
     ): Response {
         $media = $mediaService->listForDog($dogId, $owner);
         if (null === $media) {
@@ -32,7 +33,7 @@ final class DogMediaApiController extends AbstractController
         }
 
         return $this->json(array_map(
-            static fn ($item) => DogMediaView::from($item, $storage)->toArray(),
+            static fn ($item) => DogMediaView::from($item, $mediaUrlGenerator)->toArray(),
             $media,
         ));
     }
@@ -43,7 +44,7 @@ final class DogMediaApiController extends AbstractController
         #[CurrentUser] User $owner,
         Request $request,
         DogMediaService $mediaService,
-        MediaStorageInterface $storage,
+        MediaUrlGenerator $mediaUrlGenerator,
     ): Response {
         $file = $request->files->get('file');
         if (!$file instanceof UploadedFile) {
@@ -56,7 +57,32 @@ final class DogMediaApiController extends AbstractController
             throw $this->createNotFoundException('Dog not found');
         }
 
-        return $this->json(DogMediaView::from($media, $storage)->toArray(), 201);
+        return $this->json(DogMediaView::from($media, $mediaUrlGenerator)->toArray(), 201);
+    }
+
+    #[Route('/{id<\d+>}', name: 'app_api_dog_media_download', methods: ['GET'])]
+    public function download(
+        int $dogId,
+        int $id,
+        #[CurrentUser] User $owner,
+        DogMediaService $mediaService,
+        PrivateMediaResponseFactory $responseFactory,
+    ): Response {
+        $media = $mediaService->get($dogId, $id, $owner);
+        if (null === $media) {
+            throw $this->createNotFoundException('Dog media not found');
+        }
+
+        $response = $responseFactory->create(
+            $media->getStorageKey(),
+            $media->getOriginalName(),
+            $media->getMimeType(),
+        );
+        if (null === $response) {
+            throw $this->createNotFoundException('Dog media file not found');
+        }
+
+        return $response;
     }
 
     #[Route('/{id<\d+>}', methods: ['DELETE'])]
@@ -79,7 +105,7 @@ final class DogMediaApiController extends AbstractController
         #[CurrentUser] User $owner,
         #[MapRequestPayload] SelectDogMediaPayload $payload,
         DogMediaService $mediaService,
-        MediaStorageInterface $storage,
+        MediaUrlGenerator $mediaUrlGenerator,
     ): Response {
         $media = $mediaService->selectThumbnail($dogId, $payload->mediaId, $owner);
 
@@ -87,7 +113,7 @@ final class DogMediaApiController extends AbstractController
             throw $this->createNotFoundException('Dog media not found');
         }
 
-        return $this->json(DogMediaView::from($media, $storage)->toArray());
+        return $this->json(DogMediaView::from($media, $mediaUrlGenerator)->toArray());
     }
 
     #[Route('/thumbnail', methods: ['DELETE'])]
@@ -109,14 +135,14 @@ final class DogMediaApiController extends AbstractController
         #[CurrentUser] User $owner,
         #[MapRequestPayload] SelectDogMediaPayload $payload,
         DogMediaService $mediaService,
-        MediaStorageInterface $storage,
+        MediaUrlGenerator $mediaUrlGenerator,
     ): Response {
         $media = $mediaService->selectProfile($dogId, $payload->mediaId, $owner);
         if (null === $media) {
             throw $this->createNotFoundException('Dog media not found');
         }
 
-        return $this->json(DogMediaView::from($media, $storage)->toArray());
+        return $this->json(DogMediaView::from($media, $mediaUrlGenerator)->toArray());
     }
 
     #[Route('/profile', methods: ['DELETE'])]

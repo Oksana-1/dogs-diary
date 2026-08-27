@@ -105,6 +105,7 @@ Treatment create and update requests accept `types`, `productName`, `treatmentDa
 
 - `GET /api/dogs/{dogId}/media` — list a dog's media.
 - `POST /api/dogs/{dogId}/media` — upload media using the multipart field `file`.
+- `GET /api/dogs/{dogId}/media/{id}` — stream an owner-authorized media item.
 - `DELETE /api/dogs/{dogId}/media/{id}` — delete a media item.
 - `PUT /api/dogs/{dogId}/media/thumbnail` — select an image thumbnail using `{"mediaId": 123}`.
 - `DELETE /api/dogs/{dogId}/media/thumbnail` — clear the selected thumbnail.
@@ -117,13 +118,16 @@ Dog media supports JPEG, PNG, and WebP images up to 10 MB, plus MP4 and WebM vid
 
 - `GET /api/dogs/{dogId}/treatments/{treatmentId}/media` — list a treatment's images.
 - `POST /api/dogs/{dogId}/treatments/{treatmentId}/media` — upload an image using the multipart field `file`.
+- `GET /api/dogs/{dogId}/treatments/{treatmentId}/media/{id}` — stream an owner-authorized treatment image.
 - `DELETE /api/dogs/{dogId}/treatments/{treatmentId}/media/{id}` — delete a treatment image.
 
 Treatment media supports one JPEG, PNG, or WebP image up to 10 MB per treatment. Uploading another image replaces the existing treatment photo.
 
 ## Media Storage
 
-Uploaded files are stored under `public/uploads` and exposed at `/uploads`. Database records keep media metadata and the generated storage key; deleting a dog or treatment cascades to its media records and stored files through the application services.
+Uploaded files are stored under the private `var/uploads` directory. API responses expose authenticated media routes rather than filesystem paths; each download is owner-scoped, uses private no-store cache headers, and supports byte ranges for video playback. Database records keep media metadata and randomized storage keys; deleting a dog or treatment cascades to its media records and stored files through the application services.
+
+When upgrading an existing installation, move the contents of `public/uploads` to `var/uploads` before serving requests with the new configuration. The storage-key-relative directory structure must be preserved.
 
 Audit the database and filesystem without changing either:
 

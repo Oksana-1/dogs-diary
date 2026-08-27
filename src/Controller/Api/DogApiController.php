@@ -5,7 +5,7 @@ namespace App\Controller\Api;
 use App\Application\Dog\Data\CreateDogData;
 use App\Application\Dog\Data\UpdateDogData;
 use App\Application\Dog\DogService;
-use App\Application\Media\MediaStorageInterface;
+use App\Application\Media\MediaUrlGenerator;
 use App\Controller\Api\Dto\CreateDogPayload;
 use App\Controller\Api\Dto\UpdateDogPayload;
 use App\Entity\User;
@@ -19,7 +19,7 @@ use Symfony\Component\Security\Http\Attribute\CurrentUser;
 #[Route('/api/dogs')]
 class DogApiController extends AbstractController
 {
-    public function __construct(private readonly MediaStorageInterface $mediaStorage)
+    public function __construct(private readonly MediaUrlGenerator $mediaUrlGenerator)
     {
     }
 
@@ -27,7 +27,7 @@ class DogApiController extends AbstractController
     public function getCollection(#[CurrentUser] User $owner, DogService $dogService): Response
     {
         return $this->json(array_map(
-            fn ($dog) => DogView::from($dog, $this->mediaStorage)->toArray(),
+            fn ($dog) => DogView::from($dog, $this->mediaUrlGenerator)->toArray(),
             $dogService->list($owner),
         ));
     }
@@ -40,7 +40,7 @@ class DogApiController extends AbstractController
             throw $this->createNotFoundException('Dog not found');
         }
 
-        return $this->json(DogView::from($dog, $this->mediaStorage)->toArray());
+        return $this->json(DogView::from($dog, $this->mediaUrlGenerator)->toArray());
     }
 
     #[Route('/{id<\d+>}', methods: ['PUT'])]
@@ -64,7 +64,7 @@ class DogApiController extends AbstractController
             throw $this->createNotFoundException('Dog not found');
         }
 
-        return $this->json(DogView::from($dog, $this->mediaStorage)->toArray());
+        return $this->json(DogView::from($dog, $this->mediaUrlGenerator)->toArray());
     }
 
     #[Route('', methods: ['POST'])]
@@ -83,7 +83,7 @@ class DogApiController extends AbstractController
             height: $payload->height,
         ), $owner);
 
-        return $this->json(DogView::from($dog, $this->mediaStorage)->toArray(), 201);
+        return $this->json(DogView::from($dog, $this->mediaUrlGenerator)->toArray(), 201);
     }
 
     #[Route('/{id<\d+>}', methods: ['DELETE'])]

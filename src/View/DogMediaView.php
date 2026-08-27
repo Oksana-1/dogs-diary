@@ -2,20 +2,20 @@
 
 namespace App\View;
 
-use App\Application\Media\MediaStorageInterface;
+use App\Application\Media\MediaUrlGenerator;
 use App\Entity\DogMedia;
 
 final readonly class DogMediaView extends AbstractView
 {
     public function __construct(
         private DogMedia $media,
-        private MediaStorageInterface $storage,
+        private MediaUrlGenerator $urlGenerator,
     ) {
     }
 
-    public static function from(DogMedia $media, MediaStorageInterface $storage): self
+    public static function from(DogMedia $media, MediaUrlGenerator $urlGenerator): self
     {
-        return new self($media, $storage);
+        return new self($media, $urlGenerator);
     }
 
     /**
@@ -26,7 +26,7 @@ final readonly class DogMediaView extends AbstractView
         return [
             'id' => $this->media->getId(),
             'type' => $this->media->getType()->value,
-            'url' => $this->storage->publicUrl($this->media->getStorageKey()),
+            'url' => $this->urlGenerator->forDogMedia($this->media),
             'originalName' => $this->media->getOriginalName(),
             'mimeType' => $this->media->getMimeType(),
             'sizeBytes' => $this->media->getSizeBytes(),

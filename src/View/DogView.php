@@ -2,20 +2,20 @@
 
 namespace App\View;
 
-use App\Application\Media\MediaStorageInterface;
+use App\Application\Media\MediaUrlGenerator;
 use App\Entity\Dog;
 
 final readonly class DogView extends AbstractView
 {
     public function __construct(
         private Dog $dog,
-        private MediaStorageInterface $storage,
+        private MediaUrlGenerator $urlGenerator,
     ) {
     }
 
-    public static function from(Dog $dog, MediaStorageInterface $storage): self
+    public static function from(Dog $dog, MediaUrlGenerator $urlGenerator): self
     {
-        return new self($dog, $storage);
+        return new self($dog, $urlGenerator);
     }
 
     /**
@@ -36,13 +36,13 @@ final readonly class DogView extends AbstractView
             'height' => $this->dog->getHeight(),
             'status' => $this->dog->getStatus(),
             'thumbnail' => $thumbnail
-                ? DogMediaView::from($thumbnail, $this->storage)->toArray()
+                ? DogMediaView::from($thumbnail, $this->urlGenerator)->toArray()
                 : null,
             'profileMedia' => $profileMedia
-                ? DogMediaView::from($profileMedia, $this->storage)->toArray()
+                ? DogMediaView::from($profileMedia, $this->urlGenerator)->toArray()
                 : null,
             'treatments' => $this->dog->getTreatments()->map(
-                fn ($treatment) => TreatmentView::from($treatment, $this->storage)->toArray()
+                fn ($treatment) => TreatmentView::from($treatment, $this->urlGenerator)->toArray()
             )->toArray(),
         ];
     }

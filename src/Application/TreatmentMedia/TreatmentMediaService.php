@@ -132,6 +132,11 @@ final readonly class TreatmentMediaService
         return $media;
     }
 
+    public function get(int $dogId, int $treatmentId, int $mediaId, User $owner): ?TreatmentMedia
+    {
+        return $this->mediaRepository->findOneForTreatmentAndOwner($dogId, $treatmentId, $mediaId, $owner);
+    }
+
     public function delete(int $dogId, int $treatmentId, int $mediaId, User $owner): bool
     {
         $storageKey = $this->em->wrapInTransaction(function () use ($dogId, $treatmentId, $mediaId, $owner): ?string {

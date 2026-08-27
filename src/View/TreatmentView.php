@@ -2,20 +2,20 @@
 
 namespace App\View;
 
-use App\Application\Media\MediaStorageInterface;
+use App\Application\Media\MediaUrlGenerator;
 use App\Entity\Treatment;
 
 final readonly class TreatmentView extends AbstractView
 {
     public function __construct(
         private Treatment $treatment,
-        private MediaStorageInterface $storage,
+        private MediaUrlGenerator $urlGenerator,
     ) {
     }
 
-    public static function from(Treatment $treatment, MediaStorageInterface $storage): self
+    public static function from(Treatment $treatment, MediaUrlGenerator $urlGenerator): self
     {
-        return new self($treatment, $storage);
+        return new self($treatment, $urlGenerator);
     }
 
     /**
@@ -34,7 +34,7 @@ final readonly class TreatmentView extends AbstractView
             'dueDate' => $this->treatment->getDueDate()?->format('Y-m-d'),
             'note' => $this->treatment->getNote(),
             'photo' => $photo
-                ? TreatmentMediaView::from($photo, $this->storage)->toArray()
+                ? TreatmentMediaView::from($photo, $this->urlGenerator)->toArray()
                 : null,
         ];
     }
