@@ -49,6 +49,14 @@ final class LoginLogoutTest extends WebTestCase
         self::assertNotSame('', $crawler->filter('input[name="_csrf_token"]')->attr('value'));
     }
 
+    public function testLoginExplainsWhenTheFrontendSessionHasExpired(): void
+    {
+        $this->client->request('GET', '/login?reason=session_expired');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextSame('.auth-notice', 'Your session expired. Please log in again.');
+    }
+
     public function testLoginUsesTheSavedTargetAndCreatesRememberMeCookie(): void
     {
         $this->client->request('GET', '/dog/42');

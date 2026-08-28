@@ -35,7 +35,7 @@ export default {
                 <form class="auth-form" :action="formAction" method="post">
                     <input type="hidden" name="_csrf_token" :value="csrfToken">
 
-                    <div v-if="errors.length" class="auth-errors" role="alert">
+                    <div v-if="errors.length" id="reset-request-errors" class="auth-errors" role="alert">
                         <p v-for="error in errors" :key="error">{{ error }}</p>
                     </div>
 
@@ -51,6 +51,7 @@ export default {
                             required
                             autofocus
                             :aria-invalid="errors.length ? 'true' : undefined"
+                            :aria-describedby="errors.length ? 'reset-request-errors' : undefined"
                         >
                     </div>
 

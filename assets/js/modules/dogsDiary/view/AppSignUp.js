@@ -36,6 +36,7 @@ export default {
                             placeholder="Your name"
                             :value="values.name"
                             required
+                            autofocus
                             :aria-invalid="errors.name?.length ? 'true' : undefined"
                             :aria-describedby="errors.name?.length ? 'sign-up-name-error' : undefined"
                         >
@@ -91,10 +92,18 @@ export default {
                     </div>
 
                     <label class="auth-check">
-                        <input name="terms" type="checkbox" value="1" required :checked="values.terms">
+                        <input
+                            name="terms"
+                            type="checkbox"
+                            value="1"
+                            required
+                            :checked="values.terms"
+                            :aria-invalid="errors.terms?.length ? 'true' : undefined"
+                            :aria-describedby="errors.terms?.length ? 'sign-up-terms-error' : undefined"
+                        >
                         <span>I agree to the Terms of Service and Privacy Policy.</span>
                     </label>
-                    <p v-if="errors.terms?.length" class="auth-field-error">{{ errors.terms[0] }}</p>
+                    <p v-if="errors.terms?.length" id="sign-up-terms-error" class="auth-field-error">{{ errors.terms[0] }}</p>
 
                     <button class="btn btn-black auth-submit" type="submit">Create account</button>
                 </form>

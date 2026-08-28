@@ -25,12 +25,18 @@ class AuthController extends AbstractController
             return $this->redirectToRoute('app_main');
         }
 
+        $notices = $request->getSession()->getFlashBag()->get('password_reset_success');
+
+        if ('session_expired' === $request->query->getString('reason')) {
+            $notices[] = 'Your session expired. Please log in again.';
+        }
+
         return $this->render('auth/login.html.twig', [
             'last_email' => User::normalizeEmail($authenticationUtils->getLastUsername()),
             'login_error' => null !== $authenticationUtils->getLastAuthenticationError()
                 ? 'Invalid email or password.'
                 : null,
-            'login_notices' => $request->getSession()->getFlashBag()->get('password_reset_success'),
+            'login_notices' => $notices,
         ]);
     }
 

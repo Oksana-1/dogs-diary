@@ -28,7 +28,7 @@ export default {
                     <p>If an account matches the email you entered, a password reset link is on its way.</p>
                 </div>
 
-                <div class="auth-notice">
+                <div class="auth-notice" role="status">
                     <p>The link expires in {{ tokenLifetimeMinutes }} minutes. Check your spam folder if you don't see the message.</p>
                 </div>
 

@@ -47,12 +47,12 @@ export default {
                             required
                             minlength="12"
                             :aria-invalid="errors.password ? 'true' : undefined"
-                            :aria-describedby="errors.password ? 'reset-password-error' : undefined"
+                            :aria-describedby="errors.password ? 'reset-password-error' : 'reset-password-help'"
                         >
                         <p v-if="errors.password" id="reset-password-error" class="auth-field-error" role="alert">
                             {{ errors.password.join(' ') }}
                         </p>
-                        <p v-else class="auth-help">Use at least 12 characters.</p>
+                        <p v-else id="reset-password-help" class="auth-help">Use at least 12 characters.</p>
                     </div>
 
                     <div class="auth-field">

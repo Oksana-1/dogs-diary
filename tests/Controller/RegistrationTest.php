@@ -52,6 +52,8 @@ final class RegistrationTest extends WebTestCase
         self::assertSelectorExists('#sign-up-email-error');
         self::assertSelectorExists('#sign-up-password-error');
         self::assertSelectorExists('#sign-up-password-confirmation-error');
+        self::assertSelectorExists('input[name="terms"][aria-invalid="true"][aria-describedby="sign-up-terms-error"]');
+        self::assertSelectorExists('#sign-up-terms-error');
     }
 
     public function testItRegistersAndAuthenticatesANewUser(): void

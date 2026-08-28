@@ -42,6 +42,7 @@
                             <input id="sign-up-{{ input[0] }}" name="{{ input[0] }}" type="{{ input[2] }}"
                                    autocomplete="{{ input[3] }}" placeholder="{{ input[4] }}"
                                    value="{{ attribute(registration_values, input[0]) }}" required
+                                   {% if input[0] == 'name' %}autofocus{% endif %}
                                    {% if attribute(registration_errors, input[0]) is defined %}aria-invalid="true" aria-describedby="sign-up-{{ input[0]|replace({'_': '-'}) }}-error"{% endif %}>
                             {% if attribute(registration_errors, input[0]) is defined %}
                                 <p id="sign-up-{{ input[0]|replace({'_': '-'}) }}-error" class="auth-field-error">{{ attribute(registration_errors, input[0])|first }}</p>
@@ -65,11 +66,12 @@
                     {% endfor %}
 
                     <label class="auth-check">
-                        <input name="terms" type="checkbox" value="1" required {% if registration_values.terms %}checked{% endif %}>
+                        <input name="terms" type="checkbox" value="1" required {% if registration_values.terms %}checked{% endif %}
+                               {% if registration_errors.terms is defined %}aria-invalid="true" aria-describedby="sign-up-terms-error"{% endif %}>
                         <span>I agree to the Terms of Service and Privacy Policy.</span>
                     </label>
                     {% if registration_errors.terms is defined %}
-                        <p class="auth-field-error">{{ registration_errors.terms|first }}</p>
+                        <p id="sign-up-terms-error" class="auth-field-error">{{ registration_errors.terms|first }}</p>
                     {% endif %}
 
                     <button class="btn btn-black auth-submit" type="submit">Create account</button>

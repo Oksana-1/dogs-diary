@@ -2,6 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
+        <meta name="login-url" content="{{ path('app_login') }}">
         {% if app.user %}
             <meta name="csrf-token" content="{{ csrf_token('api') }}">
         {% endif %}

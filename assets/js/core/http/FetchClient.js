@@ -31,6 +31,7 @@ export default class FetchClient extends HttpClient {
                     baseUrl = "",
                     defaultHeaders = {},
                     csrfToken = null,
+                    onUnauthorized = null,
                     timeout = 15000
                 } = {}) {
 
@@ -39,6 +40,7 @@ export default class FetchClient extends HttpClient {
         this.baseUrl = baseUrl;
         this.defaultHeaders = defaultHeaders;
         this.csrfToken = csrfToken;
+        this.onUnauthorized = onUnauthorized;
         this.timeout = timeout;
     }
 
@@ -83,6 +85,7 @@ export default class FetchClient extends HttpClient {
                 this.baseUrl + url,
                 {
                     method,
+                    credentials: "same-origin",
                     headers: {
                         ...this.defaultHeaders,
                         ...(hasJsonBody
@@ -102,10 +105,14 @@ export default class FetchClient extends HttpClient {
                 }
             );
             if (response.redirected) {
-                throw new HttpError(
-                    response.status,
+                const requestError = new HttpError(
+                    401,
                     `Unexpected redirect to ${response.url} — session likely expired`
                 );
+
+                this.notifyUnauthorized(requestError);
+
+                throw requestError;
             }
 
             const contentType =
@@ -120,11 +127,17 @@ export default class FetchClient extends HttpClient {
             }
 
             if (!response.ok) {
-                throw new HttpError(
+                const requestError = new HttpError(
                     response.status,
                     errorMessage(response.status, response.statusText, data),
                     data
                 );
+
+                if (response.status === 401) {
+                    this.notifyUnauthorized(requestError);
+                }
+
+                throw requestError;
             }
 
             return data;
@@ -150,6 +163,12 @@ export default class FetchClient extends HttpClient {
             if (signal && forwardAbort) {
                 signal.removeEventListener("abort", forwardAbort);
             }
+        }
+    }
+
+    notifyUnauthorized(error) {
+        if (typeof this.onUnauthorized === "function") {
+            this.onUnauthorized(error);
         }
     }
 

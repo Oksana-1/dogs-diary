@@ -163,4 +163,14 @@ Compile assets for deployment:
 php bin/console asset-map:compile
 ```
 
-The repository does not currently include an automated test suite.
+Run the PHP test suite:
+
+```bash
+php bin/phpunit
+```
+
+Run the frontend transport tests with Node.js:
+
+```bash
+node --test tests/JavaScript/FetchClient.test.mjs
+```
