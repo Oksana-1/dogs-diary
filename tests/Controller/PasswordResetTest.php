@@ -57,11 +57,18 @@ final class PasswordResetTest extends WebTestCase
         $this->client->followRedirect();
         self::assertSelectorTextContains('.auth-heading', 'If an account matches');
         self::assertSelectorTextNotContains('body', self::EMAIL);
+        $existingAccountConfirmation = $this->client->getCrawler()->filter('.auth-card')->text(normalizeWhitespace: true);
 
         $crawler = $this->client->request('GET', '/reset-password');
         $this->client->submit($crawler->selectButton('Send reset link')->form(['email' => 'unknown@example.com']));
         self::assertResponseRedirects('/reset-password/check-email');
         self::assertEmailCount(0);
+
+        $this->client->followRedirect();
+        self::assertSame(
+            $existingAccountConfirmation,
+            $this->client->getCrawler()->filter('.auth-card')->text(normalizeWhitespace: true),
+        );
     }
 
     public function testRequestFormRejectsInvalidCsrfWithoutSendingMail(): void
@@ -120,6 +127,34 @@ final class PasswordResetTest extends WebTestCase
         self::assertSelectorTextContains('#reset-password-error', 'at least 12');
         self::assertSelectorTextContains('#reset-password-confirmation-error', 'do not match');
         self::assertSame(1, $this->entityManager->getRepository(ResetPasswordRequest::class)->count([]));
+    }
+
+    public function testPasswordResetInvalidatesAnExistingRememberMeCookie(): void
+    {
+        $crawler = $this->client->request('GET', '/login');
+        $this->client->submit($crawler->selectButton('Login')->form([
+            'email' => self::EMAIL,
+            'password' => self::OLD_PASSWORD,
+            'remember_me' => '1',
+        ]));
+        self::assertResponseRedirects('/');
+
+        $rememberMeCookie = $this->client->getCookieJar()->get('REMEMBERME');
+        self::assertNotNull($rememberMeCookie);
+
+        $token = $this->requestToken();
+        $crawler = $this->client->request('GET', '/reset-password/'.$token);
+        $this->client->submit($crawler->selectButton('Reset password')->form([
+            'password' => self::NEW_PASSWORD,
+            'password_confirmation' => self::NEW_PASSWORD,
+        ]));
+        self::assertResponseRedirects('/login');
+
+        $this->client->getCookieJar()->clear();
+        $this->client->getCookieJar()->set($rememberMeCookie);
+        $this->client->request('GET', '/');
+
+        self::assertResponseRedirects('/login');
     }
 
     public function testRepeatedRequestsAreThrottledWithoutRevealingWhy(): void

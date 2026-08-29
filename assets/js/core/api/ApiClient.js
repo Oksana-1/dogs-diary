@@ -1,4 +1,5 @@
 import FetchClient from "../http/FetchClient.js";
+import createSessionExpiryRedirect from "../auth/SessionExpiryRedirect.js";
 class ApiClient {
 
     constructor(httpClient) {
@@ -27,21 +28,8 @@ class ApiClient {
 
 }
 
-let sessionRedirectStarted = false;
-
-function redirectExpiredSession() {
-    if (sessionRedirectStarted) {
-        return;
-    }
-
-    sessionRedirectStarted = true;
-
-    const configuredLoginUrl = document.querySelector('meta[name="login-url"]')?.content ?? "/login";
-    const loginUrl = new URL(configuredLoginUrl, window.location.origin);
-    loginUrl.searchParams.set("reason", "session_expired");
-
-    window.location.replace(loginUrl.toString());
-}
+const loginUrl = document.querySelector('meta[name="login-url"]')?.content ?? "/login";
+const redirectExpiredSession = createSessionExpiryRedirect(loginUrl);
 
 const apiClient = new ApiClient(
     new FetchClient({

@@ -3,6 +3,7 @@ import test from "node:test";
 
 import FetchClient from "../../assets/js/core/http/FetchClient.js";
 import { HttpError } from "../../assets/js/core/http/HttpClient.js";
+import createSessionExpiryRedirect from "../../assets/js/core/auth/SessionExpiryRedirect.js";
 
 function jsonResponse(body, status = 200) {
     return new Response(JSON.stringify(body), {
@@ -97,4 +98,19 @@ test("notifies the shared session handler for an API 401", async (context) => {
     assert.ok(unauthorizedError instanceof HttpError);
     assert.equal(unauthorizedError.status, 401);
     assert.equal(unauthorizedError.code, "authentication_required");
+});
+
+test("redirects concurrent expired-session notifications to login only once", () => {
+    const redirects = [];
+    const redirectExpiredSession = createSessionExpiryRedirect("/login", {
+        origin: "https://dogs-diary.test",
+        replace: (url) => redirects.push(url),
+    });
+
+    redirectExpiredSession();
+    redirectExpiredSession();
+
+    assert.deepEqual(redirects, [
+        "https://dogs-diary.test/login?reason=session_expired",
+    ]);
 });
