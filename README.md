@@ -139,6 +139,9 @@ Add `--delete-orphans` only when orphaned files should be permanently removed.
 
 ## Development Commands
 
+Production environment requirements and the fail-safe preflight command are
+documented in [`docs/PRODUCTION_CONFIGURATION.md`](docs/PRODUCTION_CONFIGURATION.md).
+
 Check PHP formatting without modifying files:
 
 ```bash

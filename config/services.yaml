@@ -34,5 +34,16 @@ services:
     App\Application\Media\MediaStorageInterface:
         alias: App\Infrastructure\Media\LocalMediaStorage
 
+    App\Command\CheckProductionConfigCommand:
+        arguments:
+            $environment: '%kernel.environment%'
+            $debug: '%kernel.debug%'
+            $appSecret: '%env(APP_SECRET)%'
+            $databaseUrl: '%env(DATABASE_URL)%'
+            $mailerDsn: '%env(MAILER_DSN)%'
+            $mailerFromAddress: '%env(MAILER_FROM_ADDRESS)%'
+            $mailerFromName: '%env(MAILER_FROM_NAME)%'
+            $appBaseUrl: '%env(APP_BASE_URL)%'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
