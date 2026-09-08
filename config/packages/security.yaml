@@ -43,6 +43,7 @@ security:
                 csrf_parameter: _csrf_token
 
     access_control:
+        - { path: ^/healthz$, roles: PUBLIC_ACCESS }
         - { path: ^/login$, roles: PUBLIC_ACCESS }
         - { path: ^/sign-up$, roles: PUBLIC_ACCESS }
         - { path: ^/reset-password(?:/|$), roles: PUBLIC_ACCESS }

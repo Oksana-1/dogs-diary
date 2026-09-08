@@ -25,3 +25,14 @@ when@test:
                     adapter: cache.adapter.array
         session:
             storage_factory_id: session.storage.factory.mock_file
+
+when@prod:
+    framework:
+        # Railway terminates HTTPS at its edge proxy. Trust only the immediate
+        # peer so Symfony sees the original scheme and client address.
+        trusted_proxies: 'REMOTE_ADDR'
+        trusted_headers:
+            - 'x-forwarded-for'
+            - 'x-forwarded-host'
+            - 'x-forwarded-proto'
+            - 'x-forwarded-port'

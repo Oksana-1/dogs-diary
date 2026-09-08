@@ -25,6 +25,7 @@ final class SecurityAccessTest extends WebTestCase
      */
     public static function publicPageProvider(): iterable
     {
+        yield 'health check' => ['/healthz'];
         yield 'login' => ['/login'];
         yield 'registration' => ['/sign-up'];
         yield 'password-reset request' => ['/reset-password'];

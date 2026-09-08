@@ -142,6 +142,9 @@ Add `--delete-orphans` only when orphaned files should be permanently removed.
 Production environment requirements and the fail-safe preflight command are
 documented in [`docs/PRODUCTION_CONFIGURATION.md`](docs/PRODUCTION_CONFIGURATION.md).
 
+The production image and Railway runtime setup are documented in
+[`docs/PRODUCTION_DOCKER.md`](docs/PRODUCTION_DOCKER.md).
+
 Check PHP formatting without modifying files:
 
 ```bash
