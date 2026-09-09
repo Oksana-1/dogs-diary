@@ -145,6 +145,9 @@ documented in [`docs/PRODUCTION_CONFIGURATION.md`](docs/PRODUCTION_CONFIGURATION
 The production image and Railway runtime setup are documented in
 [`docs/PRODUCTION_DOCKER.md`](docs/PRODUCTION_DOCKER.md).
 
+The GitHub Actions quality gate and its exact local commands are documented in
+[`docs/CI.md`](docs/CI.md).
+
 Check PHP formatting without modifying files:
 
 ```bash
