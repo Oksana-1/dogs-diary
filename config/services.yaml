@@ -31,6 +31,10 @@ services:
         arguments:
             $uploadDirectory: '%app.media.upload_directory%'
 
+    App\EventSubscriber\SecurityResponseHeadersSubscriber:
+        arguments:
+            $environment: '%kernel.environment%'
+
     App\Application\Media\MediaStorageInterface:
         alias: App\Infrastructure\Media\LocalMediaStorage
 
