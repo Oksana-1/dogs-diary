@@ -1139,6 +1139,51 @@ textarea:focus-visible {
     text-align: center;
 }
 
+/* Error pages ------------------------------------------------------------ */
+
+.main:has(.error-page) {
+    min-height: 100%;
+}
+
+.error-page {
+    display: grid;
+    min-height: calc(100vh - var(--header-height));
+    padding: clamp(2rem, 8vw, 6rem) 1.5rem;
+    place-items: center;
+    background:
+        radial-gradient(circle at 85% 15%, var(--bg-info) 0, transparent 28rem),
+        var(--bg-light);
+}
+
+.error-card {
+    width: min(100%, 620px);
+    padding: clamp(2rem, 6vw, 4rem);
+    border-radius: 2rem;
+    background: var(--bg-main);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.08);
+    text-align: center;
+}
+
+.error-code {
+    margin-bottom: 0.75rem;
+    color: var(--text-info);
+    font-size: clamp(3rem, 10vw, 6rem);
+    font-weight: 700;
+    line-height: 1;
+}
+
+.error-card h1 {
+    margin-bottom: 1rem;
+    font-size: clamp(1.75rem, 5vw, 2.5rem);
+    font-weight: 600;
+}
+
+.error-card > p:not(.error-code) {
+    margin: 0 auto 2rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+
 /* Authentication pages --------------------------------------------------- */
 
 .main:has(.auth-page) {
