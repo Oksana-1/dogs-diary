@@ -49,6 +49,17 @@ Generate `APP_SECRET` locally with:
 php -r 'echo bin2hex(random_bytes(32)), PHP_EOL;'
 ```
 
+Railway Free, Trial, and Hobby plans do not provide outbound SMTP. This project
+therefore uses the Resend HTTPS API transport in production:
+
+```dotenv
+MAILER_DSN=resend+api://<resend-api-key>@default
+MAILER_FROM_ADDRESS=no-reply@<verified-domain>
+```
+
+Verify the sender domain in Resend before deploying, and store the DSN only as
+a sealed Railway service variable. Do not commit the API key.
+
 Seal `APP_SECRET`, `DATABASE_URL`, and `MAILER_DSN` after configuration. Do not
 set `PORT`; Railway injects it and the Caddy configuration already consumes it.
 Before deployment, run this through Railway's service shell or pre-deploy step:
