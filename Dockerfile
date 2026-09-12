@@ -12,6 +12,8 @@ WORKDIR /app
 
 FROM php_base AS build
 
+ENV COMPOSER_ALLOW_SUPERUSER=1
+
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 COPY composer.json composer.lock symfony.lock ./
 
