@@ -57,12 +57,15 @@ MAILER_DSN=resend+api://<resend-api-key>@default
 MAILER_FROM_ADDRESS=no-reply@<verified-domain>
 ```
 
+Do not store the bare `re_...` API key in `MAILER_DSN`; without the
+`resend+api://` scheme Symfony cannot construct the mail transport.
+
 Verify the sender domain in Resend before deploying, and store the DSN only as
 a sealed Railway service variable. Do not commit the API key.
 
 Seal `APP_SECRET`, `DATABASE_URL`, and `MAILER_DSN` after configuration. Do not
 set `PORT`; Railway injects it and the Caddy configuration already consumes it.
-Before deployment, run this through Railway's service shell or pre-deploy step:
+The image entrypoint runs this check automatically before starting FrankenPHP:
 
 ```bash
 php bin/console app:production:check --no-debug
@@ -75,7 +78,7 @@ Configure the application service with:
 | Setting | Value |
 |---|---|
 | Builder | Dockerfile |
-| Pre-deploy command | `php bin/console app:production:check --no-debug && php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration` |
+| Pre-deploy command | `php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration` |
 | Pre-deploy timeout | `300` seconds |
 | Healthcheck path | `/healthz` |
 | Healthcheck timeout | `300` seconds |
@@ -83,9 +86,11 @@ Configure the application service with:
 | Replicas | `1` |
 
 The pre-deploy step runs in a separate container with environment variables and
-private networking, but without the application Volume. A non-zero exit blocks
-the release. Migrations must therefore remain database-only; file changes belong
-in the normal application process or a separately supervised maintenance task.
+private networking, but without the application Volume. Keep it as the single
+migration command shown above; the image entrypoint performs the production
+configuration check separately. A non-zero exit blocks the release. Migrations
+must therefore remain database-only; file changes belong in the normal
+application process or a separately supervised maintenance task.
 
 The healthcheck accepts any `2xx`; `/healthz` returns `204`. Railway uses it only
 to gate a new deployment, not as continuous uptime monitoring. Because the app
