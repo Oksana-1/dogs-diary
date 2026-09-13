@@ -25,40 +25,44 @@ The UI is server-rendered with Twig and enhanced by Vue 3 islands. Data is expos
 
 ### Prerequisites
 
-- PHP 8.2 or newer with Composer
 - Docker with Docker Compose
-- Symfony CLI for the documented development server command
 
 ### Setup
 
-1. Install the PHP dependencies:
+1. Build and start the application, PostgreSQL 16, and Mailpit:
 
    ```bash
-   composer install
+   docker compose up --build
    ```
 
-2. Start PostgreSQL:
+   The application is available at <http://localhost:8080>. Mailpit's local
+   inbox is available at <http://localhost:8025>.
+
+2. Run Symfony or Composer commands inside the application container:
 
    ```bash
-   docker compose up -d
+   docker compose exec app php bin/console about
+   docker compose exec app composer require vendor/package
    ```
 
-3. If necessary, override `DATABASE_URL` in `.env.local`. The committed default connects to the Docker Compose database on `127.0.0.1:5432`.
-
-4. Create the database and apply the schema:
+3. Stop the stack when finished:
 
    ```bash
-   php bin/console doctrine:database:create --if-not-exists
-   php bin/console doctrine:migrations:migrate --no-interaction
+   docker compose down
    ```
 
-5. Start the application:
+The container installs the locked Composer dependencies and applies pending
+Doctrine migrations on startup. Project sources are bind-mounted, so PHP, Twig,
+and JavaScript changes are available without rebuilding the image. The named
+volumes preserve PostgreSQL data, uploads, and container-managed dependencies.
+Use `docker compose down --volumes` only when you intentionally want to delete
+all local database and upload data.
 
-   ```bash
-   symfony serve
-   ```
-
-AssetMapper serves the development assets directly. A Node.js install or frontend bundler is not required.
+The development target inherits the production PHP 8.4, FrankenPHP, Caddy,
+extensions, and PHP limits from the same `Dockerfile`. Development-only error
+display and timestamp validation remain enabled locally. AssetMapper serves the
+development assets directly; a Node.js install or frontend bundler is not
+required for the application runtime.
 
 ## Application Structure
 
@@ -151,31 +155,36 @@ The GitHub Actions quality gate and its exact local commands are documented in
 Check PHP formatting without modifying files:
 
 ```bash
-vendor/bin/php-cs-fixer fix --dry-run --diff
+docker compose exec app vendor/bin/php-cs-fixer fix --dry-run --diff
 ```
 
 Apply PHP formatting:
 
 ```bash
-vendor/bin/php-cs-fixer fix
+docker compose exec app vendor/bin/php-cs-fixer fix
 ```
 
 Validate Doctrine mappings:
 
 ```bash
-php bin/console doctrine:schema:validate
+docker compose exec app php bin/console doctrine:schema:validate
 ```
 
 Compile assets for deployment:
 
 ```bash
-php bin/console asset-map:compile
+docker compose exec app php bin/console asset-map:compile
 ```
 
 Run the PHP test suite:
 
 ```bash
-php bin/phpunit
+docker compose exec \
+  -e DATABASE_URL='sqlite:///:memory:' \
+  -e MAILER_DSN='null://null' \
+  -e MAILER_FROM_ADDRESS='no-reply@dogs-diary.test' \
+  -e APP_BASE_URL='http://localhost' \
+  app php bin/phpunit
 ```
 
 Run the frontend transport tests with Node.js:

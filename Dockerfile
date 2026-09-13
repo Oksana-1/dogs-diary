@@ -57,3 +57,17 @@ EXPOSE 8080
 
 ENTRYPOINT ["app-entrypoint"]
 CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
+
+FROM runtime AS development
+
+ENV APP_ENV=dev \
+    APP_DEBUG=1 \
+    COMPOSER_ALLOW_SUPERUSER=1 \
+    COMPOSER_HOME=/app/var/composer
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+COPY docker/php.dev.ini /usr/local/etc/php/conf.d/zzz-dev.ini
+
+# Keep the production runtime as the default target used by Railway and by a
+# plain `docker build`, while Compose explicitly selects `development`.
+FROM runtime AS production
