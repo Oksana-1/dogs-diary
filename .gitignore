@@ -20,6 +20,7 @@
 ###< symfony/asset-mapper ###
 
 .idea
+/plans/
 
 ###> phpunit/phpunit ###
 /phpunit.xml

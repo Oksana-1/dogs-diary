@@ -1,5 +1,6 @@
 import { computed, reactive, ref } from 'vue';
 import useAsyncModal from './useAsyncModal.js';
+import { formatDate } from '../../../../utils/helpers.js';
 
 export default function useDogDetails(dogId, repository) {
     const dog = ref(null);
@@ -63,10 +64,6 @@ export default function useDogDetails(dogId, repository) {
         if (deleted) {
             window.location.assign('/');
         }
-    }
-
-    function formatDate(value, options = { year: 'numeric', month: 'long', day: 'numeric' }) {
-        return value ? new Date(`${value}T00:00:00`).toLocaleDateString('en-US', options) : '—';
     }
 
     function formatGender(gender) {
