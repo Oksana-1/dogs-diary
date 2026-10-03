@@ -1,0 +1,113 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+    printf '%s\n' \
+        'Usage: bin/check [all|php|frontend] [--local]' \
+        '' \
+        'all       PHP quality checks and frontend tests (default).' \
+        'php       Composer validation/audit, PHPUnit, formatting, Symfony lint.' \
+        'frontend  Node.js transport tests.' \
+        '--local   Run PHP/Composer on the host instead of the running app container.' \
+        '' \
+        'Requires installed dependencies; does not install them or start Docker.' \
+        'PHP uses isolated SQLite in memory and disabled email delivery.' \
+        'PostgreSQL migrations/schema checks remain a separate CI job.'
+}
+
+scope=all
+scope_set=false
+local_php=false
+for argument in "$@"; do
+    case "$argument" in
+        all|php|frontend)
+            if "$scope_set"; then
+                printf 'Specify only one check scope.\n' >&2
+                exit 2
+            fi
+            scope="$argument"
+            scope_set=true
+            ;;
+        --local) local_php=true ;;
+        -h|--help) usage; exit 0 ;;
+        *) printf 'Unknown argument: %s\n' "$argument" >&2; usage >&2; exit 2 ;;
+    esac
+done
+
+check_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+cd -- "$check_root"
+
+require_command() {
+    if ! command -v "$1" >/dev/null 2>&1; then
+        printf 'Required command is unavailable: %s\n' "$1" >&2
+        exit 127
+    fi
+}
+
+# Explicit values override development/container environment variables.
+test_environment=(
+    APP_ENV=test
+    APP_DEBUG=1
+    'DATABASE_URL=sqlite:///:memory:'
+    'MAILER_DSN=null://null'
+    'MAILER_FROM_ADDRESS=no-reply@dogs-diary.test'
+    'MAILER_FROM_NAME=Dogs Diary'
+    'APP_BASE_URL=http://localhost'
+    'APP_SECRET=dogs-diary-check-only-secret'
+)
+
+php_runner=()
+if [[ "$scope" != frontend ]]; then
+    if "$local_php"; then
+        require_command php
+        require_command composer
+        if [[ ! -f vendor/autoload.php ]]; then
+            printf 'Dependencies missing. Run composer install first.\n' >&2
+            exit 1
+        fi
+        php_runner=(env "${test_environment[@]}")
+    else
+        require_command docker
+        php_runner=(docker compose exec -T)
+        for setting in "${test_environment[@]}"; do
+            php_runner+=(-e "$setting")
+        done
+        php_runner+=(app)
+    fi
+fi
+if [[ "$scope" != php ]]; then
+    require_command node
+fi
+
+run() {
+    local runtime="$1"
+    shift
+    local result=0
+    printf '\nRunning:'
+    printf ' %q' "$@"
+    printf '\n'
+    if [[ "$runtime" == php ]]; then
+        "${php_runner[@]}" "$@" || result=$?
+    else
+        "$@" || result=$?
+    fi
+    if [[ "$result" -ne 0 ]]; then
+        printf 'FAILED (exit %s). Remaining checks were not run.\n' "$result" >&2
+        exit "$result"
+    fi
+}
+
+if [[ "$scope" != frontend ]]; then
+    run php composer validate --strict --no-check-publish
+    run php composer audit --locked --abandoned=fail --no-interaction
+    run php php bin/phpunit
+    run php vendor/bin/php-cs-fixer fix --dry-run --diff
+    run php php bin/console lint:yaml config --parse-tags
+    run php php bin/console lint:twig templates
+    run php php bin/console lint:container
+fi
+if [[ "$scope" != php ]]; then
+    run host node --test tests/JavaScript/FetchClient.test.mjs
+fi
+
+printf '\nPASS: %s checks completed. PostgreSQL migration/schema checks are separate.\n' "$scope"

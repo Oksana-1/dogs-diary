@@ -143,6 +143,16 @@ Add `--delete-orphans` only when orphaned files should be permanently removed.
 
 ## Development Commands
 
+Run the local quality checks (PHP in the running app container, Node.js on the host):
+
+```bash
+bin/check
+```
+
+Use `bin/check php` or `bin/check frontend` for a focused run, or add `--local`
+to use host PHP/Composer. See [`docs/CI.md`](docs/CI.md) for prerequisites,
+failure behavior, and the separate PostgreSQL checks.
+
 Production environment requirements and the fail-safe preflight command are
 documented in [`docs/PRODUCTION_CONFIGURATION.md`](docs/PRODUCTION_CONFIGURATION.md).
 

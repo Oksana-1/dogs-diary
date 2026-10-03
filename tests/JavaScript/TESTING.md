@@ -43,6 +43,10 @@ Current executable command:
 node --test tests/JavaScript/FetchClient.test.mjs
 ```
 
+From the repository root, `bin/check frontend` wraps this same command and
+propagates its exit status. It uses host Node.js and does not require Docker or
+Composer. This wrapper adds no frontend dependencies or package toolchain.
+
 When Vitest and package scripts are added, update this section in the same change with the canonical commands for a full run, watch mode, and a single file.
 
 ## 3. Test locations and names
