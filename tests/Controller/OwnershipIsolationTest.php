@@ -93,6 +93,71 @@ final class OwnershipIsolationTest extends WebTestCase
         self::assertSame('Shared Dog', $this->jsonResponse()['name']);
     }
 
+    public function testDogListContainsCardFieldsAndSelectedThumbnailWithoutTreatments(): void
+    {
+        $this->aliceDog
+            ->setGender(\App\Enum\GenderTypeEnum::FEMALE)
+            ->setAdoptDate(new \DateTimeImmutable('2021-02-03'))
+            ->setStatus('Active')
+            ->setWeight(18)
+            ->setHeight(45);
+        $this->aliceDog->selectThumbnailMedia($this->aliceDogMedia);
+        $this->aliceDog->selectProfileMedia($this->aliceDogMedia);
+        $this->entityManager->flush();
+        $this->entityManager->clear();
+
+        $this->client->request('GET', '/api/dogs');
+
+        self::assertResponseIsSuccessful();
+        [$dog, $sharedDog] = $this->jsonResponse();
+        self::assertSame([
+            'id', 'name', 'birthDate', 'gender', 'adoptDate', 'weight', 'height',
+            'status', 'thumbnail',
+        ], array_keys($dog));
+        self::assertSame($this->id($this->aliceDog), $dog['id']);
+        self::assertSame('Alice Dog', $dog['name']);
+        self::assertSame('2020-01-01', $dog['birthDate']);
+        self::assertSame('female', $dog['gender']);
+        self::assertSame('2021-02-03', $dog['adoptDate']);
+        self::assertSame(18, $dog['weight']);
+        self::assertSame(45, $dog['height']);
+        self::assertSame('Active', $dog['status']);
+        self::assertSame('/api/dogs/'.$dog['id'].'/media/'.$this->id($this->aliceDogMedia), $dog['thumbnail']['url']);
+        self::assertNull($sharedDog['thumbnail']);
+        self::assertSame('Shared Dog', $sharedDog['name']);
+
+        $this->client->request('GET', '/api/dogs/'.$dog['id']);
+        self::assertResponseIsSuccessful();
+        self::assertSame($dog['thumbnail']['url'], $this->jsonResponse()['profileMedia']['url']);
+        self::assertSame('Alice Treatment', $this->jsonResponse()['treatments'][0]['productName']);
+    }
+
+    public function testDogListQueryCountStaysBoundedAsDogsWithTreatmentsGrow(): void
+    {
+        $this->entityManager->clear();
+        $this->client->enableProfiler();
+        $this->client->request('GET', '/api/dogs');
+        self::assertResponseIsSuccessful();
+        $smallQueryCount = $this->client->getProfile()->getCollector('db')->getQueryCount();
+
+        $owner = $this->entityManager->find(User::class, $this->id($this->alice));
+        for ($index = 0; $index < 5; ++$index) {
+            $dog = $this->createDog('Extra Dog '.$index, $owner);
+            $this->entityManager->flush();
+            $this->createTreatment($dog, 'Extra Treatment '.$index);
+            $this->createDogMedia($dog, (string) ($index + 1));
+        }
+        $this->entityManager->flush();
+        $this->entityManager->clear();
+
+        $this->client->enableProfiler();
+        $this->client->request('GET', '/api/dogs');
+        self::assertResponseIsSuccessful();
+        self::assertCount(7, $this->jsonResponse());
+        $largeQueryCount = $this->client->getProfile()->getCollector('db')->getQueryCount();
+        self::assertSame($smallQueryCount, $largeQueryCount);
+    }
+
     public function testForeignDogCannotBeReadFromApiOrWebPage(): void
     {
         $this->client->request('GET', '/api/dogs/'.$this->id($this->bobDog));
@@ -110,7 +175,10 @@ final class OwnershipIsolationTest extends WebTestCase
         $this->client->jsonRequest('POST', '/api/dogs', $this->dogPayload('New Dog'));
 
         self::assertResponseStatusCodeSame(201);
-        $createdId = $this->jsonResponse()['id'];
+        $createdResponse = $this->jsonResponse();
+        self::assertArrayHasKey('treatments', $createdResponse);
+        self::assertSame([], $createdResponse['treatments']);
+        $createdId = $createdResponse['id'];
         $createdDog = $this->entityManager->find(Dog::class, $createdId);
         self::assertInstanceOf(Dog::class, $createdDog);
         self::assertCount(1, $createdDog->getOwners());
@@ -119,6 +187,7 @@ final class OwnershipIsolationTest extends WebTestCase
         $this->client->jsonRequest('PUT', '/api/dogs/'.$createdId, $this->dogPayload('Updated Dog'));
         self::assertResponseIsSuccessful();
         self::assertSame('Updated Dog', $this->jsonResponse()['name']);
+        self::assertArrayHasKey('treatments', $this->jsonResponse());
 
         $this->client->request('DELETE', '/api/dogs/'.$createdId);
         self::assertResponseStatusCodeSame(204);

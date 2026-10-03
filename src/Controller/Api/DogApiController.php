@@ -9,6 +9,7 @@ use App\Application\Media\MediaUrlGenerator;
 use App\Controller\Api\Dto\CreateDogPayload;
 use App\Controller\Api\Dto\UpdateDogPayload;
 use App\Entity\User;
+use App\View\DogSummaryView;
 use App\View\DogView;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,7 +28,7 @@ class DogApiController extends AbstractController
     public function getCollection(#[CurrentUser] User $owner, DogService $dogService): Response
     {
         return $this->json(array_map(
-            fn ($dog) => DogView::from($dog, $this->mediaUrlGenerator)->toArray(),
+            fn ($dog) => DogSummaryView::from($dog, $this->mediaUrlGenerator)->toArray(),
             $dogService->list($owner),
         ));
     }

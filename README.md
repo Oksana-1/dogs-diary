@@ -87,7 +87,7 @@ The `/` and `/dog/{id}` routes render lightweight Twig shells. `assets/app.js` m
 
 ### Dogs
 
-- `GET /api/dogs` — list dogs.
+- `GET /api/dogs` — list dog summaries with card fields and selected thumbnails, without treatment history.
 - `GET /api/dogs/{id}` — get one dog.
 - `POST /api/dogs` — create a dog.
 - `PUT /api/dogs/{id}` — update a dog.
