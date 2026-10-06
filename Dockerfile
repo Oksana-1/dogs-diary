@@ -39,9 +39,12 @@ RUN composer dump-autoload \
 
 FROM php_base AS runtime
 
+COPY docker/pgdg.sources /etc/apt/sources.list.d/pgdg.sources
+
 RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \
+    && curl --fail --silent --show-error https://www.postgresql.org/media/keys/ACCC4CF8.asc -o /usr/share/keyrings/postgresql.asc \
     && apt-get update \
-    && apt-get install -y --no-install-recommends gosu \
+    && apt-get install -y --no-install-recommends gosu python3 restic postgresql-client-16 \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /app /app
@@ -50,7 +53,7 @@ COPY docker/entrypoint.sh /usr/local/bin/app-entrypoint
 COPY docker/php.ini /usr/local/etc/php/conf.d/zz-app.ini
 
 RUN chmod +x /usr/local/bin/app-entrypoint \
-    && mkdir -p /app/var/cache /app/var/log /app/var/uploads /config /data \
+    && mkdir -p /app/var/cache /app/var/log /app/var/uploads /app/var/backup /config /data \
     && chown -R www-data:www-data /app/var /config /data
 
 EXPOSE 8080

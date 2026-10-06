@@ -1,8 +1,8 @@
 #!/bin/sh
 set -eu
 
-mkdir -p /app/var/cache /app/var/log /app/var/uploads /config /data
-chown www-data:www-data /app/var/cache /app/var/log /app/var/uploads /config /data
+mkdir -p /app/var/cache /app/var/log /app/var/uploads /app/var/backup /config /data
+chown www-data:www-data /app/var/cache /app/var/log /app/var/uploads /app/var/backup /config /data
 
 if [ "${APP_ENV:-prod}" = "prod" ]; then
     gosu www-data php /app/bin/console app:production:check --no-debug
@@ -13,6 +13,10 @@ else
     chown -R www-data:www-data /app/vendor /app/assets/vendor "${COMPOSER_HOME:-/app/var/composer}"
     gosu www-data composer install --no-interaction --prefer-dist
     gosu www-data php /app/bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
+fi
+
+if [ "${BACKUP_SCHEDULE_ENABLED:-0}" = "1" ]; then
+    exec gosu www-data python3 -B /app/ops/backup.py serve "$@"
 fi
 
 exec gosu www-data "$@"

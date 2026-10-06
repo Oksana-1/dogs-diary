@@ -143,6 +143,10 @@ Add `--delete-orphans` only when orphaned files should be permanently removed.
 
 ## Development Commands
 
+Encrypted PostgreSQL/uploads backups to Cloudflare R2 and their activation steps
+are documented in [`docs/R2_BACKUPS.md`](docs/R2_BACKUPS.md). Scheduling is disabled
+by default; credentials alone do not enable backups.
+
 Run the local quality checks (PHP in the running app container, Node.js on the host):
 
 ```bash

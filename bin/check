@@ -5,7 +5,7 @@ usage() {
     printf '%s\n' \
         'Usage: bin/check [all|php|frontend] [--local]' \
         '' \
-        'all       PHP quality checks and frontend tests (default).' \
+        'all       PHP quality checks, frontend tests, and Python backup tests (default).' \
         'php       Composer validation/audit, PHPUnit, formatting, Symfony lint.' \
         'frontend  Node.js transport tests.' \
         '--local   Run PHP/Composer on the host instead of the running app container.' \
@@ -78,6 +78,9 @@ fi
 if [[ "$scope" != php ]]; then
     require_command node
 fi
+if [[ "$scope" == all ]]; then
+    require_command python3
+fi
 
 run() {
     local runtime="$1"
@@ -108,6 +111,9 @@ if [[ "$scope" != frontend ]]; then
 fi
 if [[ "$scope" != php ]]; then
     run host node --test tests/JavaScript/FetchClient.test.mjs
+fi
+if [[ "$scope" == all ]]; then
+    run host python3 -B -m unittest discover -s tests/Operations -v
 fi
 
 printf '\nPASS: %s checks completed. PostgreSQL migration/schema checks are separate.\n' "$scope"

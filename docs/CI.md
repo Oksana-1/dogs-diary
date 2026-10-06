@@ -24,6 +24,10 @@ before running PHP checks. `--local` requires host PHP, Composer, the required P
 extensions (including SQLite), and installed Composer dependencies. CI uses PHP
 8.4 and Node.js 24. The script does not install dependencies or start containers.
 
+The full `bin/check` run also executes the backup workflow unit tests using host
+Python 3 (`python3 -B -m unittest discover -s tests/Operations -v`). These tests
+require no additional Python packages and never access production or R2.
+
 The PHP checks reuse the quality-job commands below, excluding dependency
 installation. They explicitly set `APP_ENV=test`, an in-memory SQLite database,
 disabled email delivery, and test application settings, overriding inherited
@@ -47,6 +51,7 @@ composer install --prefer-dist --no-interaction --no-progress
 composer audit --locked --abandoned=fail --no-interaction
 php bin/phpunit
 node --test tests/JavaScript/FetchClient.test.mjs
+python3 -B -m unittest discover -s tests/Operations -v
 vendor/bin/php-cs-fixer fix --dry-run --diff
 php bin/console lint:yaml config --parse-tags
 php bin/console lint:twig templates

@@ -99,10 +99,30 @@ deployments.
 
 ## 5. Migration and backup policy
 
+The optional offsite backup implementation uses private Cloudflare R2 storage.
+See [R2 backup setup and restore verification](R2_BACKUPS.md) for configuration,
+retention, scheduling, and activation. Its production success must be recorded;
+do not infer it from the presence of scripts or environment variables.
+
 The current four migrations have been tested from an empty PostgreSQL 16
 database in CI. Their forward path creates the baseline schema, adds users and
 password-reset storage, and tightens treatment-media cardinality. The tightening
 migration aborts safely if legacy data has more than one photo per treatment.
+
+For every production Volume, open the owning service's **Backups** tab and
+enable both schedules:
+
+| Schedule | Railway retention |
+|---|---|
+| Daily | 6 days |
+| Weekly | 27 days |
+
+The PostgreSQL data Volume and the application Volume mounted at
+`/app/var/uploads` are separate backup targets; configuring one does not protect
+the other. Trigger and record a manual backup for each Volume before the first
+restore drill. Railway currently limits a manual backup to 50% of the Volume's
+capacity, and wiping a Volume also deletes its snapshots. Keep portable offsite
+copies for recovery from project or Volume loss.
 
 For the initial empty database:
 
@@ -126,7 +146,92 @@ Enable PostgreSQL point-in-time recovery when the production recovery objective
 requires restoration between scheduled snapshots. Test a logical dump restore
 into a scratch database before relying on it.
 
-## 6. First-deploy smoke test
+### Non-production restore drill
+
+Do not click **Restore** on a production Volume merely to test it. Railway stages
+a replacement Volume at the original mount path and redeploys the service after
+the change is applied. Use a disposable environment or service for a snapshot
+restore. Use portable copies to verify the data without replacing production:
+
+1. Record the source backup timestamps and start time. Never print connection
+   strings or store them in the repository.
+2. Create an encrypted offsite custom-format dump with PostgreSQL's
+   `pg_dump --format=custom --no-owner` and download or copy the uploads tree
+   while it is in a consistent state.
+3. Create an empty scratch PostgreSQL database and scratch uploads Volume. They
+   must not be referenced by the production application.
+4. Restore the dump with `pg_restore --no-owner --exit-on-error` and restore the
+   uploads copy to `/app/var/uploads` on the scratch service.
+5. Point a disposable application deployment at the scratch resources, then
+   run:
+
+   ```bash
+   php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
+   php bin/console doctrine:schema:validate
+   php bin/console app:media:audit --no-interaction --no-debug
+   ```
+
+   Do not pass `--delete-orphans` during a drill or scheduled audit.
+6. Compare source and restored counts for `app_user`, `dog`, `treatment`,
+   `dog_media`, and `treatment_media`. Inspect several highest-ID records and
+   confirm their referenced image/video files can be downloaded from the
+   disposable application.
+7. Record the finish time, duration, counts, migration/schema result, media
+   audit result, and operator. Delete scratch resources only after the record is
+   complete; retain the offsite copies according to the agreed retention policy.
+
+### Backup and restore record
+
+Copy this table into the release notes for every drill:
+
+| Field | Recorded value |
+|---|---|
+| UTC date and operator | |
+| Application commit/tag | |
+| PostgreSQL manual snapshot | |
+| Uploads manual snapshot | |
+| Offsite database dump | |
+| Offsite uploads copy | |
+| Scratch database/Volume | |
+| users / dogs / treatments | |
+| dog media / treatment media | |
+| Migration and schema validation | |
+| Media audit and sampled files | |
+| Total restore duration | |
+| Result and follow-up | |
+
+## 6. Continuous monitoring and media audit
+
+Railway calls `/healthz` while bringing up a deployment, but does not use that
+healthcheck for continuous uptime monitoring. Configure an external monitor
+against the production HTTPS URL with these minimum settings:
+
+- `GET https://<production-domain>/healthz` every 5 minutes;
+- accept only a `2xx` response (the application normally returns `204`);
+- alert after two consecutive failures and notify again on recovery;
+- route alerts to a channel that is checked outside Railway;
+- keep at least 30 days of incident history.
+
+Run the media audit daily as a short-lived scheduled task that exits after the
+command completes:
+
+```bash
+php bin/console app:media:audit --no-interaction --no-debug
+```
+
+The task needs the production database and the same uploads filesystem. Do not
+create a Railway cron service that can see only the database: that would report
+every media row as missing. If the uploads Volume cannot be safely mounted by a
+separate scheduled service, use a trusted external scheduler to run the command
+inside the active application deployment through `railway ssh`, or defer
+automation and record a daily manual run. Treat a non-zero exit as an alert.
+Never schedule `--delete-orphans`.
+
+Record the monitor URL, interval, alert destination, audit schedule, latest
+successful run, and owner in the release notes. Do not mark monitoring complete
+until a deliberate test failure has delivered an alert and a recovery notice.
+
+## 7. First-deploy smoke test
 
 ### Platform and transport
 
@@ -171,7 +276,7 @@ deploying the release tag's commit. It does not roll back PostgreSQL or uploaded
 files. If a schema change is incompatible with the old application, fix forward
 or explicitly restore a verified backup rather than guessing.
 
-## 7. Go/no-go record
+## 8. Go/no-go record
 
 Do not enable production traffic unless every item below is known:
 
@@ -190,4 +295,8 @@ Railway references used for this runbook:
 - <https://docs.railway.com/deployments/github-autodeploys>
 - <https://docs.railway.com/databases/postgresql>
 - <https://docs.railway.com/guides/postgres-backups-restores>
+- <https://docs.railway.com/volumes/backups>
+- <https://docs.railway.com/deployments/healthchecks>
+- <https://docs.railway.com/cron-jobs>
+- <https://docs.railway.com/cli/ssh>
 - <https://docs.railway.com/guides/roll-back-bad-deploy>
