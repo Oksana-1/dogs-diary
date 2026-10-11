@@ -39,9 +39,12 @@ RUN composer dump-autoload \
 
 FROM php_base AS runtime
 
+COPY docker/pgdg.sources /etc/apt/sources.list.d/pgdg.sources
+
 RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \
+    && curl --fail --silent --show-error https://www.postgresql.org/media/keys/ACCC4CF8.asc -o /usr/share/keyrings/postgresql.asc \
     && apt-get update \
-    && apt-get install -y --no-install-recommends gosu \
+    && apt-get install -y --no-install-recommends gosu python3 restic postgresql-client-16 \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /app /app
@@ -50,10 +53,24 @@ COPY docker/entrypoint.sh /usr/local/bin/app-entrypoint
 COPY docker/php.ini /usr/local/etc/php/conf.d/zz-app.ini
 
 RUN chmod +x /usr/local/bin/app-entrypoint \
-    && mkdir -p /app/var/cache /app/var/log /app/var/uploads /config /data \
+    && mkdir -p /app/var/cache /app/var/log /app/var/uploads /app/var/backup /config /data \
     && chown -R www-data:www-data /app/var /config /data
 
 EXPOSE 8080
 
 ENTRYPOINT ["app-entrypoint"]
 CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
+
+FROM runtime AS development
+
+ENV APP_ENV=dev \
+    APP_DEBUG=1 \
+    COMPOSER_ALLOW_SUPERUSER=1 \
+    COMPOSER_HOME=/app/var/composer
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+COPY docker/php.dev.ini /usr/local/etc/php/conf.d/zzz-dev.ini
+
+# Keep the production runtime as the default target used by Railway and by a
+# plain `docker build`, while Compose explicitly selects `development`.
+FROM runtime AS production

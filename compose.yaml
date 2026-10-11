@@ -1,27 +1,61 @@
-
 services:
-###> doctrine/doctrine-bundle ###
-  database:
-    image: postgres:${POSTGRES_VERSION:-16}-alpine
+  app:
+    build:
+      context: .
+      target: development
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-app}
-      # You should definitely change the password in production
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-!ChangeMe!}
-      POSTGRES_USER: ${POSTGRES_USER:-app}
+      APP_ENV: dev
+      APP_DEBUG: "1"
+      APP_SECRET: local-dogs-diary-secret
+      APP_BASE_URL: http://localhost:8080
+      DATABASE_URL: "postgresql://app:!ChangeMe!@database:5432/app?serverVersion=16&charset=utf8"
+      MAILER_DSN: smtp://mailer:1025
+      MAILER_FROM_ADDRESS: no-reply@dogs-diary.local
+      MAILER_FROM_NAME: Dogs Diary
+      PORT: "8080"
     ports:
-      - "5432:5432"
+      - "8080:8080"
     healthcheck:
-      test: ["CMD", "pg_isready", "-d", "${POSTGRES_DB:-app}", "-U", "${POSTGRES_USER:-app}"]
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8080/healthz"]
+      interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 60s
+      start_period: 20s
     volumes:
-      - database_data:/var/lib/postgresql/data:rw
-      # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
-      # - ./docker/db/data:/var/lib/postgresql/data:rw
-###< doctrine/doctrine-bundle ###
+      - .:/app
+      - app_vendor:/app/vendor
+      - app_asset_vendor:/app/assets/vendor
+      - app_var:/app/var
+    depends_on:
+      database:
+        condition: service_healthy
+      mailer:
+        condition: service_started
+
+  database:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: app
+      POSTGRES_PASSWORD: "!ChangeMe!"
+      POSTGRES_USER: app
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d app -U app"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    volumes:
+      - database_data:/var/lib/postgresql/data
+
+  mailer:
+    image: axllent/mailpit
+    ports:
+      - "127.0.0.1:${MAILPIT_PORT:-8025}:8025"
 
 volumes:
-###> doctrine/doctrine-bundle ###
+  app_vendor:
+  app_asset_vendor:
+  app_var:
   database_data:
-###< doctrine/doctrine-bundle ###

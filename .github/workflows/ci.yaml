@@ -53,6 +53,9 @@ jobs:
             - name: Run JavaScript tests
               run: node --test tests/JavaScript/FetchClient.test.mjs
 
+            - name: Run backup workflow tests
+              run: python3 -B -m unittest discover -s tests/Operations -v
+
             - name: Check PHP formatting
               run: vendor/bin/php-cs-fixer fix --dry-run --diff
 
