@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-if [ "${VERCEL_ENV:-preview}" != preview ]; then
+if [ "${VERCEL_ENV:-preview}" != "preview" ]; then
     echo 'This feasibility image supports Preview only.' >&2
     exit 1
 fi
