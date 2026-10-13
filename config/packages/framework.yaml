@@ -19,17 +19,18 @@ framework:
 when@test:
     framework:
         test: true
-        cache:
-            pools:
-                cache.rate_limiter:
-                    adapter: cache.adapter.array
         session:
             storage_factory_id: session.storage.factory.mock_file
 
 when@prod:
     framework:
-        # Railway terminates HTTPS at its edge proxy. Trust only the immediate
-        # peer so Symfony sees the original scheme and client address.
+        session:
+            handler_id: app.database_session_handler
+            cookie_secure: true
+            gc_probability: 1
+            gc_divisor: 100
+        # The hosting edge must overwrite forwarded headers and be the only
+        # ingress to the container. Recheck this on any new hosting platform.
         trusted_proxies: 'REMOTE_ADDR'
         trusted_headers:
             - 'x-forwarded-for'

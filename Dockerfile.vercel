@@ -1,0 +1,31 @@
+# Preview feasibility runtime. Production cutover is a separate operation.
+FROM dunglas/frankenphp:1-php8.4-bookworm AS base
+RUN install-php-extensions intl pdo_pgsql zip \
+    && cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+WORKDIR /app
+ENV APP_ENV=prod APP_DEBUG=0 PORT=8080
+
+FROM base AS build
+ENV COMPOSER_ALLOW_SUPERUSER=1
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+COPY composer.json composer.lock symfony.lock ./
+RUN composer install --no-dev --no-interaction --no-progress --no-scripts --no-autoloader --prefer-dist
+COPY . ./
+COPY docker/runtime.env /app/.env
+RUN composer dump-autoload --no-dev --no-interaction --no-scripts --classmap-authoritative \
+    && php bin/console importmap:install \
+    && php bin/console asset-map:compile \
+    && php bin/console cache:clear --no-debug --no-warmup
+
+FROM base AS preview
+COPY --from=build /app /app
+COPY docker/Caddyfile /etc/caddy/Caddyfile
+COPY docker/php.ini /usr/local/etc/php/conf.d/zz-app.ini
+COPY docker/vercel-preview-entrypoint.sh /usr/local/bin/vercel-preview-entrypoint
+RUN chmod +x /usr/local/bin/vercel-preview-entrypoint \
+    && mkdir -p /app/var/cache /app/var/log /app/var/uploads /app/var/backup /config /data \
+    && chown -R www-data:www-data /app/var /config /data
+USER www-data
+EXPOSE 8080
+ENTRYPOINT ["vercel-preview-entrypoint"]
+CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]

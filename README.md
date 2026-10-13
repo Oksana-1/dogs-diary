@@ -163,6 +163,9 @@ documented in [`docs/PRODUCTION_CONFIGURATION.md`](docs/PRODUCTION_CONFIGURATION
 The production image and Railway runtime setup are documented in
 [`docs/PRODUCTION_DOCKER.md`](docs/PRODUCTION_DOCKER.md).
 
+Shared database sessions, login throttling, and the isolated Vercel Preview
+runtime are documented in [`docs/STATELESS_RUNTIME.md`](docs/STATELESS_RUNTIME.md).
+
 The GitHub Actions quality gate and its exact local commands are documented in
 [`docs/CI.md`](docs/CI.md).
 

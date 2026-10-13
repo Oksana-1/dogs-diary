@@ -25,8 +25,7 @@ security:
                 csrf_token_id: authenticate
                 default_target_path: app_main
             login_throttling:
-                max_attempts: 5
-                interval: '1 minute'
+                limiter: app.login_rate_limiter
             remember_me:
                 secret: '%kernel.secret%'
                 lifetime: 1209600

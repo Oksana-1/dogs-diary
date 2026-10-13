@@ -1,6 +1,9 @@
 .git
 .github
 .idea
+.vercel
+.codex
+.agents
 .DS_Store
 **/.DS_Store
 
@@ -22,3 +25,5 @@ ARCHITECTURE_REVIEW*.md
 TEMP.md
 compose*.yaml
 dogs-diary-production-week-plan.md
+dogs-diary-next-week-plan.md
+docs/operations

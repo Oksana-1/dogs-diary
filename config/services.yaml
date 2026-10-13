@@ -38,6 +38,22 @@ services:
     App\Application\Media\MediaStorageInterface:
         alias: App\Infrastructure\Media\LocalMediaStorage
 
+    app.database_session_handler:
+        class: Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler
+        factory: ['@App\Infrastructure\Security\DatabaseSessionHandlerFactory', 'create']
+        lazy: true
+
+    app.security_lock_factory:
+        alias: lock.factory
+
+    app.login_rate_limiter:
+        class: Symfony\Component\Security\Http\RateLimiter\DefaultLoginRateLimiter
+        arguments:
+            $globalFactory: '@limiter.login_global'
+            $localFactory: '@limiter.login_local'
+            # Stable across builds/instances; never use container.build_hash here.
+            $secret: '%kernel.secret%'
+
     App\Command\CheckProductionConfigCommand:
         arguments:
             $environment: '%kernel.environment%'

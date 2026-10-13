@@ -11,6 +11,24 @@ use Symfony\Component\Console\Tester\CommandTester;
 
 final class CheckProductionConfigCommandTest extends TestCase
 {
+    public function testHostedPreviewRequiresTlsAndDisabledMailWithoutLeakingSecrets(): void
+    {
+        $make = static fn (string $query, string $mailer) => new CommandTester(new CheckProductionConfigCommand(
+            environment: 'prod', debug: false, appSecret: str_repeat('b', 64),
+            databaseUrl: 'postgresql://preview:private-password@preview.example.com/preview'.$query,
+            mailerDsn: $mailer, mailerFromAddress: 'no-reply@dogs-diary.test',
+            mailerFromName: 'Preview', appBaseUrl: 'https://preview.example.com',
+        ));
+        $safe = $make('?sslmode=verify-full', 'null://null');
+        self::assertSame(Command::SUCCESS, $safe->execute(['--preview' => true, '--require-tls' => true]));
+        $unsafe = $make('?sslmode=prefer', 'smtp://user:mail-secret@mail.example.com');
+        self::assertSame(Command::FAILURE, $unsafe->execute(['--preview' => true, '--require-tls' => true]));
+        self::assertStringContainsString('must require PostgreSQL TLS', $unsafe->getDisplay());
+        self::assertStringContainsString('Preview MAILER_DSN must be null://null', $unsafe->getDisplay());
+        self::assertStringNotContainsString('private-password', $unsafe->getDisplay());
+        self::assertStringNotContainsString('mail-secret', $unsafe->getDisplay());
+    }
+
     public function testItAcceptsSafeProductionConfiguration(): void
     {
         $tester = new CommandTester(new CheckProductionConfigCommand(

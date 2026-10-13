@@ -75,3 +75,15 @@ php bin/console doctrine:schema:validate
 Both jobs must pass before a commit is considered deployable. Protect `main` in
 GitHub and require the `Tests and static checks` and `PostgreSQL migrations and
 schema` checks before merging.
+
+## Shared security state integration
+
+After changes to sessions, login limits, or the Preview runtime, also run:
+
+```sh
+python3 -B tests/Operations/shared_state_smoke.py
+```
+
+This requires the isolated PostgreSQL and two Preview containers described in
+[`STATELESS_RUNTIME.md`](STATELESS_RUNTIME.md). It is an explicit integration
+check, not part of the SQLite unit job or an automatic production operation.
