@@ -109,3 +109,6 @@ jobs:
 
             - name: Validate Doctrine mapping and schema
               run: php bin/console doctrine:schema:validate
+
+            - name: Verify baseline and legacy backup adoption
+              run: php tests/Migrations/verify_baseline.php

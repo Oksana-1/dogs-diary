@@ -29,6 +29,18 @@ The UI is server-rendered with Twig and enhanced by Vue 3 islands. Data is expos
 
 ### Setup
 
+The local stack uses one application database, `dogs_diary_dev_20261012`,
+restored from the Monday archive in `~/DogsDiaryBackups/2026-10-12`.
+Compose and host Symfony commands target that same database. PostgreSQL's
+built-in `postgres` and template databases are not application copies.
+Uploads use the existing external volume `dogs_diary_dev_20261012_var`.
+Do not start the retired `local-copy`, Vercel spike, or Tuesday test containers.
+
+These instructions resume the restored stack on this machine. A fresh machine
+must restore the private DB/uploads archive and create that uploads volume
+before starting the app; starting an empty PostgreSQL volume does not import
+the backup automatically. Keep the archive private and never use it in Preview.
+
 1. Build and start the application, PostgreSQL 16, and Mailpit:
 
    ```bash
@@ -36,7 +48,7 @@ The UI is server-rendered with Twig and enhanced by Vue 3 islands. Data is expos
    ```
 
    The application is available at <http://localhost:8080>. Mailpit's local
-   inbox is available at <http://localhost:8025>.
+   inbox is available at <http://localhost:18025> (avoids the other project's Mailhog).
 
 2. Run Symfony or Composer commands inside the application container:
 
@@ -55,8 +67,17 @@ The container installs the locked Composer dependencies and applies pending
 Doctrine migrations on startup. Project sources are bind-mounted, so PHP, Twig,
 and JavaScript changes are available without rebuilding the image. The named
 volumes preserve PostgreSQL data, uploads, and container-managed dependencies.
-Use `docker compose down --volumes` only when you intentionally want to delete
-all local database and upload data.
+Use `docker compose down` without `--volumes` to retain data. The external
+uploads volume is deliberately protected from Compose volume removal, but
+`down --volumes` would still delete the database and dependency volumes.
+
+The migration history is squashed into `Version20261013180000`. It creates a
+fresh schema or adopts Monday's four-version backup / the old five-version
+schema without replacing application data. Normal migration startup handles
+the conversion; never manually mark the baseline as executed. See
+[`docs/MIGRATIONS.md`](docs/MIGRATIONS.md) for restore compatibility and checks.
+Do not use schema reset commands for cleanup.
+Tests continue to use isolated in-memory SQLite, never this development data.
 
 The development target inherits the production PHP 8.4, FrankenPHP, Caddy,
 extensions, and PHP limits from the same `Dockerfile`. Development-only error

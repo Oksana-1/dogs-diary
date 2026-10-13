@@ -70,7 +70,15 @@ matches the current entity mapping:
 ```bash
 php bin/console doctrine:migrations:migrate --no-interaction
 php bin/console doctrine:schema:validate
+php tests/Migrations/verify_baseline.php
 ```
+
+The baseline integration check uses transaction-isolated temporary schemas in
+the configured PostgreSQL database; it rolls back every scenario and creates
+no additional database or volume. Locally run
+`docker compose exec -T app php tests/Migrations/verify_baseline.php`.
+It covers fresh creation, Monday/current legacy adoption, data preservation,
+the treatment-photo constraint, unsupported histories and rollback refusal.
 
 Both jobs must pass before a commit is considered deployable. Protect `main` in
 GitHub and require the `Tests and static checks` and `PostgreSQL migrations and
