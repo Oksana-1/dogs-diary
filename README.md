@@ -19,7 +19,7 @@ The UI is server-rendered with Twig and enhanced by Vue 3 islands. Data is expos
 - Twig
 - Vue 3 through AssetMapper and ImportMap (no Node build step)
 - Doctrine ORM and Doctrine Migrations
-- PostgreSQL 16 through Docker Compose
+- PostgreSQL 18.6 through Docker Compose (matching the hosted database)
 
 ## Local Development
 
@@ -41,7 +41,12 @@ must restore the private DB/uploads archive and create that uploads volume
 before starting the app; starting an empty PostgreSQL volume does not import
 the backup automatically. Keep the archive private and never use it in Preview.
 
-1. Build and start the application, PostgreSQL 16, and Mailpit:
+The local copy preserves the production users and password hashes from Monday's
+backup: use the same application email/password recorded at that backup date.
+Email delivery stays in local Mailpit. Automatic synchronization is on hold;
+local changes are not sent to the hosted database.
+
+1. Build and start the application, PostgreSQL 18.6, and Mailpit:
 
    ```bash
    docker compose up --build
@@ -78,6 +83,11 @@ the conversion; never manually mark the baseline as executed. See
 [`docs/MIGRATIONS.md`](docs/MIGRATIONS.md) for restore compatibility and checks.
 Do not use schema reset commands for cleanup.
 Tests continue to use isolated in-memory SQLite, never this development data.
+
+The PostgreSQL 18 data volume is `dogs-diary_database_data_pg18`, mounted at
+`/var/lib/postgresql` (the image uses version-specific `PGDATA`). A major upgrade
+requires dump/restore into a fresh volume, not attaching a PostgreSQL 16 data
+directory to the new image. See the [upgrade record](docs/operations/2026-10-14-hosting.md).
 
 The development target inherits the production PHP 8.4, FrankenPHP, Caddy,
 extensions, and PHP limits from the same `Dockerfile`. Development-only error
@@ -181,7 +191,7 @@ failure behavior, and the separate PostgreSQL checks.
 Production environment requirements and the fail-safe preflight command are
 documented in [`docs/PRODUCTION_CONFIGURATION.md`](docs/PRODUCTION_CONFIGURATION.md).
 
-The production image and Railway runtime setup are documented in
+The portable production image and persistent-volume runtime are documented in
 [`docs/PRODUCTION_DOCKER.md`](docs/PRODUCTION_DOCKER.md).
 
 Shared database sessions, login throttling, and the isolated Vercel Preview

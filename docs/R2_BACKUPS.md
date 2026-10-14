@@ -4,10 +4,12 @@ Status: implementation prepared; production activation, R2 upload, and productio
 restore verification must be recorded separately. Creating the bucket and setting
 variables do not enable backups.
 
-The application stays on Railway. `bin/backup` runs in the application container,
-where it can reach the private PostgreSQL 16 service and `/app/var/uploads`.
-Do not run this as a separate Railway cron service: it would not have the same
-uploads volume. Keep one application replica.
+This workflow requires a persistent, single-replica application container.
+`bin/backup` runs in that container, where it can reach PostgreSQL and
+`/app/var/uploads`. A separate scheduler without the same uploads volume cannot
+capture a database/media pair. Vercel Preview disables this scheduler and uses
+ephemeral media; its recovery boundary is described in
+[STATELESS_RUNTIME.md](STATELESS_RUNTIME.md).
 
 ## What is saved
 
@@ -33,7 +35,7 @@ Secrets are passed through the process environment, never command arguments or
 normal application logs. Failed tools are reported by name and exit code without
 their potentially sensitive diagnostics.
 
-## Railway variables
+## Backup environment variables
 
 Set these on the **application service**, in production:
 
@@ -48,15 +50,16 @@ Set these on the **application service**, in production:
 | `BACKUP_SCHEDULE_ENABLED` | Leave unset or `0` until the first backup and restore drill pass |
 | `BACKUP_HOUR_UTC` | `3` by default: daily at 03:00 UTC, independent of DST |
 | `BACKUP_RETENTION_ENABLED` | Leave unset or `0` until retention is reviewed |
+| `APP_REVISION` | Optional deployed commit SHA, recorded in the backup manifest; defaults to `unknown` |
 
-Save the restic password in your password manager **outside Railway**. Losing it
+Save the restic password in your password manager **outside the hosting account**. Losing it
 makes the backups unusable, even if the R2 access keys still work. Do not replace
 it casually; restic password rotation requires updating repository keys.
 
 The job reads the existing `DATABASE_URL`. It supports standard PostgreSQL URLs
 and the query parameters `serverVersion`, `charset`, and `sslmode`; unexpected
 options fail rather than silently changing connection security. The image installs
-PostgreSQL client 16 from the signed PostgreSQL apt repository, plus Python 3 and
+PostgreSQL client 18 from the signed PostgreSQL apt repository, plus Python 3 and
 restic. There are no new Python package dependencies.
 
 ## First backup and activation
@@ -118,7 +121,8 @@ gosu www-data /app/bin/backup restore <snapshot-id>
 
 This verifies restored bytes and prints a unique directory below `/app/var/backup`.
 It never overwrites `/app/var/uploads` or imports a database. Locate `database.dump`,
-`uploads/`, and `manifest.json` within that directory. Use PostgreSQL 16 tools to
+`uploads/`, and `manifest.json` within that directory. Use tools matching the
+server's major version (currently PostgreSQL 18) to
 import the dump into a **new disposable database** with `pg_restore --no-owner
 --no-acl --exit-on-error`. Supply its connection through isolated `PG*` variables;
 do not reuse production `DATABASE_URL` for restoration.
@@ -127,12 +131,13 @@ Point a disposable application at that database and the restored uploads. Valida
 the Doctrine schema, compare users/dogs/treatments/media counts, run the read-only
 media audit, and sample authenticated image/video downloads. Never pass
 `--delete-orphans`. Record snapshot ID, times, counts, results, and operator before
-removing scratch resources. The existing deployment runbook describes the checks.
+removing scratch resources. See [MIGRATIONS.md](MIGRATIONS.md) for supported
+restore states and [PRODUCTION_DOCKER.md](PRODUCTION_DOCKER.md) for the container runtime.
 
 For disaster recovery without the running app, use the same image/tools in a
 disposable container, supply the R2 credentials and saved encryption password,
 and restore there. The bucket is not a replacement for keeping the password and
-repository access recoverable outside the lost Railway project.
+repository access recoverable outside the lost hosting project.
 
 ## Local checks
 

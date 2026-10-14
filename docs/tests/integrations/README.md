@@ -134,10 +134,10 @@ The proposed jobs are:
 | Deployment smoke | After an authorized deployment | Read-only health and page-load checks |
 
 Keep deployment smoke checks separate from Playwright's state-changing suite.
-For Railway, a production smoke check should verify `/healthz`, TLS, the public
+For a hosted deployment, a smoke check should verify `/healthz`, TLS, the public
 authentication page, and static/module loading without registering users or
 changing application data. Operational release steps remain in the
-[Railway deployment runbook](../../RAILWAY_DEPLOYMENT.md).
+[hosted Preview runtime guide](../../STATELESS_RUNTIME.md).
 
 ## Completion criteria
 
@@ -149,4 +149,3 @@ changing application data. Operational release steps remain in the
 - CI publishes useful failure artifacts without exposing secrets.
 - Browser tests use isolated database and upload storage and are safe to rerun.
 - Production deployment checks remain read-only.
-

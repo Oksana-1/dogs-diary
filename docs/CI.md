@@ -63,7 +63,7 @@ The Node command is the canonical frontend command documented in
 
 ## Database job
 
-The database job starts a clean PostgreSQL 16 service, applies the complete
+The database job starts a clean PostgreSQL 18.6 service, applies the complete
 Doctrine migration chain, and then validates that the resulting database schema
 matches the current entity mapping:
 

@@ -1,47 +1,51 @@
 # Production Docker image
 
-The root `Dockerfile` builds a production-only Symfony image with FrankenPHP,
+The root `Dockerfile` provides production and development Symfony images with FrankenPHP,
 Caddy, PostgreSQL support, optimized Composer autoloading, and compiled
-AssetMapper assets. Railway detects this file automatically.
+AssetMapper assets. Compose uses its development target; the separate
+`Dockerfile.vercel` builds the hosted Preview runtime described in
+[STATELESS_RUNTIME.md](STATELESS_RUNTIME.md).
 
 All repository `.env` variants are excluded from the image, together with
 development dependencies and tests. The image receives a container-only base
 dotenv file containing fail-closed, non-secret defaults because Symfony Runtime
-requires that file to exist. Railway variables override every blank value.
+requires that file to exist. Deployment environment variables override every
+blank value.
 
 The image always sets `APP_ENV=prod` and `APP_DEBUG=0`. Its startup entrypoint:
 
 1. prepares writable cache, log, and upload directories;
 2. runs `app:production:check` without printing secret values;
 3. clears and warms the Symfony cache;
-4. drops from root to `www-data` and starts FrankenPHP on Railway's `PORT`.
+4. drops from root to `www-data` and starts FrankenPHP on the configured `PORT`.
 
 Doctrine migrations are not run by the image entrypoint. They require the
-separate migration and backup policy in the deployment checklist, so an
+separate migration and backup policy in [MIGRATIONS.md](MIGRATIONS.md), so an
 ordinary container restart cannot unexpectedly change the database schema.
 
-## Railway service settings
+## Persistent-container requirements
 
-- Deploy the repository as a service; Railway will detect `Dockerfile`.
+- Build the root `Dockerfile` for a host that supports persistent containers.
 - Generate a public domain and set `APP_BASE_URL` to its HTTPS origin.
 - Set all variables listed in `PRODUCTION_CONFIGURATION.md`.
 - Set the healthcheck path to `/healthz` with an appropriate timeout.
-- Attach a Railway Volume at exactly `/app/var/uploads` before accepting any
+- Mount persistent storage at exactly `/app/var/uploads` before accepting any
   uploads. A different path will leave uploaded media on ephemeral storage.
 - Keep one application replica while using local media storage. Multiple
   replicas would not share the mounted filesystem consistently.
 
-Railway mounts volumes only at runtime and initially owns the mount point as
-root. The entrypoint starts as root only long enough to prepare these writable
-directories, then runs the application as `www-data`.
+Volume mounts are supplied at runtime. The entrypoint starts as root only long
+enough to prepare writable directories and their ownership, then runs the
+application as `www-data`.
 
-The app server listens on `{$PORT}` with `8080` as a local fallback. Railway
-terminates HTTPS; Caddy and Symfony trust the immediate platform proxy so secure
-cookies and absolute HTTPS URLs work correctly.
+The app server listens on `{$PORT}` with `80` as Caddy's fallback. Set
+`PORT=8080` to match the image's exposed port and the example below. When the
+hosting edge terminates HTTPS, Symfony trusts the immediate proxy; verify its
+forwarded headers and secure cookies before enabling traffic.
 
 ## Local verification
 
-Build the same image Railway will use:
+Build the portable image:
 
 ```bash
 docker build --tag dogs-diary:production .

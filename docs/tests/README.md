@@ -84,7 +84,7 @@ instrument all applicable production files.
 - Document ownership and a triage rule for flaky tests.
 - Require the stable test jobs in branch protection.
 - Keep deployment smoke checks read-only and separate from the destructive
-  browser suite. See the [Railway deployment runbook](../RAILWAY_DEPLOYMENT.md).
+  browser suite. See the [hosted Preview runtime guide](../STATELESS_RUNTIME.md).
 
 ## Definition of a healthy test system
 
@@ -99,4 +99,3 @@ The plan is successful when:
 - no test relies on production data or modifies the production environment;
 - flaky tests are fixed or quarantined with an owner and deadline, never hidden
   behind unconditional retries.
-

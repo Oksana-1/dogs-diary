@@ -23,12 +23,14 @@ This document records the production safety pass completed on 2026-09-10.
   requires the session-bound `X-CSRF-TOKEN` value exposed by the authenticated
   page. Missing or invalid tokens receive JSON `403`.
 - Session and remember-me cookies are HTTP-only and SameSite `Lax`; their Secure
-  flag follows the request scheme seen through Railway's trusted proxy.
+  flag follows the request scheme seen through the hosting edge's trusted proxy.
 
 ## Uploads
 
 - Uploaded media is stored below `/app/var/uploads`, outside the public web
-  root. Production must mount the Railway Volume at exactly that path.
+  root. A filesystem-based production runtime must mount persistent storage at
+  exactly that path. Vercel Preview uploads remain ephemeral; see
+  [STATELESS_RUNTIME.md](STATELESS_RUNTIME.md) for the current hosting boundary.
 - Media is served only through owner-scoped controllers, with private,
   `no-store`, `nosniff` responses. Foreign and mismatched IDs return `404`.
 - The server determines MIME type from file contents, accepts only JPEG, PNG,
@@ -46,7 +48,7 @@ This document records the production safety pass completed on 2026-09-10.
 - Responses set `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, a
   restrictive camera/geolocation/microphone `Permissions-Policy`, and
   `Referrer-Policy: strict-origin-when-cross-origin`.
-- Secure production responses also set one-year HSTS. Railway must serve the
+- Secure production responses also set one-year HSTS. The hosting edge must serve the
   application exclusively over HTTPS before production traffic is enabled.
 - Expected 404 and 405 responses are excluded from error-triggered log flushing;
   server errors remain logged.

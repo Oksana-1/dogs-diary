@@ -1,7 +1,10 @@
 # PostgreSQL-backed security state and Preview runtime
 
-Apply `Version20261013120000` before starting the new runtime. It adds `sessions`,
-`security_rate_limits`, and `lock_keys`; no business tables or data change.
+Apply the squashed baseline `Version20261013180000` before starting the new
+runtime. On Monday's backup it adds `sessions`, `security_rate_limits`, and
+`lock_keys`; on an already upgraded database it preserves those tables and
+adopts the baseline. Business data remains intact. See [MIGRATIONS.md](MIGRATIONS.md)
+for supported starting states and restore checks.
 The schema listener includes these tables in Doctrine's normal schema validation
 in every environment. Do not exclude them with a schema filter.
 
@@ -37,19 +40,39 @@ warms only disposable local cache. It never runs migrations. Compiled assets are
 in the image; production logs already go to stderr. Media is still local and
 ephemeral until Wednesday's storage work.
 
-Configure Preview-only `APP_SECRET`, `DATABASE_URL`, `APP_BASE_URL` (HTTPS origin),
-and `PORT=8080`. Do not reuse live credentials or connect Preview to the live DB.
+Configure Preview-only `APP_SECRET`, `DATABASE_URL`, and `PORT=8080`.
+Hosted startup derives `APP_BASE_URL` from the deployment's `VERCEL_URL` when no
+explicit HTTPS origin is supplied; local Docker smoke still requires it explicitly.
+Do not reuse live credentials. With one hosted database, keep synthetic Preview
+tables in a separate `preview` schema and use a role with no `USAGE` on `public`.
+That role must default to `search_path=preview` on both direct and pooled
+connections; verify those permissions before putting its URL in Preview.
 Keep Vercel's system environment variables enabled: `VERCEL=1` activates mandatory
 TLS validation; `VERCEL_ENV=preview` selects the permitted deployment environment.
 Use the same Preview secret across instances, different from production.
+
+Create a Preview from the project root with the container port set explicitly:
+
+```sh
+vercel deploy --target preview --env PORT=8080
+```
+
+The deployment override keeps Vercel's routing port aligned with the image's
+default, even if the project-level port differs. Do not pass database credentials
+or the application secret on the command line; use the Preview-scoped variables.
+The image build verifies the PostgreSQL PDO driver and validates Caddy's
+configuration as the runtime user before deployment.
 
 Runtime `DATABASE_URL` can use the provider's pooled endpoint. Run migrations,
 imports and dumps with its **direct** URL, supplied only for those commands.
 Use `sslmode=verify-full` with the provider's trusted CA where supported (at least
 `sslmode=require`); URL-encode credentials. Never print either URL in reports.
 Preflight checks the URL policy, not the live TLS connection. Verify actual
-encryption with `pg_stat_ssl` on both the ORM and session connection before
-declaring a hosted deployment ready.
+encryption on the actual client connection before declaring deployment ready.
+Neon's proxy terminates TLS before PostgreSQL, so backend `pg_stat_ssl` may report
+false even with verified TLS on the client-to-proxy connection. Use verified CA
+TLS settings and client connection information instead of treating that backend
+flag as proof of plaintext transport.
 
 ```sh
 php bin/console app:production:check --preview --require-tls
@@ -65,8 +88,9 @@ must match the Preview origin so reset links do not point to production.
 
 On a first switch from filesystem sessions, existing sessions will need login
 again. Preserve `APP_SECRET` for subsequent releases. Roll back application code
-without dropping the new tables: the migration intentionally has no destructive
-down path. Dropping tables would erase throttling and invalidate sessions.
+without dropping the new tables: the baseline intentionally has no destructive
+down path. Code from before the squash must not be used to run migrations against
+baseline metadata. Dropping tables would erase throttling and invalidate sessions.
 
 ## Recovery boundary
 

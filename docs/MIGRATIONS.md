@@ -43,8 +43,12 @@ Monday's backup still needs the security tables created. Older partial backups
 must first be upgraded using their matching historical code; this baseline does
 not guess missing history. Do not downgrade code independently of DB metadata.
 
-Restoring production-derived archives also requires the existing local-account
-sanitization and private uploads handling documented in the Monday record.
+For this personal project, the user explicitly requested preserving the original
+production users and password hashes locally. Do not anonymize or reset the
+account during restore. Keep email routed to local Mailpit, scheduling disabled,
+and the restored database/uploads private; never use this data in Preview.
+The earlier Monday account sanitization is historical, not the current policy.
+See [the original-data restore record](operations/2026-10-14-local-original-restore.md).
 
 ## Verification
 

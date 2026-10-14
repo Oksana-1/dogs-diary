@@ -1,19 +1,4 @@
-{
-	admin off
-	auto_https off
-	persist_config off
-
-	log {
-		format json
-	}
-
-	servers {
-		trusted_proxies static private_ranges 100.0.0.0/8
-		client_ip_headers X-Forwarded-For X-Real-IP
-	}
-}
-
-:{$PORT:8080} {
+:{$PORT:80} {
 	root * /app/public
 	encode zstd br gzip
 

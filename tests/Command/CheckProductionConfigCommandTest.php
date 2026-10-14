@@ -35,7 +35,7 @@ final class CheckProductionConfigCommandTest extends TestCase
             environment: 'prod',
             debug: false,
             appSecret: str_repeat('a', 64),
-            databaseUrl: 'postgresql://railway_user:railway_password@postgres.railway.internal:5432/railway',
+            databaseUrl: 'postgresql://app_user:private-db-password@postgres.example.com:5432/dogs_diary',
             mailerDsn: 'smtp://mailer_user:mailer_password@smtp.example.com:587',
             mailerFromAddress: 'no-reply@example.com',
             mailerFromName: 'Dogs Diary',
@@ -44,7 +44,7 @@ final class CheckProductionConfigCommandTest extends TestCase
 
         self::assertSame(Command::SUCCESS, $tester->execute([]));
         self::assertStringContainsString('Production configuration is safe to use.', $tester->getDisplay());
-        self::assertStringNotContainsString('railway_password', $tester->getDisplay());
+        self::assertStringNotContainsString('private-db-password', $tester->getDisplay());
         self::assertStringNotContainsString(str_repeat('a', 64), $tester->getDisplay());
     }
 

@@ -8,7 +8,7 @@ services:
       APP_DEBUG: "1"
       APP_SECRET: local-dogs-diary-secret
       APP_BASE_URL: http://localhost:8080
-      DATABASE_URL: "postgresql://app:!ChangeMe!@database:5432/dogs_diary_dev_20261012?serverVersion=16&charset=utf8"
+      DATABASE_URL: "postgresql://app:!ChangeMe!@database:5432/dogs_diary_dev_20261012?serverVersion=18&charset=utf8"
       MAILER_DSN: smtp://mailer:1025
       MAILER_FROM_ADDRESS: no-reply@dogs-diary.local
       MAILER_FROM_NAME: Dogs Diary
@@ -34,7 +34,7 @@ services:
         condition: service_started
 
   database:
-    image: postgres:16-alpine
+    image: postgres:18.6-alpine
     environment:
       POSTGRES_DB: dogs_diary_dev_20261012
       POSTGRES_PASSWORD: "!ChangeMe!"
@@ -48,7 +48,8 @@ services:
       retries: 10
       start_period: 10s
     volumes:
-      - database_data:/var/lib/postgresql/data
+      # PostgreSQL 18 uses /var/lib/postgresql/18/docker as PGDATA.
+      - database_data:/var/lib/postgresql
 
   mailer:
     image: axllent/mailpit
@@ -62,3 +63,4 @@ volumes:
     external: true
     name: dogs_diary_dev_20261012_var
   database_data:
+    name: dogs-diary_database_data_pg18

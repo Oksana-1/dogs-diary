@@ -1,5 +1,3 @@
-"""Encrypted, paired PostgreSQL/uploads backups, run inside the app container."""
-
 import argparse
 import contextlib
 import datetime as dt
@@ -45,7 +43,6 @@ def settings(environ):
         raise BackupError("BACKUP_RESTIC_PASSWORD must have at least 32 characters")
     if environ.get("BACKUP_R2_REGION", "auto") != "auto":
         raise BackupError("BACKUP_R2_REGION must be auto")
-    # Do not pass application secrets, PG overrides, or unrelated restic options.
     return {
         "PATH": os.environ.get("PATH", "/usr/local/bin:/usr/bin:/bin"),
         "LANG": "C.UTF-8",
@@ -69,7 +66,6 @@ def postgres_settings(environ):
             "PGDATABASE": unquote(url.path[1:]), "PGCONNECT_TIMEOUT": "15",
         }
         query = parse_qs(url.query)
-        # Doctrine's serverVersion/charset are not libpq connection parameters.
         for key, value in query.items():
             if key in ("serverVersion", "charset"):
                 continue
@@ -82,7 +78,6 @@ def postgres_settings(environ):
 
 
 def command(args, env, cwd=None, timeout=1800):
-    """Keep connection strings and tool diagnostics out of application logs."""
     try:
         process = subprocess.Popen(args, env=env, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
     except OSError:
@@ -122,21 +117,22 @@ def capture(root, destination, environ):
         raise BackupError("Uploads directory is missing or is a symlink")
     pg_env = postgres_settings(environ)
     with exclusive_lock(root / "var/backup/writes.lock"):
-        # Symlinks could export files outside uploads or produce an unrestorable copy.
         if any(path.is_symlink() for path in uploads.rglob("*")):
             raise BackupError("Uploads contains a symlink; backup refused")
+        version = command(["psql", "--no-psqlrc", "--tuples-only", "--no-align", "--command", "SHOW server_version_num"], pg_env, timeout=60).strip()
+        if not version.isdigit() or int(version) < 100000:
+            raise BackupError("Unable to determine PostgreSQL server version")
         command(["pg_dump", "--format=custom", "--no-owner", "--no-acl", "--file", str(destination / "database.dump")], pg_env, timeout=300)
         command(["pg_restore", "--list", str(destination / "database.dump")], pg_env, timeout=60)
         shutil.copytree(uploads, destination / "uploads")
         manifest = {
             "format": 1,
             "captured_at": dt.datetime.now(dt.timezone.utc).isoformat(),
-            "commit": environ.get("RAILWAY_GIT_COMMIT_SHA", "unknown"),
-            "postgres_major": 16,
+            "commit": environ.get("APP_REVISION", "unknown"),
+            "postgres_major": int(version) // 10000,
             "uploads_files": sum(path.is_file() for path in (destination / "uploads").rglob("*")),
         }
         (destination / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
-    # Network upload happens after the write lock is released.
 
 
 def backup(root, env, environ):
@@ -157,7 +153,6 @@ def backup(root, env, environ):
 
 
 def retention(env, dry_run=True):
-    # Never expire raw R2 objects: restic snapshots share encrypted data chunks.
     restic(["check"], env)
     args = ["forget", "--host", HOST, "--tag", TAG, "--group-by", "host",
             "--keep-daily", "7", "--keep-weekly", "4"]
@@ -202,7 +197,6 @@ def next_run(now, hour):
 
 
 def serve(server_args, environ):
-    """Supervise the web process and one daily backup without a second volume mount."""
     if not server_args:
         raise BackupError("serve requires the web-server command")
     settings(environ)
@@ -243,7 +237,7 @@ def serve(server_args, environ):
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description="Encrypted, paired PostgreSQL/uploads backups, run inside the app container.")
     parser.add_argument("action", choices=("init", "run", "status", "check", "restore", "retention-preview", "prune", "serve"))
     parser.add_argument("server", nargs=argparse.REMAINDER)
     args = parser.parse_args()
@@ -280,7 +274,6 @@ def main():
                 retention(env, dry_run=args.action == "retention-preview")
         return 0
     except (BackupError, OSError, ValueError, subprocess.TimeoutExpired) as error:
-        # OSError can contain private paths; only our curated errors are logged.
         log(f"FAILED: {error if isinstance(error, BackupError) else type(error).__name__}")
         return 1
 

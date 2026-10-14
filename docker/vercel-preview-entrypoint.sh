@@ -7,6 +7,9 @@ if [ "${VERCEL_ENV:-preview}" != "preview" ]; then
 fi
 : "${APP_SECRET:?Set a new Preview-only APP_SECRET}"
 : "${DATABASE_URL:?Set an isolated Preview database URL}"
+if [ -z "${APP_BASE_URL:-}" ] && [ "${VERCEL:-0}" = 1 ] && [ -n "${VERCEL_URL:-}" ]; then
+    export APP_BASE_URL="https://${VERCEL_URL}"
+fi
 : "${APP_BASE_URL:?Set the HTTPS Preview origin}"
 export APP_ENV=prod APP_DEBUG=0 MAILER_DSN=null://null BACKUP_SCHEDULE_ENABLED=0
 export MAILER_FROM_ADDRESS=no-reply@dogs-diary.test MAILER_FROM_NAME='Dogs Diary Preview'

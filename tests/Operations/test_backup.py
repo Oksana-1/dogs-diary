@@ -59,7 +59,7 @@ class BackupTests(unittest.TestCase):
             with self.assertRaises(backup.BackupError):
                 with backup.exclusive_lock(self.root / "var/backup/writes.lock"):
                     pass
-            return ""
+            return "180006\n" if args[0] == "psql" else ""
         def restic(args, env, **kwargs):
             if args[0] == "backup":
                 directory = kwargs["cwd"]
@@ -67,6 +67,7 @@ class BackupTests(unittest.TestCase):
                 self.assertEqual((directory / "database.dump").read_bytes(), b"PGDMP-test")
                 self.assertEqual((directory / "uploads/dogs/1/photo.jpg").read_bytes(), b"photo content")
                 self.assertEqual(json.loads((directory / "manifest.json").read_text())["uploads_files"], 1)
+                self.assertEqual(json.loads((directory / "manifest.json").read_text())["postgres_major"], 18)
                 with backup.exclusive_lock(self.root / "var/backup/writes.lock"):
                     pass
                 return json.dumps({"message_type": "summary", "snapshot_id": "abc123"})
@@ -75,10 +76,37 @@ class BackupTests(unittest.TestCase):
             self.assertEqual(backup.backup(self.root, self.env, self.environ), "abc123")
         self.assertFalse(captured[0].exists())
 
-    def test_failed_dump_never_uploads_a_snapshot_and_releases_lock(self):
-        with patch.object(backup, "command", side_effect=backup.BackupError("dump failed")), patch.object(backup, "restic") as remote:
+    def test_manifest_uses_server_version_not_the_url_hint_or_client_version(self):
+        destination = self.root / "capture"
+        destination.mkdir()
+        with patch.object(backup, "command", return_value="160015\n"):
+            backup.capture(self.root, destination, {**self.environ, "DATABASE_URL": self.environ["DATABASE_URL"].replace("serverVersion=16", "serverVersion=18")})
+        self.assertEqual(json.loads((destination / "manifest.json").read_text())["postgres_major"], 16)
+
+    def test_manifest_records_the_application_revision_when_supplied(self):
+        for revision in (None, "test-deployed-commit"):
+            with self.subTest(revision=revision), tempfile.TemporaryDirectory() as directory:
+                environ = dict(self.environ)
+                if revision is not None:
+                    environ["APP_REVISION"] = revision
+                destination = Path(directory)
+                with patch.object(backup, "command", return_value="180006\n"):
+                    backup.capture(self.root, destination, environ)
+                manifest = json.loads((destination / "manifest.json").read_text())
+                self.assertEqual(manifest["commit"], revision or "unknown")
+
+    def test_unreadable_server_version_never_exports_or_uploads(self):
+        with patch.object(backup, "command", return_value="unknown") as pg, patch.object(backup, "restic") as remote:
             with self.assertRaises(backup.BackupError):
                 backup.backup(self.root, self.env, self.environ)
+        self.assertEqual(pg.call_count, 1)
+        remote.assert_not_called()
+
+    def test_failed_dump_never_uploads_a_snapshot_and_releases_lock(self):
+        with patch.object(backup, "command", side_effect=["180006\n", backup.BackupError("dump failed")]) as pg, patch.object(backup, "restic") as remote:
+            with self.assertRaises(backup.BackupError):
+                backup.backup(self.root, self.env, self.environ)
+            self.assertEqual(pg.call_args.args[0][0], "pg_dump")
             remote.assert_not_called()
         with backup.exclusive_lock(self.root / "var/backup/writes.lock"):
             pass

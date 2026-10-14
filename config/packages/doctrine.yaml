@@ -1,10 +1,16 @@
 doctrine:
     dbal:
-        url: '%env(resolve:DATABASE_URL)%'
+        # Percent-encoded passwords and TLS paths must remain URL data, not
+        # Symfony container parameter references.
+        url: '%env(DATABASE_URL)%'
+        # Each role uses one schema as its search_path. DBAL qualifies tables
+        # from other schemas with a dot; leave those outside this app's migration
+        # and validation scope, including the isolated hosted Preview schema.
+        schema_filter: '~^[^.]+$~'
 
         # Keep cache warmup independent from database availability. Local
-        # Compose and the managed production database both use PostgreSQL 16.
-        server_version: '16'
+        # Compose and the managed hosted database both use PostgreSQL 18.
+        server_version: '18'
 
         profiling_collect_backtrace: '%kernel.debug%'
     orm:

@@ -1,7 +1,7 @@
-# Preview feasibility runtime. Production cutover is a separate operation.
 FROM dunglas/frankenphp:1-php8.4-bookworm AS base
 RUN install-php-extensions intl pdo_pgsql zip \
-    && cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+    && cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \
+    && php --ri pdo_pgsql
 WORKDIR /app
 ENV APP_ENV=prod APP_DEBUG=0 PORT=8080
 
@@ -26,6 +26,7 @@ RUN chmod +x /usr/local/bin/vercel-preview-entrypoint \
     && mkdir -p /app/var/cache /app/var/log /app/var/uploads /app/var/backup /config /data \
     && chown -R www-data:www-data /app/var /config /data
 USER www-data
+RUN frankenphp validate --config /etc/caddy/Caddyfile
 EXPOSE 8080
 ENTRYPOINT ["vercel-preview-entrypoint"]
 CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]

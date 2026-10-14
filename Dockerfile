@@ -44,7 +44,7 @@ COPY docker/pgdg.sources /etc/apt/sources.list.d/pgdg.sources
 RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \
     && curl --fail --silent --show-error https://www.postgresql.org/media/keys/ACCC4CF8.asc -o /usr/share/keyrings/postgresql.asc \
     && apt-get update \
-    && apt-get install -y --no-install-recommends gosu python3 restic postgresql-client-16 \
+    && apt-get install -y --no-install-recommends gosu python3 restic postgresql-client-18 \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /app /app
@@ -71,6 +71,6 @@ ENV APP_ENV=dev \
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 COPY docker/php.dev.ini /usr/local/etc/php/conf.d/zzz-dev.ini
 
-# Keep the production runtime as the default target used by Railway and by a
-# plain `docker build`, while Compose explicitly selects `development`.
+# Keep the production runtime as the default for a plain `docker build`,
+# while Compose explicitly selects `development`.
 FROM runtime AS production
