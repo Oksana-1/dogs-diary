@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use App\Infrastructure\Media\MediaStorageFactory;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -26,6 +27,7 @@ final class CheckProductionConfigCommand extends Command
         private readonly string $mailerFromAddress,
         private readonly string $mailerFromName,
         private readonly string $appBaseUrl,
+        private readonly ?MediaStorageFactory $mediaStorageFactory = null,
     ) {
         parent::__construct();
     }
@@ -34,12 +36,23 @@ final class CheckProductionConfigCommand extends Command
     {
         $this->addOption('preview', null, InputOption::VALUE_NONE, 'Require disabled mail delivery for an isolated Preview.');
         $this->addOption('require-tls', null, InputOption::VALUE_NONE, 'Require PostgreSQL TLS for a hosted database.');
+        $this->addOption('require-r2', null, InputOption::VALUE_NONE, 'Require valid R2 configuration for durable hosted media.');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
         $errors = $this->validationErrors((bool) $input->getOption('preview'), (bool) $input->getOption('require-tls'));
+        if ($input->getOption('require-r2')) {
+            try {
+                if (null === $this->mediaStorageFactory) {
+                    throw new \RuntimeException();
+                }
+                $this->mediaStorageFactory->createS3Client();
+            } catch (\Throwable) {
+                $errors[] = 'MEDIA_STORAGE must be r2 with valid MEDIA_R2_* configuration.';
+            }
+        }
 
         if ([] !== $errors) {
             $io->error('Production configuration is not safe.');

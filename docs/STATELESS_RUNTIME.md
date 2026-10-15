@@ -1,4 +1,4 @@
-# PostgreSQL-backed security state and Preview runtime
+# PostgreSQL-backed security state and Vercel runtime
 
 Apply the squashed baseline `Version20261013180000` before starting the new
 runtime. On Monday's backup it adds `sessions`, `security_rate_limits`, and
@@ -32,13 +32,22 @@ session-level advisory locks with PgBouncer transaction pooling. Large private
 media requests may keep sessions active; revisit early session closing with the
 R2 implementation and measure connection occupancy before cutover.
 
-## Hosted Preview
+## Hosted runtime
 
-`Dockerfile.vercel` is a Preview-only image. Its entrypoint refuses a production
-deployment, disables mail and backup scheduling, validates configuration and
-warms only disposable local cache. It never runs migrations. Compiled assets are
-in the image; production logs already go to stderr. Media is still local and
-ephemeral until Wednesday's storage work.
+`Dockerfile.vercel` uses `docker/vercel-entrypoint.sh`. Production startup
+preserves real mail settings, requires a canonical HTTPS origin, PostgreSQL TLS
+and R2 storage, validates configuration and warms disposable local cache. It
+disables filesystem backup scheduling and never runs migrations. Compiled assets
+are in the image; production logs go to stderr. Local storage remains available
+for development and isolated tests, not durable Vercel production storage.
+
+`R2_CHECK_ONLY=1` is a deployment-only health diagnostic that never boots the
+application or accesses its database. See [PRODUCTION_CONFIGURATION.md](PRODUCTION_CONFIGURATION.md).
+
+### Isolated Preview compatibility
+
+Preview still disables mail and requires separate credentials. These protections
+remain useful for isolated security tests; they are not production configuration.
 
 Configure Preview-only `APP_SECRET`, `DATABASE_URL`, and `PORT=8080`.
 Hosted startup derives `APP_BASE_URL` from the deployment's `VERCEL_URL` when no
@@ -48,7 +57,7 @@ tables in a separate `preview` schema and use a role with no `USAGE` on `public`
 That role must default to `search_path=preview` on both direct and pooled
 connections; verify those permissions before putting its URL in Preview.
 Keep Vercel's system environment variables enabled: `VERCEL=1` activates mandatory
-TLS validation; `VERCEL_ENV=preview` selects the permitted deployment environment.
+Preview TLS validation; `VERCEL_ENV=preview` selects isolated Preview behavior.
 Use the same Preview secret across instances, different from production.
 
 Create a Preview from the project root with the container port set explicitly:
@@ -123,31 +132,32 @@ Build and set up once (commands fail if names already exist; inspect/reuse them
 rather than dropping databases):
 
 ```sh
-docker network create dogs-diary-tuesday
-docker run -d --name dogs-diary-tuesday-db --network dogs-diary-tuesday \
-  -e POSTGRES_DB=dogs_diary_tuesday_test -e POSTGRES_USER=app \
-  -e POSTGRES_PASSWORD=tuesday-disposable-only \
-  -p 127.0.0.1:15432:5432 postgres:16-alpine
+docker network create dogs-diary-runtime
+docker run -d --rm --name dogs-diary-runtime-db --network dogs-diary-runtime \
+  --tmpfs /var/lib/postgresql \
+  -e POSTGRES_DB=dogs_diary_runtime_test -e POSTGRES_USER=app \
+  -e POSTGRES_PASSWORD=runtime-disposable-only \
+  -p 127.0.0.1:15434:5432 postgres:18.6-alpine
 # Wait until pg_isready succeeds before migrations.
-docker exec dogs-diary-tuesday-db pg_isready -U app -d dogs_diary_tuesday_test
-APP_ENV=test DATABASE_URL='postgresql://app:tuesday-disposable-only@127.0.0.1:15432/dogs_diary_tuesday?serverVersion=16&charset=utf8' \
+docker exec dogs-diary-runtime-db pg_isready -U app -d dogs_diary_runtime_test
+APP_ENV=test DATABASE_URL='postgresql://app:runtime-disposable-only@127.0.0.1:15434/dogs_diary_runtime?serverVersion=18&charset=utf8' \
   php bin/console doctrine:migrations:migrate --no-interaction
-docker build -f Dockerfile.vercel -t dogs-diary:tuesday-preview .
+docker build --platform linux/amd64 -f Dockerfile.vercel -t dogs-diary:vercel-runtime-check .
 ```
 
 Start the two apps with separate filesystems, using `a`/18181 and `b`/18182:
 
 ```sh
-docker run -d --name dogs-diary-tuesday-a --network dogs-diary-tuesday \
+docker run -d --rm --platform linux/amd64 --name dogs-diary-runtime-a --network dogs-diary-runtime \
   -p 127.0.0.1:18181:8080 \
-  -e APP_SECRET=tuesday-isolated-shared-session-secret-2026 \
-  -e DATABASE_URL='postgresql://app:tuesday-disposable-only@dogs-diary-tuesday-db:5432/dogs_diary_tuesday_test?serverVersion=16&charset=utf8' \
-  -e APP_BASE_URL=https://diary.test dogs-diary:tuesday-preview
-docker run -d --name dogs-diary-tuesday-b --network dogs-diary-tuesday \
+  -e APP_SECRET=runtime-isolated-shared-session-secret-2026 \
+  -e DATABASE_URL='postgresql://app:runtime-disposable-only@dogs-diary-runtime-db:5432/dogs_diary_runtime_test?serverVersion=18&charset=utf8' \
+  -e APP_BASE_URL=https://diary.test dogs-diary:vercel-runtime-check
+docker run -d --rm --platform linux/amd64 --name dogs-diary-runtime-b --network dogs-diary-runtime \
   -p 127.0.0.1:18182:8080 \
-  -e APP_SECRET=tuesday-isolated-shared-session-secret-2026 \
-  -e DATABASE_URL='postgresql://app:tuesday-disposable-only@dogs-diary-tuesday-db:5432/dogs_diary_tuesday_test?serverVersion=16&charset=utf8' \
-  -e APP_BASE_URL=https://diary.test dogs-diary:tuesday-preview
+  -e APP_SECRET=runtime-isolated-shared-session-secret-2026 \
+  -e DATABASE_URL='postgresql://app:runtime-disposable-only@dogs-diary-runtime-db:5432/dogs_diary_runtime_test?serverVersion=18&charset=utf8' \
+  -e APP_BASE_URL=https://diary.test dogs-diary:vercel-runtime-check
 python3 -B tests/Operations/shared_state_smoke.py
 ```
 
@@ -158,8 +168,10 @@ correct password that must still be throttled. Preview uses null mail, so the
 reset completion uses a known synthetic token fixture in the disposable DB;
 this check does not prove provider email delivery.
 
-Stop when finished, preserving test data for inspection:
+Stop when finished. These `--rm` containers contain only synthetic data and are
+removed automatically, including the tmpfs database:
 
 ```sh
-docker stop dogs-diary-tuesday-a dogs-diary-tuesday-b dogs-diary-tuesday-db
+docker stop dogs-diary-runtime-a dogs-diary-runtime-b dogs-diary-runtime-db
+docker network rm dogs-diary-runtime
 ```

@@ -1,4 +1,4 @@
-"""HTTP security smoke for the explicitly named disposable Tuesday containers.
+"""HTTP security smoke for the explicitly named disposable runtime containers.
 
 Never accepts production URLs. See docs/STATELESS_RUNTIME.md for setup.
 """
@@ -18,14 +18,14 @@ import time
 from urllib.parse import urlencode, urlsplit
 
 
-DATABASE = "dogs_diary_tuesday_test"
-SECRET = "tuesday-isolated-shared-session-secret-2026"
-PASSWORD = "Tuesday synthetic password 2026!"
+DATABASE = "dogs_diary_runtime_test"
+SECRET = "runtime-isolated-shared-session-secret-2026"
+PASSWORD = "Runtime synthetic password 2026!"
 
 
 def sql(statement):
     return subprocess.check_output([
-        "docker", "exec", "dogs-diary-tuesday-db", "psql", "-U", "app",
+        "docker", "exec", "dogs-diary-runtime-db", "psql", "-U", "app",
         "-d", DATABASE, "-v", "ON_ERROR_STOP=1", "-Atc", statement,
     ], text=True).strip()
 
@@ -84,7 +84,7 @@ class Client:
 
 def main():
     assert sql("SELECT current_database()") == DATABASE
-    for name in ("dogs-diary-tuesday-a", "dogs-diary-tuesday-b"):
+    for name in ("dogs-diary-runtime-a", "dogs-diary-runtime-b"):
         config = json.loads(subprocess.check_output(["docker", "inspect", name], text=True))[0]
         env = dict(item.split("=", 1) for item in config["Config"]["Env"])
         assert f"/{DATABASE}?" in env["DATABASE_URL"]
@@ -103,7 +103,7 @@ def main():
     })
     assert status == 302
     assert client.request(18181, "/api/dogs")[0] == 200
-    restart("dogs-diary-tuesday-a")
+    restart("dogs-diary-runtime-a")
     assert client.request(18181, "/api/dogs")[0] == 200
     token = client.csrf(18181, "/")
     assert client.request(18182, "/logout", {"_csrf_token": "invalid"})[0] == 403
@@ -112,7 +112,7 @@ def main():
     assert client.request(18181, "/api/dogs")[0] == 401
 
     token = client.csrf(18181, "/login")
-    restart("dogs-diary-tuesday-b")
+    restart("dogs-diary-runtime-b")
     assert client.request(18182, "/login", {
         "_csrf_token": token, "email": email, "password": PASSWORD,
     })[0] == 302
@@ -131,7 +131,7 @@ def main():
         f"expires_at = to_timestamp({expiry}) AT TIME ZONE 'UTC' WHERE user_id = {user_id}")
     reset_path = "/reset-password/" + selector + verifier
     token = client.csrf(18181, reset_path)
-    restart("dogs-diary-tuesday-b")
+    restart("dogs-diary-runtime-b")
     new_password = PASSWORD + " changed"
     assert client.request(18182, reset_path, {
         "_csrf_token": token, "password": new_password, "password_confirmation": new_password,
@@ -161,7 +161,7 @@ def main():
 
     with ThreadPoolExecutor(max_workers=5) as executor:
         list(executor.map(fail_login, range(5)))
-    restart("dogs-diary-tuesday-a")
+    restart("dogs-diary-runtime-a")
     browser = Client()
     token = browser.csrf(18182, "/login")
     response = browser.request(18181, "/login", {

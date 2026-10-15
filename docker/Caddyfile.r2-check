@@ -1,0 +1,11 @@
+{
+	admin off
+	auto_https off
+}
+
+:{$PORT:8080} {
+	header Cache-Control "no-store"
+	header X-Robots-Tag "noindex, nofollow"
+	respond /healthz 204
+	respond "Application disabled during R2 verification." 503
+}

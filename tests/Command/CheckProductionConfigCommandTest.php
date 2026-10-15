@@ -5,12 +5,31 @@ declare(strict_types=1);
 namespace App\Tests\Command;
 
 use App\Command\CheckProductionConfigCommand;
+use App\Infrastructure\Media\LocalMediaStorage;
+use App\Infrastructure\Media\MediaStorageFactory;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
 final class CheckProductionConfigCommandTest extends TestCase
 {
+    public function testHostedProductionRejectsMissingOrLocalMediaWithoutLeakingCredentials(): void
+    {
+        foreach (['local', 'r2'] as $driver) {
+            $factory = new MediaStorageFactory(new LocalMediaStorage(sys_get_temp_dir()), $driver, 'https://untrusted.example', 'auto', 'media', 'private-key', 'private-secret');
+            $tester = new CommandTester(new CheckProductionConfigCommand(
+                environment: 'prod', debug: false, appSecret: str_repeat('a', 64),
+                databaseUrl: 'postgresql://app:private-db@postgres.example.com/diary?sslmode=require',
+                mailerDsn: 'smtp://mail.example.com', mailerFromAddress: 'hello@example.com',
+                mailerFromName: 'Diary', appBaseUrl: 'https://diary.example.com', mediaStorageFactory: $factory,
+            ));
+            self::assertSame(Command::FAILURE, $tester->execute(['--require-r2' => true, '--require-tls' => true]));
+            self::assertStringContainsString('MEDIA_STORAGE must be r2', $tester->getDisplay());
+            self::assertStringNotContainsString('private-key', $tester->getDisplay());
+            self::assertStringNotContainsString('private-secret', $tester->getDisplay());
+        }
+    }
+
     public function testHostedPreviewRequiresTlsAndDisabledMailWithoutLeakingSecrets(): void
     {
         $make = static fn (string $query, string $mailer) => new CommandTester(new CheckProductionConfigCommand(
@@ -35,14 +54,15 @@ final class CheckProductionConfigCommandTest extends TestCase
             environment: 'prod',
             debug: false,
             appSecret: str_repeat('a', 64),
-            databaseUrl: 'postgresql://app_user:private-db-password@postgres.example.com:5432/dogs_diary',
+            databaseUrl: 'postgresql://app_user:private-db-password@postgres.example.com:5432/dogs_diary?sslmode=require',
             mailerDsn: 'smtp://mailer_user:mailer_password@smtp.example.com:587',
             mailerFromAddress: 'no-reply@example.com',
             mailerFromName: 'Dogs Diary',
             appBaseUrl: 'https://dogs-diary.example.com',
+            mediaStorageFactory: new MediaStorageFactory(new LocalMediaStorage(sys_get_temp_dir()), 'r2', 'https://'.str_repeat('a', 32).'.r2.cloudflarestorage.com', 'auto', 'media', 'test-key', 'test-secret'),
         ));
 
-        self::assertSame(Command::SUCCESS, $tester->execute([]));
+        self::assertSame(Command::SUCCESS, $tester->execute(['--require-tls' => true, '--require-r2' => true]));
         self::assertStringContainsString('Production configuration is safe to use.', $tester->getDisplay());
         self::assertStringNotContainsString('private-db-password', $tester->getDisplay());
         self::assertStringNotContainsString(str_repeat('a', 64), $tester->getDisplay());

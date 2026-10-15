@@ -17,16 +17,18 @@ RUN composer dump-autoload --no-dev --no-interaction --no-scripts --classmap-aut
     && php bin/console asset-map:compile \
     && php bin/console cache:clear --no-debug --no-warmup
 
-FROM base AS preview
+FROM base AS runtime
 COPY --from=build /app /app
 COPY docker/Caddyfile /etc/caddy/Caddyfile
 COPY docker/php.ini /usr/local/etc/php/conf.d/zz-app.ini
-COPY docker/vercel-preview-entrypoint.sh /usr/local/bin/vercel-preview-entrypoint
-RUN chmod +x /usr/local/bin/vercel-preview-entrypoint \
+COPY docker/Caddyfile.r2-check /etc/caddy/Caddyfile.r2-check
+COPY docker/vercel-entrypoint.sh /usr/local/bin/vercel-entrypoint
+RUN chmod +x /usr/local/bin/vercel-entrypoint \
     && mkdir -p /app/var/cache /app/var/log /app/var/uploads /app/var/backup /config /data \
     && chown -R www-data:www-data /app/var /config /data
 USER www-data
-RUN frankenphp validate --config /etc/caddy/Caddyfile
+RUN frankenphp validate --config /etc/caddy/Caddyfile \
+    && frankenphp validate --config /etc/caddy/Caddyfile.r2-check
 EXPOSE 8080
-ENTRYPOINT ["vercel-preview-entrypoint"]
+ENTRYPOINT ["vercel-entrypoint"]
 CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]

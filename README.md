@@ -102,7 +102,7 @@ required for the application runtime.
 - `src/Application` contains the dog, treatment, and media use cases.
 - `src/Entity` and `src/Repository` contain the Doctrine model and persistence layer for dogs, treatments, dog media, and treatment media.
 - `src/View` normalizes entities for API responses.
-- `src/Infrastructure/Media` stores uploaded media on the local filesystem.
+- `src/Infrastructure/Media` provides local filesystem and private R2 media storage.
 - `assets/js/modules/dogsDiary` contains the Vue UI, composables, entities, and API repositories.
 - `templates` contains the shared Twig layout and Vue mount points.
 - `migrations` contains the PostgreSQL schema history.
@@ -139,8 +139,10 @@ Treatment create and update requests accept `types`, `productName`, `treatmentDa
 ### Dog Media
 
 - `GET /api/dogs/{dogId}/media` — list a dog's media.
-- `POST /api/dogs/{dogId}/media` — upload media using the multipart field `file`.
-- `GET /api/dogs/{dogId}/media/{id}` — stream an owner-authorized media item.
+- `POST /api/dogs/{dogId}/media` — local-storage upload using the multipart field `file`.
+- `POST /api/dogs/{dogId}/media/uploads` — initiate a direct R2 upload, or select local multipart mode.
+- `POST /api/dogs/{dogId}/media/uploads/{uploadId}/complete` — validate and finalize a direct upload.
+- `GET /api/dogs/{dogId}/media/{id}` — authorize and stream or redirect to private media.
 - `DELETE /api/dogs/{dogId}/media/{id}` — delete a media item.
 - `PUT /api/dogs/{dogId}/media/thumbnail` — select an image thumbnail using `{"mediaId": 123}`.
 - `DELETE /api/dogs/{dogId}/media/thumbnail` — clear the selected thumbnail.
@@ -152,7 +154,9 @@ Dog media supports JPEG, PNG, and WebP images up to 10 MB, plus MP4 and WebM vid
 ### Treatment Media
 
 - `GET /api/dogs/{dogId}/treatments/{treatmentId}/media` — list a treatment's images.
-- `POST /api/dogs/{dogId}/treatments/{treatmentId}/media` — upload an image using the multipart field `file`.
+- `POST /api/dogs/{dogId}/treatments/{treatmentId}/media` — local-storage image upload using the multipart field `file`.
+- `POST /api/dogs/{dogId}/treatments/{treatmentId}/media/uploads` — initiate an image upload.
+- `POST /api/dogs/{dogId}/treatments/{treatmentId}/media/uploads/{uploadId}/complete` — finalize a direct image upload.
 - `GET /api/dogs/{dogId}/treatments/{treatmentId}/media/{id}` — stream an owner-authorized treatment image.
 - `DELETE /api/dogs/{dogId}/treatments/{treatmentId}/media/{id}` — delete a treatment image.
 
@@ -160,17 +164,26 @@ Treatment media supports one JPEG, PNG, or WebP image up to 10 MB per treatment.
 
 ## Media Storage
 
+Private R2 storage, direct browser uploads, retention and Cloudflare/Vercel setup
+are documented in [`docs/R2_MEDIA.md`](docs/R2_MEDIA.md). Set `MEDIA_STORAGE=r2`
+with the documented credentials to select R2. The default `local` driver uses
+the filesystem behavior below. Hosted synthetic R2 checks passed; production
+settings, browser checks and coordinated recovery remain release gates. This
+feature does not migrate existing files automatically.
+
 Uploaded files are stored under the private `var/uploads` directory. API responses expose authenticated media routes rather than filesystem paths; each download is owner-scoped, uses private no-store cache headers, and supports byte ranges for video playback. Database records keep media metadata and randomized storage keys; deleting a dog or treatment cascades to its media records and stored files through the application services.
 
 When upgrading an existing installation, move the contents of `public/uploads` to `var/uploads` before serving requests with the new configuration. The storage-key-relative directory structure must be preserved.
 
-Audit the database and filesystem without changing either:
+Audit the database and selected storage without changing either:
 
 ```bash
 php bin/console app:media:audit
 ```
 
-Add `--delete-orphans` only when orphaned files should be permanently removed.
+Add `--delete-orphans` only after reviewing the reported canonical keys. Local
+files are permanently removed; R2 files are retained before canonical deletion.
+Never use this option during a restore or an active import/upload operation.
 
 ## Development Commands
 

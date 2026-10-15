@@ -7,11 +7,13 @@ use Doctrine\Migrations\Exception\AbortMigration;
 use Doctrine\Migrations\Exception\IrreversibleMigration;
 use Doctrine\ORM\Tools\SchemaValidator;
 use DoctrineMigrations\Version20261013180000;
+use DoctrineMigrations\Version20261015090000;
 use Psr\Log\NullLogger;
 
 require dirname(__DIR__, 2).'/vendor/autoload.php';
 (new Symfony\Component\Dotenv\Dotenv())->bootEnv(dirname(__DIR__, 2).'/.env');
 require dirname(__DIR__, 2).'/migrations/Version20261013180000.php';
+require dirname(__DIR__, 2).'/migrations/Version20261015090000.php';
 
 // Each scenario creates only a random schema inside a transaction. No existing
 // table is addressed, and rollback removes all test DDL/data even on failure.
@@ -91,10 +93,16 @@ foreach (['fresh', 'monday', 'current', 'incomplete-history', 'unknown-history',
             $connection->executeStatement($query->getStatement(), $query->getParameters(), $query->getTypes());
         }
         $assert(0 === (int) $connection->fetchOne('SELECT COUNT(*) FROM doctrine_migration_versions'), 'Legacy versions were not removed.');
+        $uploadsMigration = new Version20261015090000($connection, new NullLogger());
+        $uploadsMigration->up($connection->createSchemaManager()->introspectSchema());
+        foreach ($uploadsMigration->getSql() as $query) {
+            $connection->executeStatement($query->getStatement(), $query->getParameters(), $query->getTypes());
+        }
+        $assert(0 === (int) $connection->fetchOne('SELECT COUNT(*) FROM media_upload'), 'New upload tickets must start empty.');
         $connection->getConfiguration()->setSchemaAssetsFilter(static fn (string $name): bool => $testFilter($name) && 'doctrine_migration_versions' !== $name);
         $schemaChanges = (new SchemaValidator($manager))->getUpdateSchemaList();
         $connection->getConfiguration()->setSchemaAssetsFilter($testFilter);
-        $assert([] === $schemaChanges, 'Baseline schema does not match the application mapping: '.implode('; ', $schemaChanges));
+        $assert([] === $schemaChanges, 'Migrated schema does not match the application mapping: '.implode('; ', $schemaChanges));
         $assert(('fresh' === $scenario ? 0 : 1) === (int) $connection->fetchOne('SELECT COUNT(*) FROM dog'), 'Existing dog data changed.');
         if ('current' === $scenario) {
             $assert('preserve-me' === $connection->fetchOne("SELECT state FROM security_rate_limits WHERE id = 'sentinel'"), 'Security state changed.');

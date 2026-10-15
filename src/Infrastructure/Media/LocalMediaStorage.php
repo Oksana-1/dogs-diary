@@ -4,8 +4,10 @@ namespace App\Infrastructure\Media;
 
 use App\Application\Media\MediaStorageInterface;
 use App\Enum\MediaOwnerTypeEnum;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
 final readonly class LocalMediaStorage implements MediaStorageInterface
 {
@@ -54,6 +56,24 @@ final readonly class LocalMediaStorage implements MediaStorageInterface
     public function exists(string $storageKey): bool
     {
         return null !== $this->resolvePath($storageKey);
+    }
+
+    public function createResponse(string $storageKey, string $originalName, string $mimeType): ?BinaryFileResponse
+    {
+        $path = $this->resolvePath($storageKey);
+        if (null === $path) {
+            return null;
+        }
+
+        $response = new BinaryFileResponse($path);
+        $response->headers->set('Content-Type', $mimeType);
+        $response->headers->set('X-Content-Type-Options', 'nosniff');
+        $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_INLINE, $originalName);
+        $response->setPrivate();
+        $response->setMaxAge(0);
+        $response->headers->addCacheControlDirective('no-store');
+
+        return $response;
     }
 
     public function resolvePath(string $storageKey): ?string

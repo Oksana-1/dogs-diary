@@ -30,7 +30,9 @@ final readonly class SecurityResponseHeadersSubscriber implements EventSubscribe
 
         $headers->set('X-Content-Type-Options', 'nosniff');
         $headers->set('X-Frame-Options', 'DENY');
-        $headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
+        if (!$headers->has('Referrer-Policy')) {
+            $headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
+        }
         $headers->set('Permissions-Policy', 'camera=(), geolocation=(), microphone=()');
 
         if ('prod' === $this->environment && $request->isSecure()) {

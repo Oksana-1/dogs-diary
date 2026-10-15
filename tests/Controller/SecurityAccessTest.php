@@ -85,6 +85,8 @@ final class SecurityAccessTest extends WebTestCase
         yield 'treatment update' => ['PUT', '/api/dogs/42/treatments/7'];
         yield 'treatment deletion' => ['DELETE', '/api/dogs/42/treatments/7'];
         yield 'dog media upload' => ['POST', '/api/dogs/42/media'];
+        yield 'dog media upload initiation' => ['POST', '/api/dogs/42/media/uploads'];
+        yield 'dog media upload finalization' => ['POST', '/api/dogs/42/media/uploads/'.str_repeat('a', 32).'/complete'];
         yield 'dog media download' => ['GET', '/api/dogs/42/media/9'];
         yield 'dog media deletion' => ['DELETE', '/api/dogs/42/media/9'];
         yield 'dog thumbnail selection' => ['PUT', '/api/dogs/42/media/thumbnail'];
@@ -93,6 +95,8 @@ final class SecurityAccessTest extends WebTestCase
         yield 'dog profile clearing' => ['DELETE', '/api/dogs/42/media/profile'];
         yield 'treatment media list' => ['GET', '/api/dogs/42/treatments/7/media'];
         yield 'treatment media upload' => ['POST', '/api/dogs/42/treatments/7/media'];
+        yield 'treatment upload initiation' => ['POST', '/api/dogs/42/treatments/7/media/uploads'];
+        yield 'treatment upload finalization' => ['POST', '/api/dogs/42/treatments/7/media/uploads/'.str_repeat('a', 32).'/complete'];
         yield 'treatment media download' => ['GET', '/api/dogs/42/treatments/7/media/9'];
         yield 'treatment media deletion' => ['DELETE', '/api/dogs/42/treatments/7/media/9'];
     }

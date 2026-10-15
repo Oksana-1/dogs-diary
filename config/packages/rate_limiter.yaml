@@ -1,5 +1,11 @@
 framework:
     rate_limiter:
+        media_upload:
+            policy: fixed_window
+            limit: 30
+            interval: '1 hour'
+            storage_service: App\Infrastructure\Security\DatabaseRateLimiterStorage
+            lock_factory: app.security_lock_factory
         login_local:
             policy: fixed_window
             limit: 5
