@@ -3,21 +3,47 @@
 namespace App\Controller\Api;
 
 use App\Application\Media\Exception\MediaValidationException;
+use App\Application\Media\MediaUploadService;
 use App\Application\Media\MediaUrlGenerator;
 use App\Application\Media\PrivateMediaResponseFactory;
 use App\Application\TreatmentMedia\TreatmentMediaService;
+use App\Controller\Api\Dto\MediaUploadPayload;
 use App\Entity\User;
 use App\View\TreatmentMediaView;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 #[Route('/api/dogs/{dogId<\d+>}/treatments/{treatmentId<\d+>}/media')]
 final class TreatmentMediaApiController extends AbstractController
 {
+    #[Route('/uploads', methods: ['POST'])]
+    public function initiateUpload(
+        int $dogId,
+        int $treatmentId,
+        #[CurrentUser] User $owner,
+        #[MapRequestPayload] MediaUploadPayload $payload,
+        MediaUploadService $uploads,
+    ): Response {
+        return $this->json($uploads->initiate($dogId, $treatmentId, $owner, $payload->name, $payload->mimeType, $payload->sizeBytes));
+    }
+
+    #[Route('/uploads/{uploadId}/complete', requirements: ['uploadId' => '[a-f0-9]{32}'], methods: ['POST'])]
+    public function completeUpload(
+        int $dogId,
+        int $treatmentId,
+        string $uploadId,
+        #[CurrentUser] User $owner,
+        MediaUploadService $uploads,
+        MediaUrlGenerator $urls,
+    ): Response {
+        return $this->json(TreatmentMediaView::from($uploads->complete($uploadId, $dogId, $treatmentId, $owner), $urls)->toArray(), 201);
+    }
+
     #[Route('', methods: ['GET'])]
     public function getCollection(
         int $dogId,

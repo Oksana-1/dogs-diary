@@ -1,9 +1,13 @@
 import Dog from "../../../entities/Dog.js";
+import { formatDate } from '../../../../../utils/helpers.js';
 
 export default {
     name: 'DogItem',
     props: {
         dog: Dog,
+    },
+    methods: {
+        formatDate,
     },
     data() {
         return {
@@ -28,9 +32,9 @@ export default {
             </div>
             <span class="breed-tag">{{ dog.status ?? 'No status' }}</span>
             <p class="dog-card-meta">
-                Born: {{ dog.birthDate ? dog.birthDate : 'Unknown' }}<br>
+                Born: {{ formatDate(dog.birthDate) }}<br>
                 Gender {{ dog.gender || 'Unknown' }}<br></br>
-                Adopted: {{ dog.adoptDate ? dog.adoptDate : 'Unknown' }}<br>
+                Adopted: {{ formatDate(dog.adoptDate) }}<br>
                 Weight: {{ dog.weight ?? 'Unknown' }} kg
             </p>
         </div>

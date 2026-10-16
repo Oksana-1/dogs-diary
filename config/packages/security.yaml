@@ -25,8 +25,7 @@ security:
                 csrf_token_id: authenticate
                 default_target_path: app_main
             login_throttling:
-                max_attempts: 5
-                interval: '1 minute'
+                limiter: app.login_rate_limiter
             remember_me:
                 secret: '%kernel.secret%'
                 lifetime: 1209600
@@ -43,6 +42,7 @@ security:
                 csrf_parameter: _csrf_token
 
     access_control:
+        - { path: ^/healthz$, roles: PUBLIC_ACCESS }
         - { path: ^/login$, roles: PUBLIC_ACCESS }
         - { path: ^/sign-up$, roles: PUBLIC_ACCESS }
         - { path: ^/reset-password(?:/|$), roles: PUBLIC_ACCESS }

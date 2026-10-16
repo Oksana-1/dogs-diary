@@ -13,20 +13,27 @@ defaults.
 | `APP_ENV` | `prod` |
 | `APP_DEBUG` | `0` |
 | `APP_SECRET` | Unique random value of at least 32 characters |
-| `DATABASE_URL` | Railway PostgreSQL URL, including credentials and database name |
+| `DATABASE_URL` | Hosted PostgreSQL URL, including credentials and database name |
 | `MAILER_DSN` | Real mail transport; `null://null` is rejected |
 | `MAILER_FROM_ADDRESS` | Verified sender address |
 | `MAILER_FROM_NAME` | Visible sender name |
 | `APP_BASE_URL` | Public HTTPS origin, without a trailing path |
 
-Generate `APP_SECRET` locally and copy only the output into Railway:
+Vercel also requires `MEDIA_STORAGE=r2` and the five `MEDIA_R2_*` variables in
+[R2_MEDIA.md](R2_MEDIA.md); its filesystem cannot provide durable media storage.
+The Vercel production entrypoint enforces this requirement using
+`app:production:check --require-tls --require-r2`. It preserves the configured
+production mail transport and requires an explicit canonical origin. It never
+runs migrations or schedules backups.
+
+Generate `APP_SECRET` locally and save the output in the deployment platform's secret settings:
 
 ```bash
 php -r 'echo bin2hex(random_bytes(32)), PHP_EOL;'
 ```
 
-Use Railway variable references for `DATABASE_URL` instead of copying a local
-PostgreSQL URL. Treat both `APP_SECRET` and `DATABASE_URL` as credentials:
+Use the hosted database connection URL for `DATABASE_URL`, with TLS enabled,
+instead of a local PostgreSQL URL. Treat both `APP_SECRET` and `DATABASE_URL` as credentials:
 restrict access, never print them in build logs, and rotate them if exposed.
 
 ## Preflight
@@ -35,7 +42,7 @@ Run this in the deployed service (or with the exact production variables in a
 safe shell) before migrations or traffic are enabled:
 
 ```bash
-php bin/console app:production:check
+php bin/console app:production:check --require-tls --require-r2
 ```
 
 The command reports variable names and validation failures but never their
@@ -45,3 +52,27 @@ databases, disabled mail delivery, and non-HTTPS public URLs.
 After changing variables, redeploy or restart the service and run the preflight
 again. A successful preflight checks configuration shape; it does not replace a
 database connection check or a password-reset email smoke test.
+
+The Vercel image supports Production and isolated Preview startup. Preview alone
+forces disabled mail. Shared-state behavior and testing are documented in
+[STATELESS_RUNTIME.md](STATELESS_RUNTIME.md).
+
+## Manual R2 storage check
+
+With `MEDIA_STORAGE=r2` and the documented `MEDIA_R2_*` settings supplied through
+a private process environment, run from the project root or inside the image:
+
+```bash
+php ops/r2_check.php
+```
+
+This opt-in command creates random synthetic objects, verifies signed
+upload/download, ranges, private access, retained deletion and restoration, then
+removes its objects and verifies cleanup. It does not boot Symfony, access the
+database, send mail or start a web server. JSON output contains check names and
+success/failure, not credentials or signed URLs; failure returns a nonzero status.
+
+Run it only against a bucket authorized for these synthetic writes. It is never
+invoked during application startup and requires no deployment or domain changes.
+It does not verify browser CORS, large video playback, bucket-wide retention
+policies or coordinated database recovery.
