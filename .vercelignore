@@ -1,0 +1,17 @@
+.env*
+.git
+.idea
+.codex
+.agents
+var
+vendor
+assets/vendor
+public/assets
+docs/operations
+ARCHITECTURE_REVIEW*.md
+dogs-diary-next-week-plan.md
+**/.DS_Store
+.phpunit.cache
+.php-cs-fixer.cache
+plans
+skills-lock.json

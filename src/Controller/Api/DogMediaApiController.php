@@ -4,8 +4,10 @@ namespace App\Controller\Api;
 
 use App\Application\DogMedia\DogMediaService;
 use App\Application\Media\Exception\MediaValidationException;
+use App\Application\Media\MediaUploadService;
 use App\Application\Media\MediaUrlGenerator;
 use App\Application\Media\PrivateMediaResponseFactory;
+use App\Controller\Api\Dto\MediaUploadPayload;
 use App\Controller\Api\Dto\SelectDogMediaPayload;
 use App\Entity\User;
 use App\View\DogMediaView;
@@ -20,6 +22,27 @@ use Symfony\Component\Security\Http\Attribute\CurrentUser;
 #[Route('/api/dogs/{dogId<\d+>}/media')]
 final class DogMediaApiController extends AbstractController
 {
+    #[Route('/uploads', methods: ['POST'])]
+    public function initiateUpload(
+        int $dogId,
+        #[CurrentUser] User $owner,
+        #[MapRequestPayload] MediaUploadPayload $payload,
+        MediaUploadService $uploads,
+    ): Response {
+        return $this->json($uploads->initiate($dogId, null, $owner, $payload->name, $payload->mimeType, $payload->sizeBytes));
+    }
+
+    #[Route('/uploads/{uploadId}/complete', requirements: ['uploadId' => '[a-f0-9]{32}'], methods: ['POST'])]
+    public function completeUpload(
+        int $dogId,
+        string $uploadId,
+        #[CurrentUser] User $owner,
+        MediaUploadService $uploads,
+        MediaUrlGenerator $urls,
+    ): Response {
+        return $this->json(DogMediaView::from($uploads->complete($uploadId, $dogId, null, $owner), $urls)->toArray(), 201);
+    }
+
     #[Route('', methods: ['GET'])]
     public function getCollection(
         int $dogId,

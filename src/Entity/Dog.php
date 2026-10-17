@@ -50,8 +50,8 @@ class Dog
      */
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'dogs')]
     #[ORM\JoinTable(name: 'dog_owner')]
-    #[ORM\JoinColumn(name: 'dog_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
-    #[ORM\InverseJoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'dog_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[ORM\InverseJoinColumn(name: 'user_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private Collection $owners;
 
     /**

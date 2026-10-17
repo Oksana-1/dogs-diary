@@ -2,9 +2,11 @@
 
 namespace App\Application\TreatmentMedia;
 
+use App\Application\Media\DirectUploadStorageInterface;
 use App\Application\Media\Exception\MediaValidationException;
 use App\Application\Media\MediaStorageInterface;
 use App\Application\Media\MediaUploadValidator;
+use App\Entity\MediaUpload;
 use App\Entity\TreatmentMedia;
 use App\Entity\User;
 use App\Enum\MediaOwnerTypeEnum;
@@ -40,12 +42,15 @@ final readonly class TreatmentMediaService
         return $this->mediaRepository->findForTreatmentAndOwner($dogId, $treatmentId, $owner);
     }
 
-    public function upload(int $dogId, int $treatmentId, UploadedFile $file, User $owner): ?TreatmentMedia
+    public function upload(int $dogId, int $treatmentId, UploadedFile $file, User $owner, ?MediaUpload $upload = null): ?TreatmentMedia
     {
         if (!$this->treatmentRepository->findOneForDogAndOwner($dogId, $treatmentId, $owner)) {
             return null;
         }
 
+        if ($this->storage instanceof DirectUploadStorageInterface && null === $upload) {
+            throw new MediaValidationException('Use the direct media upload flow.', 409, 'file');
+        }
         $metadata = $this->uploadValidator->validate($file);
         if (MediaTypeEnum::IMAGE !== $metadata->type) {
             throw new MediaValidationException('Treatments support image uploads only.', 415, 'file');
@@ -60,6 +65,7 @@ final readonly class TreatmentMediaService
                 $file,
                 $metadata,
                 $owner,
+                $upload,
                 &$storageKey,
                 &$replacedStorageKey,
             ): ?TreatmentMedia {
@@ -92,6 +98,7 @@ final readonly class TreatmentMediaService
                         width: $metadata->width,
                         height: $metadata->height,
                     );
+                    $upload?->complete($existingMedia);
 
                     return $existingMedia;
                 }
@@ -107,6 +114,7 @@ final readonly class TreatmentMediaService
                     position: 1,
                 );
                 $this->em->persist($media);
+                $upload?->complete($media);
 
                 return $media;
             });
