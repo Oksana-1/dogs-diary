@@ -1,4 +1,5 @@
 import DogMedia from '../entities/DogMedia.js';
+import uploadMedia from './MediaUpload.js';
 
 export default class DogMediaRepository {
     constructor(api) {
@@ -12,10 +13,7 @@ export default class DogMediaRepository {
     }
 
     async upload(dogId, file) {
-        const body = new FormData();
-        body.append('file', file);
-
-        return new DogMedia(await this.api.post(`/dogs/${dogId}/media`, body));
+        return new DogMedia(await uploadMedia(this.api, `/dogs/${dogId}/media`, file));
     }
 
     async delete(dogId, mediaId) {

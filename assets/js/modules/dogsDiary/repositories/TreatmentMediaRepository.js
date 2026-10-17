@@ -1,4 +1,5 @@
 import TreatmentMedia from '../entities/TreatmentMedia.js';
+import uploadMedia from './MediaUpload.js';
 
 export default class TreatmentMediaRepository {
     constructor(api) {
@@ -6,11 +7,8 @@ export default class TreatmentMediaRepository {
     }
 
     async upload(dogId, treatmentId, file) {
-        const body = new FormData();
-        body.append('file', file);
-
         return new TreatmentMedia(
-            await this.api.post(`/dogs/${dogId}/treatments/${treatmentId}/media`, body),
+            await uploadMedia(this.api, `/dogs/${dogId}/treatments/${treatmentId}/media`, file),
         );
     }
 

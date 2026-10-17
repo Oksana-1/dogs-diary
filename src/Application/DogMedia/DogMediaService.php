@@ -2,10 +2,12 @@
 
 namespace App\Application\DogMedia;
 
+use App\Application\Media\DirectUploadStorageInterface;
 use App\Application\Media\Exception\MediaValidationException;
 use App\Application\Media\MediaStorageInterface;
 use App\Application\Media\MediaUploadValidator;
 use App\Entity\DogMedia;
+use App\Entity\MediaUpload;
 use App\Entity\User;
 use App\Enum\MediaOwnerTypeEnum;
 use App\Enum\MediaTypeEnum;
@@ -40,13 +42,16 @@ final readonly class DogMediaService
         return $this->mediaRepository->findForDogAndOwner($dogId, $owner);
     }
 
-    public function upload(int $dogId, UploadedFile $file, User $owner): ?DogMedia
+    public function upload(int $dogId, UploadedFile $file, User $owner, ?MediaUpload $upload = null): ?DogMedia
     {
         $dog = $this->dogRepository->findForOwner($dogId, $owner);
         if (!$dog) {
             return null;
         }
 
+        if ($this->storage instanceof DirectUploadStorageInterface && null === $upload) {
+            throw new MediaValidationException('Use the direct media upload flow.', 409, 'file');
+        }
         $metadata = $this->uploadValidator->validate($file);
         $storageKey = $this->storage->store(MediaOwnerTypeEnum::DOG, $dogId, $file, $metadata->extension);
         $media = new DogMedia(
@@ -62,6 +67,7 @@ final readonly class DogMediaService
 
         try {
             $this->em->persist($media);
+            $upload?->complete($media);
             $this->em->flush();
         } catch (\Throwable $exception) {
             try {

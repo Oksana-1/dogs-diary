@@ -134,6 +134,18 @@
             ".editorconfig"
         ]
     },
+    "symfony/lock": {
+        "version": "7.4",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "5.2",
+            "ref": "8e937ff2b4735d110af1770f242c1107fdab4c8e"
+        },
+        "files": [
+            "config/packages/lock.yaml"
+        ]
+    },
     "symfony/mailer": {
         "version": "7.4",
         "recipe": {
@@ -178,6 +190,15 @@
         "files": [
             "config/packages/property_info.yaml"
         ]
+    },
+    "symfony/resend-mailer": {
+        "version": "7.4",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "7.1",
+            "ref": "487735bc20cbd1547ec311692ef0261a7687a3f0"
+        }
     },
     "symfony/routing": {
         "version": "7.3",

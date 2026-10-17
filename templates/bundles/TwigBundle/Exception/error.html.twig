@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Something went wrong | Dogs Diary{% endblock %}
+
+{% block body %}
+    <section class="error-page" aria-labelledby="error-title">
+        <div class="error-card">
+            <p class="error-code">{% block error_code %}{{ status_code|default(500) }}{% endblock %}</p>
+            <h1 id="error-title">{% block error_title %}Something went wrong{% endblock %}</h1>
+            <p>{% block error_message %}We could not complete this request. Please try again in a moment.{% endblock %}</p>
+            <a class="btn btn-black" href="{{ path('app_main') }}">Back to Dogs Diary</a>
+        </div>
+    </section>
+{% endblock %}

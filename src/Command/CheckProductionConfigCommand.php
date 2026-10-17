@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use App\Infrastructure\Media\MediaStorageFactory;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -25,14 +27,32 @@ final class CheckProductionConfigCommand extends Command
         private readonly string $mailerFromAddress,
         private readonly string $mailerFromName,
         private readonly string $appBaseUrl,
+        private readonly ?MediaStorageFactory $mediaStorageFactory = null,
     ) {
         parent::__construct();
+    }
+
+    protected function configure(): void
+    {
+        $this->addOption('preview', null, InputOption::VALUE_NONE, 'Require disabled mail delivery for an isolated Preview.');
+        $this->addOption('require-tls', null, InputOption::VALUE_NONE, 'Require PostgreSQL TLS for a hosted database.');
+        $this->addOption('require-r2', null, InputOption::VALUE_NONE, 'Require valid R2 configuration for durable hosted media.');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $errors = $this->validationErrors();
+        $errors = $this->validationErrors((bool) $input->getOption('preview'), (bool) $input->getOption('require-tls'));
+        if ($input->getOption('require-r2')) {
+            try {
+                if (null === $this->mediaStorageFactory) {
+                    throw new \RuntimeException();
+                }
+                $this->mediaStorageFactory->createS3Client();
+            } catch (\Throwable) {
+                $errors[] = 'MEDIA_STORAGE must be r2 with valid MEDIA_R2_* configuration.';
+            }
+        }
 
         if ([] !== $errors) {
             $io->error('Production configuration is not safe.');
@@ -50,7 +70,7 @@ final class CheckProductionConfigCommand extends Command
     /**
      * @return list<string>
      */
-    private function validationErrors(): array
+    private function validationErrors(bool $preview, bool $requireTls): array
     {
         $errors = [];
 
@@ -86,9 +106,17 @@ final class CheckProductionConfigCommand extends Command
             if ('!ChangeMe!' === ($database['pass'] ?? '')) {
                 $errors[] = 'DATABASE_URL must not use placeholder credentials.';
             }
+            if ($requireTls) {
+                parse_str($database['query'] ?? '', $options);
+                if (!in_array($options['sslmode'] ?? null, ['require', 'verify-ca', 'verify-full'], true)) {
+                    $errors[] = 'DATABASE_URL must require PostgreSQL TLS.';
+                }
+            }
         }
 
-        if ('' === trim($this->mailerDsn) || str_starts_with($this->mailerDsn, 'null://')) {
+        if ($preview && 'null://null' !== $this->mailerDsn) {
+            $errors[] = 'Preview MAILER_DSN must be null://null.';
+        } elseif (!$preview && ('' === trim($this->mailerDsn) || str_starts_with($this->mailerDsn, 'null://'))) {
             $errors[] = 'MAILER_DSN must configure a real production transport.';
         }
 
