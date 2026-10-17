@@ -108,12 +108,16 @@ final class ApiCsrfProtectionTest extends WebTestCase
         yield 'app_api_treatmentapi_updateitem' => ['PUT', '/api/dogs/1/treatments/1'];
         yield 'app_api_treatmentapi_deleteitem' => ['DELETE', '/api/dogs/1/treatments/1'];
         yield 'app_api_dogmediaapi_upload' => ['POST', '/api/dogs/1/media'];
+        yield 'app_api_dogmediaapi_initiateupload' => ['POST', '/api/dogs/1/media/uploads'];
+        yield 'app_api_dogmediaapi_completeupload' => ['POST', '/api/dogs/1/media/uploads/'.str_repeat('a', 32).'/complete'];
         yield 'app_api_dogmediaapi_delete' => ['DELETE', '/api/dogs/1/media/1'];
         yield 'app_api_dogmediaapi_selectthumbnail' => ['PUT', '/api/dogs/1/media/thumbnail'];
         yield 'app_api_dogmediaapi_clearthumbnail' => ['DELETE', '/api/dogs/1/media/thumbnail'];
         yield 'app_api_dogmediaapi_selectprofile' => ['PUT', '/api/dogs/1/media/profile'];
         yield 'app_api_dogmediaapi_clearprofile' => ['DELETE', '/api/dogs/1/media/profile'];
         yield 'app_api_treatmentmediaapi_upload' => ['POST', '/api/dogs/1/treatments/1/media'];
+        yield 'app_api_treatmentmediaapi_initiateupload' => ['POST', '/api/dogs/1/treatments/1/media/uploads'];
+        yield 'app_api_treatmentmediaapi_completeupload' => ['POST', '/api/dogs/1/treatments/1/media/uploads/'.str_repeat('a', 32).'/complete'];
         yield 'app_api_treatmentmediaapi_delete' => ['DELETE', '/api/dogs/1/treatments/1/media/1'];
     }
 

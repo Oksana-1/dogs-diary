@@ -20,6 +20,9 @@
 ###< symfony/asset-mapper ###
 
 .idea
+.DS_Store
+/.vercel/
+/plans/
 
 ###> phpunit/phpunit ###
 /phpunit.xml

@@ -4,6 +4,7 @@ namespace App\Application\Media;
 
 use App\Enum\MediaOwnerTypeEnum;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\Response;
 
 interface MediaStorageInterface
 {
@@ -18,10 +19,7 @@ interface MediaStorageInterface
 
     public function exists(string $storageKey): bool;
 
-    /**
-     * Returns the absolute path only for an existing, valid storage key.
-     */
-    public function resolvePath(string $storageKey): ?string;
+    public function createResponse(string $storageKey, string $originalName, string $mimeType): ?Response;
 
     /**
      * @return string[]

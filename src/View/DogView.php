@@ -23,21 +23,10 @@ final readonly class DogView extends AbstractView
      */
     public function toArray(): array
     {
-        $thumbnail = $this->dog->getThumbnailMedia();
         $profileMedia = $this->dog->getProfileMedia();
 
         return [
-            'id' => $this->dog->getId(),
-            'name' => $this->dog->getName(),
-            'birthDate' => $this->dog->getBirthDate()?->format('Y-m-d'),
-            'gender' => $this->dog->getGender()?->value,
-            'adoptDate' => $this->dog->getAdoptDate()?->format('Y-m-d'),
-            'weight' => $this->dog->getWeight(),
-            'height' => $this->dog->getHeight(),
-            'status' => $this->dog->getStatus(),
-            'thumbnail' => $thumbnail
-                ? DogMediaView::from($thumbnail, $this->urlGenerator)->toArray()
-                : null,
+            ...DogSummaryView::from($this->dog, $this->urlGenerator)->toArray(),
             'profileMedia' => $profileMedia
                 ? DogMediaView::from($profileMedia, $this->urlGenerator)->toArray()
                 : null,

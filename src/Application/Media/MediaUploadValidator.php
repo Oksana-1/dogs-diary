@@ -67,6 +67,20 @@ final readonly class MediaUploadValidator
         );
     }
 
+    public function validateDeclaration(string $name, string $mimeType, int $sizeBytes, bool $imageOnly): void
+    {
+        if ('' === trim($name) || strlen($name) > 255) {
+            throw new MediaValidationException('A file name of at most 255 bytes is required.', field: 'file');
+        }
+        if (!isset(self::MIME_CONFIGURATION[$mimeType]) || ($imageOnly && !str_starts_with($mimeType, 'image/'))) {
+            throw new MediaValidationException('This file type is not supported.', 415, 'file');
+        }
+        $limit = str_starts_with($mimeType, 'image/') ? $this->maxImageBytes : $this->maxVideoBytes;
+        if ($sizeBytes <= 0 || $sizeBytes > $limit) {
+            throw new MediaValidationException('The file is empty or exceeds the supported size limit.', $sizeBytes > $limit ? 413 : 422, 'file');
+        }
+    }
+
     /**
      * @return array{int, int}
      */
