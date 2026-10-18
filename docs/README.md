@@ -53,6 +53,8 @@ Plans describe proposed work and a historical baseline, separately from accepted
 
 ## Tooling
 
+- [Local interactive API reference](adr/tooling/backend/api-documentation.md)
+- [OpenAPI specification](adr/tooling/backend/openapi.yaml)
 - [Database migrations and restore compatibility](adr/tooling/db/migrations.md)
 - [CI and local quality checks](adr/tooling/devops/ci.md)
 - [Production Docker images](adr/tooling/devops/production-docker.md)

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token('api') }}">
+        <title>Dogs Diary API</title>
+        <link rel="stylesheet"
+              href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.33.1/swagger-ui.css"
+              integrity="sha384-Ov4/wv3j2bmct8cDc5X4ngJZohVPzEmc6uDPH8WeljUxO5vtoykvMEfbu9Vh6RaW"
+              crossorigin="anonymous">
+    </head>
+    <body>
+        <header style="padding: 1rem; font-family: sans-serif">
+            <a href="{{ path('app_main') }}">Back to Dogs Diary</a>
+            · <a href="{{ path('app_dev_api_spec') }}">OpenAPI JSON</a>
+            <p>Local development only. Requests use your current login and change real local data.</p>
+        </header>
+        <div id="swagger-ui"></div>
+        <noscript>Enable JavaScript to view the interactive API documentation.</noscript>
+        <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.33.1/swagger-ui-bundle.js"
+                integrity="sha384-ZPehFMQommnnuaZ4rpxgkgTT2DKFVp4hZC/7pLit+9Lek9T1YGSo23eHFbvNkXkw"
+                crossorigin="anonymous"></script>
+        <script>
+            const docs = SwaggerUIBundle({
+                url: {{ path('app_dev_api_spec')|json_encode|raw }},
+                dom_id: '#swagger-ui',
+                deepLinking: true,
+                filter: true,
+                displayRequestDuration: true,
+                validatorUrl: null,
+                onComplete() {
+                    docs.preauthorizeApiKey('csrfToken', document.querySelector('meta[name="csrf-token"]').content);
+                },
+                requestInterceptor(request) {
+                    const url = new URL(request.url, window.location.href);
+                    if (url.origin !== window.location.origin) {
+                        throw new Error('This documentation only sends requests to the current application.');
+                    }
+                    request.credentials = 'same-origin';
+                    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method?.toUpperCase())) {
+                        request.headers['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').content;
+                    }
+                    return request;
+                },
+            });
+        </script>
+    </body>
+</html>

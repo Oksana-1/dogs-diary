@@ -39,12 +39,13 @@ Validation failures add a `violations` array:
 | 400 | `invalid_request` | Malformed JSON or an otherwise invalid request |
 | 401 | `authentication_required` | Authentication is required or has expired |
 | 403 | `access_denied` | The authenticated client cannot perform the operation |
+| 403 | `invalid_csrf_token` | An authenticated API write has a missing or invalid CSRF token |
 | 404 | `resource_not_found` | The requested API route or resource does not exist |
 | 405 | `method_not_allowed` | The route exists but does not accept the HTTP method |
 | 409 | `conflict` | The request conflicts with current persisted state |
 | 413 | `payload_too_large` | The request or uploaded file exceeds its limit |
 | 415 | `unsupported_media_type` | The request content type or upload type is unsupported |
-| 422 | `validation_failed` | A well-formed request contains invalid values |
+| 422 | `validation_failed` | Missing required fields, incompatible value types, or invalid values |
 | 429 | `too_many_requests` | The client has exceeded a rate limit |
 | 500 | `internal_error` | An unexpected server failure occurred |
 
