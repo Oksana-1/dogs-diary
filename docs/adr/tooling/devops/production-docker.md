@@ -4,7 +4,7 @@ The root `Dockerfile` provides production and development Symfony images with Fr
 Caddy, PostgreSQL support, optimized Composer autoloading, and compiled
 AssetMapper assets. Compose uses its development target; the separate
 `Dockerfile.vercel` builds the hosted Production/Preview runtime described in
-[STATELESS_RUNTIME.md](STATELESS_RUNTIME.md).
+[Hosted runtime](../../architecture/devops/stateless-runtime.md).
 
 All repository `.env` variants are excluded from the image, together with
 development dependencies and tests. The image receives a container-only base
@@ -20,14 +20,14 @@ The image always sets `APP_ENV=prod` and `APP_DEBUG=0`. Its startup entrypoint:
 4. drops from root to `www-data` and starts FrankenPHP on the configured `PORT`.
 
 Doctrine migrations are not run by the image entrypoint. They require the
-separate migration and backup policy in [MIGRATIONS.md](MIGRATIONS.md), so an
+separate migration and backup policy in [Migrations](../db/migrations.md), so an
 ordinary container restart cannot unexpectedly change the database schema.
 
 ## Persistent-container requirements
 
 - Build the root `Dockerfile` for a host that supports persistent containers.
 - Generate a public domain and set `APP_BASE_URL` to its HTTPS origin.
-- Set all variables listed in `PRODUCTION_CONFIGURATION.md`.
+- Set all variables listed in [Production configuration](production-configuration.md).
 - Set the healthcheck path to `/healthz` with an appropriate timeout.
 - Mount persistent storage at exactly `/app/var/uploads` before accepting any
   uploads. A different path will leave uploaded media on ephemeral storage.

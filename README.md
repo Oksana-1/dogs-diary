@@ -79,7 +79,7 @@ The migration history is squashed into `Version20261013180000`. It creates a
 fresh schema or adopts Monday's four-version backup / the old five-version
 schema without replacing application data. Normal migration startup handles
 the conversion; never manually mark the baseline as executed. See
-[`docs/MIGRATIONS.md`](docs/MIGRATIONS.md) for restore compatibility and checks.
+[`Migrations`](docs/adr/tooling/db/migrations.md) for restore compatibility and checks.
 Do not use schema reset commands for cleanup.
 Tests continue to use isolated in-memory SQLite, never this development data.
 
@@ -164,7 +164,7 @@ Treatment media supports one JPEG, PNG, or WebP image up to 10 MB per treatment.
 ## Media Storage
 
 Private R2 storage, direct browser uploads, retention and Cloudflare/Vercel setup
-are documented in [`docs/R2_MEDIA.md`](docs/R2_MEDIA.md). Set `MEDIA_STORAGE=r2`
+are documented in [R2 storage](docs/adr/tooling/devops/r2-media.md). Set `MEDIA_STORAGE=r2`
 with the documented credentials to select R2. The default `local` driver uses
 the filesystem behavior below. Production is live on Vercel with R2; authenticated
 browser checks and coordinated recovery still need verification. This
@@ -187,8 +187,8 @@ Never use this option during a restore or an active import/upload operation.
 ## Development Commands
 
 Production database/media recovery requirements are documented in
-[`docs/STATELESS_RUNTIME.md`](docs/STATELESS_RUNTIME.md#recovery-boundary) and
-[`docs/R2_MEDIA.md`](docs/R2_MEDIA.md). The old filesystem/restic backup scheduler
+[Hosted runtime](docs/adr/architecture/devops/stateless-runtime.md#recovery-boundary) and
+[R2 storage](docs/adr/tooling/devops/r2-media.md). The old filesystem/restic backup scheduler
 has been removed; coordinated hosted recovery still requires verification.
 
 Run the local quality checks (PHP in the running app container, Node.js on the host):
@@ -198,20 +198,20 @@ bin/check
 ```
 
 Use `bin/check php` or `bin/check frontend` for a focused run, or add `--local`
-to use host PHP/Composer. See [`docs/CI.md`](docs/CI.md) for prerequisites,
+to use host PHP/Composer. See [CI](docs/adr/tooling/devops/ci.md) for prerequisites,
 failure behavior, and the separate PostgreSQL checks.
 
 Production environment requirements and the fail-safe preflight command are
-documented in [`docs/PRODUCTION_CONFIGURATION.md`](docs/PRODUCTION_CONFIGURATION.md).
+documented in [Production configuration](docs/adr/tooling/devops/production-configuration.md).
 
 The portable production image and persistent-volume runtime are documented in
-[`docs/PRODUCTION_DOCKER.md`](docs/PRODUCTION_DOCKER.md).
+[Production Docker images](docs/adr/tooling/devops/production-docker.md).
 
 Shared database sessions, login throttling, and Vercel Production/Preview
-runtime are documented in [`docs/STATELESS_RUNTIME.md`](docs/STATELESS_RUNTIME.md).
+runtime are documented in [Hosted runtime](docs/adr/architecture/devops/stateless-runtime.md).
 
 The GitHub Actions quality gate and its exact local commands are documented in
-[`docs/CI.md`](docs/CI.md).
+[CI](docs/adr/tooling/devops/ci.md).
 
 Check PHP formatting without modifying files:
 

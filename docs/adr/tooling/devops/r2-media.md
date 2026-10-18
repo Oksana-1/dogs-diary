@@ -173,7 +173,7 @@ with the corresponding retained media.
 - Dog media CRUD, thumbnails/profile media and concurrent treatment-photo replacement.
 - Download ranges, signed URL expiry, refresh and private cache behavior.
 - Delete/replace recovery across the accepted six-hour database window.
-- `bin/check`, the isolated PostgreSQL job in [CI.md](CI.md), and the current image build.
+- `bin/check`, the isolated PostgreSQL job in [CI](ci.md), and the current image build.
 - A bounded R2 connectivity check with synthetic objects before private media migration.
 
 ## Sources

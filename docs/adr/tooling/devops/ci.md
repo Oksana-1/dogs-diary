@@ -19,8 +19,8 @@ bin/check php --local     # PHP checks using host PHP/Composer
 ```
 
 By default, PHP commands run in the already-running Compose `app` container;
-Node.js runs on the host. Start the development stack as described in the README
-before running PHP checks. `--local` requires host PHP, Composer, the required PHP
+Node.js runs on the host. Start the development Compose stack before running
+PHP checks. `--local` requires host PHP, Composer, the required PHP
 extensions (including SQLite), and installed Composer dependencies. CI uses PHP
 8.4 and Node.js 24. The script does not install dependencies or start containers.
 
@@ -93,5 +93,5 @@ python3 -B tests/Operations/shared_state_smoke.py
 ```
 
 This requires the new disposable PostgreSQL and two runtime containers described in
-[`STATELESS_RUNTIME.md`](STATELESS_RUNTIME.md). It is an explicit integration
+[Hosted runtime](../../architecture/devops/stateless-runtime.md). It is an explicit integration
 check, not part of the SQLite unit job or an automatic production operation.

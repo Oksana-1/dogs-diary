@@ -7,7 +7,9 @@ security boundaries, and private media behavior with a layered PHPUnit suite.
 Keep pure tests fast while retaining realistic Symfony and PostgreSQL checks for
 behavior that depends on framework or database semantics.
 
-## Current state
+## Historical baseline
+
+This baseline belongs to the 2026-09-23 testing plan; it is not a fresh test run.
 
 The backend suite currently passes 87 tests with 752 assertions. Its strongest
 areas are:
@@ -87,8 +89,7 @@ constraints, transactions, locking, or SQL semantics.
 - Cover dog and treatment business-date validators at boundary dates.
 - Cover malformed JSON, wrong scalar types, unknown enum values, missing fields,
   conflicting dates, and empty treatment types.
-- Assert the stable error envelope and field-violation shape documented in
-  `docs/API_ERRORS.md`.
+- Assert the API's stable error envelope and field-violation shape.
 - Test successful create and update response bodies, not only access control.
 
 ### Priority 3: entities and views
@@ -146,4 +147,3 @@ required check once stable.
 - The clean PostgreSQL migration/schema job remains required.
 - A complete `src/` coverage report is published and protected against
   regression.
-

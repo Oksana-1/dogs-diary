@@ -3,7 +3,7 @@
 Apply the squashed baseline `Version20261013180000` before starting the new
 runtime. On Monday's backup it adds `sessions`, `security_rate_limits`, and
 `lock_keys`; on an already upgraded database it preserves those tables and
-adopts the baseline. Business data remains intact. See [MIGRATIONS.md](MIGRATIONS.md)
+adopts the baseline. Business data remains intact. See [Migrations](../../tooling/db/migrations.md)
 for supported starting states and restore checks.
 The schema listener includes these tables in Doctrine's normal schema validation
 in every environment. Do not exclude them with a schema filter.

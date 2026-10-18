@@ -8,10 +8,12 @@ Node package toolchain is needed for tests, but it does not need to become a
 production asset build step.
 
 The canonical frontend testing rules remain in
-[`tests/JavaScript/TESTING.md`](../../../tests/JavaScript/TESTING.md). Update that
+[`tests/JavaScript/TESTING.md`](../../../../tests/JavaScript/TESTING.md). Update that
 guide and the package scripts together when the toolchain is introduced.
 
-## Current state
+## Historical baseline
+
+This baseline belongs to the 2026-09-23 testing plan; it is not a fresh test run.
 
 - There are 37 JavaScript source files under `assets/js`.
 - `tests/JavaScript/FetchClient.test.mjs` is the only frontend test file.
@@ -43,7 +45,7 @@ frontend code.
    duplicate versions of the same tests.
 6. Configure stable aliases or import resolution for the same module paths used
    by the browser application.
-7. Add the canonical commands to CI and update `docs/CI.md`.
+7. Add the canonical commands to CI and document how to run them.
 
 ## Coverage priorities
 
@@ -122,4 +124,3 @@ workflows. Those belong in the browser plan.
   behavior where applicable.
 - The main user-facing states of both Vue islands have component coverage.
 - Whole-project coverage is published and protected against regression.
-

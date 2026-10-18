@@ -20,7 +20,7 @@ defaults.
 | `APP_BASE_URL` | Public HTTPS origin, without a trailing path |
 
 Vercel also requires `MEDIA_STORAGE=r2` and the five `MEDIA_R2_*` variables in
-[R2_MEDIA.md](R2_MEDIA.md); its filesystem cannot provide durable media storage.
+[R2 storage](r2-media.md); its filesystem cannot provide durable media storage.
 The Vercel production entrypoint enforces this requirement using
 `app:production:check --require-tls --require-r2`. It preserves the configured
 production mail transport and requires an explicit canonical origin. It never
@@ -55,4 +55,4 @@ database connection check or a password-reset email smoke test.
 
 The Vercel image supports Production and isolated Preview startup. Preview alone
 forces disabled mail. Shared-state behavior and testing are documented in
-[STATELESS_RUNTIME.md](STATELESS_RUNTIME.md).
+[Hosted runtime](../../architecture/devops/stateless-runtime.md).

@@ -137,7 +137,7 @@ Keep deployment smoke checks separate from Playwright's state-changing suite.
 For a hosted deployment, a smoke check should verify `/healthz`, TLS, the public
 authentication page, and static/module loading without registering users or
 changing application data. Operational release steps remain in the
-[hosted Preview runtime guide](../../STATELESS_RUNTIME.md).
+deployment workflow; running this plan does not authorize a deployment.
 
 ## Completion criteria
 

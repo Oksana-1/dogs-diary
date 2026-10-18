@@ -30,7 +30,7 @@ Current runtime/security requirements, updated for Vercel and R2 on 16 October 2
 
 - Production media uses private R2 storage with direct staged uploads and
   validated finalization. Local development uses `/app/var/uploads`, outside
-  the public web root. See [R2_MEDIA.md](R2_MEDIA.md) for the storage boundary.
+  the public web root. See [R2 storage](../../tooling/devops/r2-media.md) for the storage boundary.
 - Media downloads require owner-scoped authorization. Local files are streamed;
   R2 access uses short-lived signed URLs. Foreign and mismatched IDs return `404`.
 - The server determines MIME type from file contents, accepts only JPEG, PNG,

@@ -4,7 +4,7 @@
 
 - Stay within the requested scope and preserve unrelated changes. Inspect current code before trusting planning documents.
 - Follow the existing Symfony application services, owner-scoped repositories, API views, and Vue islands.
-- Use `README.md` and `docs/CI.md` for configured checks and isolated test environments. Keep secrets out of reports and do not run destructive database commands against development or production data.
+- Use `docs/README.md` and `docs/adr/tooling/devops/ci.md` for configured checks and isolated test environments. Keep secrets out of reports and do not run destructive database commands against development or production data.
 - Do not weaken tests or quality gates to obtain a pass. Report exact commands and observed results, distinguishing passed, failed, and not run.
 - Commit, push, publish, merge, deploy, contact others, or access production data only when authorized for that action.
 

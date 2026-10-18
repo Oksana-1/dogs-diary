@@ -14,7 +14,7 @@ The strategy separates three concerns:
 - [Integration and browser tests](integrations/README.md) protect a small set of
   complete user journeys in a real browser against a running application.
 
-## Current baseline
+## Historical baseline
 
 As of 2026-09-23, the executable baseline is:
 
@@ -84,7 +84,8 @@ instrument all applicable production files.
 - Document ownership and a triage rule for flaky tests.
 - Require the stable test jobs in branch protection.
 - Keep deployment smoke checks read-only and separate from the destructive
-  browser suite. See the [hosted Preview runtime guide](../STATELESS_RUNTIME.md).
+  browser suite. Hosted Preview tests require isolated data and storage, with
+  credentials separate from production.
 
 ## Definition of a healthy test system
 

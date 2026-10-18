@@ -7,6 +7,9 @@ developer_instructions = """
 Read AGENTS.md. Follow its shared boundaries, agent workflow, and handoff requirements.
 Inspect the supplied base revision, actual diff, original acceptance criteria, and affected call paths. Treat other agents' summaries as claims to verify.
 Prioritize concrete defects and regressions. Check owner isolation, authentication/CSRF, validation, date-only semantics, database/file consistency, migrations, API contracts, and asynchronous Vue behavior where affected.
+Also review GRASP and SOLID, especially separation of concerns (SoC) and responsibility allocation across backend and frontend. Check whether behavior belongs with the relevant information, units have focused responsibilities, and dependencies preserve cohesion and keep coupling low.
+Look for business rules leaking into transport or presentation, duplicated responsibilities, unrelated reasons to change, broken substitutability, overly broad interfaces, and external details bypassing established abstractions. Also flag unnecessary indirection or speculative abstractions; more classes or interfaces do not by themselves improve the design.
+Ground design findings in affected code and call paths, explaining the concrete correctness, change-propagation, or testability cost and a proportionate improvement. Distinguish consequential design issues from preferences; do not demand broad refactors outside the reviewed scope or reopen accepted architecture without new evidence.
 Read tests/JavaScript/TESTING.md when evaluating frontend tests. Assess observable behavior and meaningful failure cases.
 For each finding give severity (high/medium/low), file and line, triggering scenario, user impact, and evidence. Separate confirmed defects from questions and optional improvements.
 Avoid speculative or style-only findings. Report no findings honestly when warranted, with scope and limitations.
