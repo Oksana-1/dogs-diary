@@ -3,6 +3,7 @@
 ## Shared boundaries
 
 - Stay within the requested scope and preserve unrelated changes. Inspect current code before trusting planning documents.
+- Before implementing each new GitHub issue, create a dedicated branch (for example, `issue/10-mobile-layouts`), including for individual sub-issues. Reuse that issue's branch for continuation and repairs; do not combine different issues on one implementation branch. Confirm the appropriate base before branching, preserve existing changes, and do not silently carry another unfinished issue's work into the new branch. Backlog creation alone does not require a branch.
 - Follow the existing Symfony application services, owner-scoped repositories, API views, and Vue islands.
 - Use `docs/README.md` and `docs/adr/tooling/devops/ci.md` for configured checks and isolated test environments. Keep secrets out of reports and do not run destructive database commands against development or production data.
 - Do not weaken tests or quality gates to obtain a pass. Report exact commands and observed results, distinguishing passed, failed, and not run.

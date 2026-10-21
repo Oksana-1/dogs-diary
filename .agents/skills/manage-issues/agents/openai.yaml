@@ -1,0 +1,4 @@
+interface:
+  display_name: "Dogs Diary Issues"
+  short_description: "Manage Dogs Diary issues and parent feature progress"
+  default_prompt: "Use $manage-issues to create or update the next agreed Dogs Diary GitHub issue and its tracking relationships."
