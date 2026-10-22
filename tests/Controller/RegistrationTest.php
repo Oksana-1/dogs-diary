@@ -31,6 +31,7 @@ final class RegistrationTest extends WebTestCase
         $crawler = $this->client->request('GET', '/sign-up');
 
         self::assertResponseIsSuccessful();
+        self::assertSelectorExists('meta[name="viewport"][content="width=device-width, initial-scale=1"]');
         self::assertSelectorExists('form[action="/sign-up"][method="post"]');
         self::assertNotSame('', $crawler->filter('input[name="_csrf_token"]')->attr('value'));
     }

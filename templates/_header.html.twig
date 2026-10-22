@@ -1,24 +1,31 @@
 <header class="header">
     <div class="container header-container">
-        <nav class="header-nav">
-            <a href="#" class="nav-link">Health Diary</a>
-            <a href="#" class="nav-link">Gallery</a>
-            <a href="#" class="nav-link">Walk Map</a>
-        </nav>
-        <a href="{{ path('app_main') }}" class="header-logo">
+        <button class="btn btn-white header-menu-toggle" type="button" aria-label="Toggle navigation" aria-expanded="true" aria-controls="header-menu-panel" hidden>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true" focusable="false">
+                <path d="M3 6h18M3 12h18M3 18h18" />
+            </svg>
+        </button>
+        <a href="{{ path('app_main') }}" class="header-logo" aria-label="Dogs Diary home">
             <span class="logo">🐾</span>
         </a>
-        <div class="header-auth">
-            {% if app.user %}
-                <span class="header-user">{{ app.user.name ?: app.user.userIdentifier }}</span>
-                <form class="header-logout" action="{{ path('app_logout') }}" method="post">
-                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
-                    <button class="btn btn-black" type="submit">Logout</button>
-                </form>
-            {% else %}
-                <a href="{{ path('app_login') }}" class="btn btn-white">Login</a>
-                <a href="{{ path('app_sign_up') }}" class="btn btn-black">Sign Up</a>
-            {% endif %}
+        <div class="header-menu-panel" id="header-menu-panel">
+            <div class="header-auth">
+                {% if app.user %}
+                    <span class="header-user">{{ app.user.name ?: app.user.userIdentifier }}</span>
+                    <form class="header-logout" action="{{ path('app_logout') }}" method="post">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
+                        <button class="btn btn-black" type="submit">Logout</button>
+                    </form>
+                {% else %}
+                    <a href="{{ path('app_login') }}" class="btn btn-white">Login</a>
+                    <a href="{{ path('app_sign_up') }}" class="btn btn-black">Sign Up</a>
+                {% endif %}
+            </div>
+            <nav class="header-nav" id="header-navigation" aria-label="Main navigation">
+                <a href="{{ path('app_main') }}" class="nav-link">Health Diary</a>
+                <span class="nav-link nav-link-disabled" aria-disabled="true">Gallery <span class="nav-coming-soon">Coming soon</span></span>
+                <span class="nav-link nav-link-disabled" aria-disabled="true">Walk Map <span class="nav-coming-soon">Coming soon</span></span>
+            </nav>
         </div>
     </div>
 </header>
