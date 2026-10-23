@@ -44,7 +44,9 @@ export default {
                     </svg>
                 </button>
             </div>
-            <table v-if="sortedTreatments.length" class="treatments-table">
+            <div v-if="sortedTreatments.length" class="treatments-scroll"
+                 role="region" aria-label="Treatment records, scroll horizontally for more columns" tabindex="0">
+            <table class="treatments-table">
                 <thead>
                 <tr>
                     <th>Type</th>
@@ -97,6 +99,7 @@ export default {
                 </tr>
                 </tbody>
             </table>
+            </div>
             <p v-else>No treatments recorded.</p>
         </div>
     `,

@@ -46,6 +46,7 @@ final class PasswordResetTest extends WebTestCase
         $crawler = $this->client->request('GET', '/reset-password');
 
         self::assertResponseIsSuccessful();
+        self::assertSelectorExists('meta[name="viewport"][content="width=device-width, initial-scale=1"]');
         self::assertSelectorExists('form[action="/reset-password"][method="post"]');
         self::assertSelectorExists('input[name="email"][required]');
         self::assertNotSame('', $crawler->filter('input[name="_csrf_token"]')->attr('value'));
