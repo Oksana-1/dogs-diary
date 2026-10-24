@@ -42,6 +42,7 @@ final class LoginLogoutTest extends WebTestCase
         $crawler = $this->client->request('GET', '/login');
 
         self::assertResponseIsSuccessful();
+        self::assertSelectorExists('meta[name="viewport"][content="width=device-width, initial-scale=1"]');
         self::assertSelectorExists('form[action="/login"][method="post"]');
         self::assertSelectorExists('input[name="email"][required]');
         self::assertSelectorExists('input[name="password"][required]');
@@ -55,6 +56,28 @@ final class LoginLogoutTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextSame('.auth-notice', 'Your session expired. Please log in again.');
+    }
+
+    public function testHeaderSharesNavigationAndKeepsUnavailablePagesInactive(): void
+    {
+        $this->client->request('GET', '/login');
+        $crawler = new Crawler(self::getContainer()->get('twig')->render('_header.html.twig'));
+
+        self::assertCount(1, $crawler->filter('nav[aria-label="Main navigation"]'));
+        self::assertCount(1, $crawler->filter('button[type="button"][aria-label="Toggle navigation"][aria-controls="header-menu-panel"][aria-expanded="true"][hidden]'));
+        self::assertCount(1, $crawler->filter('#header-menu-panel > .header-auth:first-child'));
+        self::assertCount(1, $crawler->filter('#header-menu-panel > .header-auth + nav'));
+        self::assertSame('Health Diary', $crawler->filter('#header-navigation a[href="/"]')->text());
+        self::assertCount(1, $crawler->filter('#header-navigation a'));
+        self::assertCount(2, $crawler->filter('#header-navigation [aria-disabled="true"]'));
+        self::assertSame(
+            ['Gallery Coming soon', 'Walk Map Coming soon'],
+            $crawler->filter('#header-navigation [aria-disabled="true"]')->each(
+                static fn (Crawler $item): string => $item->text(),
+            ),
+        );
+        self::assertCount(1, $crawler->filter('.header-auth a[href="/login"]'));
+        self::assertCount(1, $crawler->filter('.header-auth a[href="/sign-up"]'));
     }
 
     public function testLoginUsesTheSavedTargetAndCreatesRememberMeCookie(): void
@@ -116,8 +139,12 @@ final class LoginLogoutTest extends WebTestCase
         $this->login();
         $crawler = $this->client->request('GET', '/');
 
+        self::assertSelectorExists('meta[name="viewport"][content="width=device-width, initial-scale=1"]');
         self::assertSelectorTextContains('.header-user', 'Jane Doe');
         self::assertSelectorNotExists('.header-auth a[href="/login"]');
+        self::assertSelectorExists('header nav[aria-label="Main navigation"] a[href="/"]');
+        self::assertSelectorExists('.header-logout[action="/logout"][method="post"] input[name="_csrf_token"]');
+        self::assertSelectorCount(1, '#header-menu-panel > .header-auth:first-child form[action="/logout"]');
 
         $this->client->submit($crawler->selectButton('Logout')->form());
         self::assertResponseRedirects('/login');

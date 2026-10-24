@@ -1,6 +1,6 @@
 """HTTP security smoke for the explicitly named disposable runtime containers.
 
-Never accepts production URLs. See docs/STATELESS_RUNTIME.md for setup.
+Never accepts production URLs. See docs/adr/architecture/devops/stateless-runtime.md for setup.
 """
 
 import base64

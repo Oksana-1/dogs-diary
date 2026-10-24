@@ -7,6 +7,7 @@ import AppResetPasswordRequest from './js/modules/dogsDiary/view/AppResetPasswor
 import AppResetPasswordCheckEmail from './js/modules/dogsDiary/view/AppResetPasswordCheckEmail.js';
 import AppResetPassword from './js/modules/dogsDiary/view/AppResetPassword.js';
 import './styles/app.css';
+import './js/headerNavigation.js';
 
 const APPS = [
     {

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Dogs Diary Issue Delivery"
+  short_description: "Coordinate one issue through implementation and review"
+  default_prompt: "Use $do-issue to implement issue 10 with the Dogs Diary agents and prepare the result for my review."

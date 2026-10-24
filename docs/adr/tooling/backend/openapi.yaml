@@ -1,0 +1,785 @@
+openapi: 3.0.3
+info:
+  title: Dogs Diary API
+  version: '1.0.0'
+  description: |
+    Local development reference for the diary API. Sign in through /login first.
+    Swagger UI reuses the browser session and adds X-CSRF-TOKEN to writes.
+    Requests operate on your current local database; they are not a sandbox.
+    All resources are scoped to the current dog's owners. Foreign resources and
+    mismatched parent IDs return 404. Dates are YYYY-MM-DD; measurements are integers.
+servers:
+  - url: /
+    description: Current local application
+security:
+  - browserSession: []
+tags:
+  - name: Dogs
+  - name: Treatments
+  - name: Dog media
+  - name: Treatment photos
+paths:
+  /api/dogs:
+    get:
+      tags: [Dogs]
+      operationId: listDogs
+      summary: List owned and shared dogs
+      description: Returns summaries, without treatments or profile media.
+      responses:
+        '200':
+          description: Dog summaries
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/DogSummary' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+    post:
+      tags: [Dogs]
+      operationId: createDog
+      summary: Create a dog owned by the current user
+      security:
+        - browserSession: []
+          csrfToken: []
+      requestBody: { $ref: '#/components/requestBodies/Dog' }
+      responses:
+        '201': { $ref: '#/components/responses/Dog' }
+        '400': { $ref: '#/components/responses/InvalidRequest' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/InvalidCsrf' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
+        '422': { $ref: '#/components/responses/Validation' }
+  /api/dogs/{id}:
+    parameters:
+      - { $ref: '#/components/parameters/Id' }
+    get:
+      tags: [Dogs]
+      operationId: getDog
+      summary: Get a dog with profile media and treatments
+      responses:
+        '200': { $ref: '#/components/responses/Dog' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Dogs]
+      operationId: updateDog
+      summary: Update a dog
+      description: Full form update. Omitted optional fields are reset to null.
+      security:
+        - browserSession: []
+          csrfToken: []
+      requestBody: { $ref: '#/components/requestBodies/Dog' }
+      responses:
+        '200': { $ref: '#/components/responses/Dog' }
+        '400': { $ref: '#/components/responses/InvalidRequest' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/InvalidCsrf' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
+        '422': { $ref: '#/components/responses/Validation' }
+    delete:
+      tags: [Dogs]
+      operationId: deleteDog
+      summary: Delete a dog and its treatments and media
+      description: Removes the shared diary for all its owners.
+      security:
+        - browserSession: []
+          csrfToken: []
+      responses:
+        '204': { description: Deleted }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/InvalidCsrf' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/dogs/{dogId}/treatments:
+    parameters:
+      - { $ref: '#/components/parameters/DogId' }
+    get:
+      tags: [Treatments]
+      operationId: listTreatments
+      summary: List treatments, newest treatment date first
+      responses:
+        '200':
+          description: Treatments
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Treatment' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    post:
+      tags: [Treatments]
+      operationId: createTreatment
+      summary: Create a treatment
+      description: Photo upload is a separate operation after saving this record.
+      security:
+        - browserSession: []
+          csrfToken: []
+      requestBody: { $ref: '#/components/requestBodies/Treatment' }
+      responses:
+        '201': { $ref: '#/components/responses/Treatment' }
+        '400': { $ref: '#/components/responses/InvalidRequest' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/InvalidCsrf' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
+        '422': { $ref: '#/components/responses/Validation' }
+  /api/dogs/{dogId}/treatments/{id}:
+    parameters:
+      - { $ref: '#/components/parameters/DogId' }
+      - { $ref: '#/components/parameters/Id' }
+    get:
+      tags: [Treatments]
+      operationId: getTreatment
+      summary: Get a treatment and its optional photo
+      responses:
+        '200': { $ref: '#/components/responses/Treatment' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Treatments]
+      operationId: updateTreatment
+      summary: Update a treatment
+      description: Full form update. Omitted optional fields are reset to null.
+      security:
+        - browserSession: []
+          csrfToken: []
+      requestBody: { $ref: '#/components/requestBodies/Treatment' }
+      responses:
+        '200': { $ref: '#/components/responses/Treatment' }
+        '400': { $ref: '#/components/responses/InvalidRequest' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/InvalidCsrf' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
+        '422': { $ref: '#/components/responses/Validation' }
+    delete:
+      tags: [Treatments]
+      operationId: deleteTreatment
+      summary: Delete a treatment and its photo
+      security:
+        - browserSession: []
+          csrfToken: []
+      responses:
+        '204': { description: Deleted }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/InvalidCsrf' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/dogs/{dogId}/media:
+    parameters:
+      - { $ref: '#/components/parameters/DogId' }
+    get:
+      tags: [Dog media]
+      operationId: listDogMedia
+      summary: List a dog's images and videos
+      responses:
+        '200':
+          description: Media library
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/DogMedia' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    post:
+      tags: [Dog media]
+      operationId: uploadDogMedia
+      summary: Upload a local image or video
+      description: |
+        Multipart upload for local storage. JPEG/PNG/WebP up to 10 MiB;
+        MP4/WebM up to 100 MiB. Uploading does not select thumbnail/profile roles.
+        R2 storage rejects multipart with 409; use the upload-ticket flow there.
+      security:
+        - browserSession: []
+          csrfToken: []
+      requestBody: { $ref: '#/components/requestBodies/MultipartFile' }
+      responses:
+        '201': { $ref: '#/components/responses/DogMedia' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/InvalidCsrf' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '413': { $ref: '#/components/responses/TooLarge' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
+        '422': { $ref: '#/components/responses/Validation' }
+  /api/dogs/{dogId}/media/{id}:
+    parameters:
+      - { $ref: '#/components/parameters/DogId' }
+      - { $ref: '#/components/parameters/Id' }
+    get:
+      tags: [Dog media]
+      operationId: downloadDogMedia
+      summary: Download authorized media
+      responses:
+        '200': { $ref: '#/components/responses/MediaBytes' }
+        '206': { description: Partial content for a byte-range request with local storage }
+        '307': { $ref: '#/components/responses/StorageRedirect' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Dog media]
+      operationId: deleteDogMedia
+      summary: Delete media and any thumbnail/profile selection it holds
+      security:
+        - browserSession: []
+          csrfToken: []
+      responses:
+        '204': { description: Deleted }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/InvalidCsrf' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/dogs/{dogId}/media/thumbnail:
+    parameters:
+      - { $ref: '#/components/parameters/DogId' }
+    put:
+      tags: [Dog media]
+      operationId: selectDogThumbnail
+      summary: Select an image as the dog's thumbnail
+      security:
+        - browserSession: []
+          csrfToken: []
+      requestBody: { $ref: '#/components/requestBodies/MediaSelection' }
+      responses:
+        '200': { $ref: '#/components/responses/DogMedia' }
+        '400': { $ref: '#/components/responses/InvalidRequest' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/InvalidCsrf' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
+        '422': { $ref: '#/components/responses/Validation' }
+    delete:
+      tags: [Dog media]
+      operationId: clearDogThumbnail
+      summary: Clear thumbnail selection, keeping the media file
+      security:
+        - browserSession: []
+          csrfToken: []
+      responses:
+        '204': { description: Cleared }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/InvalidCsrf' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/dogs/{dogId}/media/profile:
+    parameters:
+      - { $ref: '#/components/parameters/DogId' }
+    put:
+      tags: [Dog media]
+      operationId: selectDogProfileMedia
+      summary: Select an image or video for the profile
+      security:
+        - browserSession: []
+          csrfToken: []
+      requestBody: { $ref: '#/components/requestBodies/MediaSelection' }
+      responses:
+        '200': { $ref: '#/components/responses/DogMedia' }
+        '400': { $ref: '#/components/responses/InvalidRequest' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/InvalidCsrf' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
+        '422': { $ref: '#/components/responses/Validation' }
+    delete:
+      tags: [Dog media]
+      operationId: clearDogProfileMedia
+      summary: Clear profile selection, keeping the media file
+      security:
+        - browserSession: []
+          csrfToken: []
+      responses:
+        '204': { description: Cleared }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/InvalidCsrf' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/dogs/{dogId}/media/uploads:
+    parameters:
+      - { $ref: '#/components/parameters/DogId' }
+    post:
+      tags: [Dog media]
+      operationId: initiateDogMediaUpload
+      summary: Choose multipart mode or issue an R2 upload ticket
+      description: |
+        Local storage returns {"mode":"multipart"}; send the file to POST /media.
+        R2 returns a ticket and a signed uploadUrl. PUT the raw file to uploadUrl
+        with the returned contentType, without application cookies or CSRF.
+        Then call the completion endpoint. Tickets expire after 10 minutes.
+      security:
+        - browserSession: []
+          csrfToken: []
+      requestBody: { $ref: '#/components/requestBodies/UploadDeclaration' }
+      responses:
+        '200': { $ref: '#/components/responses/UploadMode' }
+        '400': { $ref: '#/components/responses/InvalidRequest' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/InvalidCsrf' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '413': { $ref: '#/components/responses/TooLarge' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
+        '422': { $ref: '#/components/responses/Validation' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /api/dogs/{dogId}/media/uploads/{uploadId}/complete:
+    parameters:
+      - { $ref: '#/components/parameters/DogId' }
+      - { $ref: '#/components/parameters/UploadId' }
+    post:
+      tags: [Dog media]
+      operationId: completeDogMediaUpload
+      summary: Validate staged R2 bytes and publish the media
+      description: |
+        R2 only. No request body is required. A completed replay returns the
+        same media while the ticket is valid and the result still exists.
+      security:
+        - browserSession: []
+          csrfToken: []
+      responses:
+        '201': { $ref: '#/components/responses/DogMedia' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/InvalidCsrf' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '410': { $ref: '#/components/responses/ExpiredUpload' }
+        '413': { $ref: '#/components/responses/TooLarge' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
+        '422': { $ref: '#/components/responses/Validation' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+        '503': { $ref: '#/components/responses/StorageUnavailable' }
+  /api/dogs/{dogId}/treatments/{treatmentId}/media:
+    parameters:
+      - { $ref: '#/components/parameters/DogId' }
+      - { $ref: '#/components/parameters/TreatmentId' }
+    get:
+      tags: [Treatment photos]
+      operationId: listTreatmentPhotos
+      summary: Get the treatment's photo as a zero-or-one-item array
+      responses:
+        '200':
+          description: Optional photo
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 1
+                items: { $ref: '#/components/schemas/TreatmentPhoto' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    post:
+      tags: [Treatment photos]
+      operationId: uploadTreatmentPhoto
+      summary: Upload or replace the treatment's photo in local storage
+      description: |
+        JPEG, PNG or WebP up to 10 MiB. Replacement preserves the media ID.
+        Videos are rejected. R2 storage requires the upload-ticket flow instead.
+      security:
+        - browserSession: []
+          csrfToken: []
+      requestBody: { $ref: '#/components/requestBodies/MultipartFile' }
+      responses:
+        '201': { $ref: '#/components/responses/TreatmentPhoto' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/InvalidCsrf' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '413': { $ref: '#/components/responses/TooLarge' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
+        '422': { $ref: '#/components/responses/Validation' }
+  /api/dogs/{dogId}/treatments/{treatmentId}/media/{id}:
+    parameters:
+      - { $ref: '#/components/parameters/DogId' }
+      - { $ref: '#/components/parameters/TreatmentId' }
+      - { $ref: '#/components/parameters/Id' }
+    get:
+      tags: [Treatment photos]
+      operationId: downloadTreatmentPhoto
+      summary: Download the authorized treatment photo
+      responses:
+        '200': { $ref: '#/components/responses/MediaBytes' }
+        '307': { $ref: '#/components/responses/StorageRedirect' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Treatment photos]
+      operationId: deleteTreatmentPhoto
+      summary: Remove the photo, keeping the treatment
+      security:
+        - browserSession: []
+          csrfToken: []
+      responses:
+        '204': { description: Deleted }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/InvalidCsrf' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/dogs/{dogId}/treatments/{treatmentId}/media/uploads:
+    parameters:
+      - { $ref: '#/components/parameters/DogId' }
+      - { $ref: '#/components/parameters/TreatmentId' }
+    post:
+      tags: [Treatment photos]
+      operationId: initiateTreatmentPhotoUpload
+      summary: Choose multipart mode or issue an R2 photo upload ticket
+      description: |
+        Local storage returns {"mode":"multipart"}. R2 returns an uploadUrl;
+        PUT the raw image there with contentType, then call completion.
+        R2 accepts only JPEG, PNG or WebP up to 10 MiB for treatment photos.
+      security:
+        - browserSession: []
+          csrfToken: []
+      requestBody: { $ref: '#/components/requestBodies/UploadDeclaration' }
+      responses:
+        '200': { $ref: '#/components/responses/UploadMode' }
+        '400': { $ref: '#/components/responses/InvalidRequest' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/InvalidCsrf' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '413': { $ref: '#/components/responses/TooLarge' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
+        '422': { $ref: '#/components/responses/Validation' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /api/dogs/{dogId}/treatments/{treatmentId}/media/uploads/{uploadId}/complete:
+    parameters:
+      - { $ref: '#/components/parameters/DogId' }
+      - { $ref: '#/components/parameters/TreatmentId' }
+      - { $ref: '#/components/parameters/UploadId' }
+    post:
+      tags: [Treatment photos]
+      operationId: completeTreatmentPhotoUpload
+      summary: Validate and publish or replace an R2 treatment photo
+      description: |
+        No body required. Replays return the current photo record while the
+        ticket is valid and its result exists. A later replacement can change
+        that record's content while retaining its ID.
+      security:
+        - browserSession: []
+          csrfToken: []
+      responses:
+        '201': { $ref: '#/components/responses/TreatmentPhoto' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/InvalidCsrf' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '410': { $ref: '#/components/responses/ExpiredUpload' }
+        '413': { $ref: '#/components/responses/TooLarge' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
+        '422': { $ref: '#/components/responses/Validation' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+        '503': { $ref: '#/components/responses/StorageUnavailable' }
+components:
+  securitySchemes:
+    csrfToken:
+      type: apiKey
+      in: header
+      name: X-CSRF-TOKEN
+      description: Required for writes; supplied automatically by the local Swagger page.
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: PHPSESSID
+      description: |
+        Browser-managed Symfony session cookie (its name may be configured).
+        Sign in at /login. Do not paste cookies into Swagger's Authorize dialog;
+        the browser supplies its existing cookie automatically.
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, minimum: 1 }
+      example: 1
+    DogId:
+      name: dogId
+      in: path
+      required: true
+      schema: { type: integer, minimum: 1 }
+      example: 1
+    TreatmentId:
+      name: treatmentId
+      in: path
+      required: true
+      schema: { type: integer, minimum: 1 }
+      example: 1
+    UploadId:
+      name: uploadId
+      in: path
+      required: true
+      schema: { type: string, pattern: '^[a-f0-9]{32}$' }
+      example: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  requestBodies:
+    Dog:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/DogInput' }
+    Treatment:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/TreatmentInput' }
+    MultipartFile:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            required: [file]
+            properties:
+              file: { type: string, format: binary }
+    MediaSelection:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [mediaId]
+            properties:
+              mediaId: { type: integer, minimum: 1, example: 1 }
+    UploadDeclaration:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [name, mimeType, sizeBytes]
+            properties:
+              name: { type: string, minLength: 1, maxLength: 255, example: photo.png }
+              mimeType:
+                type: string
+                enum: [image/jpeg, image/png, image/webp, video/mp4, video/webm]
+                example: image/png
+              sizeBytes: { type: integer, minimum: 1, example: 2048 }
+  schemas:
+    DogInput:
+      type: object
+      required: [name, birthDate]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 100, example: Luna }
+        birthDate:
+          type: string
+          format: date
+          description: Cannot be after the server's current day.
+          example: '2020-06-15'
+        gender: { type: string, nullable: true, enum: [male, female, null], example: female }
+        adoptDate:
+          type: string
+          format: date
+          nullable: true
+          description: Cannot precede birthDate. Future dates are allowed.
+          example: '2020-09-01'
+        status: { type: string, nullable: true, maxLength: 100, example: Healthy }
+        weight: { type: integer, nullable: true, minimum: 1, example: 12 }
+        height: { type: integer, nullable: true, minimum: 1, example: 40 }
+    DogSummary:
+      allOf:
+        - { $ref: '#/components/schemas/DogInput' }
+        - type: object
+          required: [id, gender, adoptDate, status, weight, height, thumbnail]
+          properties:
+            id: { type: integer, minimum: 1, example: 1 }
+            thumbnail:
+              oneOf:
+                - { $ref: '#/components/schemas/DogMedia' }
+                - { type: object, nullable: true, enum: [null] }
+    Dog:
+      allOf:
+        - { $ref: '#/components/schemas/DogSummary' }
+        - type: object
+          required: [profileMedia, treatments]
+          properties:
+            profileMedia:
+              oneOf:
+                - { $ref: '#/components/schemas/DogMedia' }
+                - { type: object, nullable: true, enum: [null] }
+            treatments:
+              type: array
+              items: { $ref: '#/components/schemas/Treatment' }
+    TreatmentInput:
+      type: object
+      required: [types, productName, treatmentDate]
+      properties:
+        types:
+          type: array
+          minItems: 1
+          items: { type: string, enum: [flea_tick, anti_worm] }
+          example: [flea_tick, anti_worm]
+        productName: { type: string, minLength: 1, maxLength: 255, example: Example treatment product }
+        treatmentDate:
+          type: string
+          format: date
+          description: Future dates are allowed; not compared to the dog's birth date.
+          example: '2026-10-01'
+        dueDate:
+          type: string
+          format: date
+          nullable: true
+          description: Cannot precede treatmentDate. Entered explicitly; no recurrence calculation.
+          example: '2026-11-01'
+        note: { type: string, nullable: true, maxLength: 255, example: Given with food }
+    Treatment:
+      allOf:
+        - { $ref: '#/components/schemas/TreatmentInput' }
+        - type: object
+          required: [id, dogId, dueDate, note, photo]
+          properties:
+            id: { type: integer, minimum: 1, example: 1 }
+            dogId: { type: integer, minimum: 1, example: 1 }
+            photo:
+              oneOf:
+                - { $ref: '#/components/schemas/TreatmentPhoto' }
+                - { type: object, nullable: true, enum: [null] }
+    Media:
+      type: object
+      required: [id, type, url, originalName, mimeType, sizeBytes, width, height, createdAt]
+      properties:
+        id: { type: integer, minimum: 1, example: 1 }
+        type: { type: string, enum: [image, video] }
+        url:
+          type: string
+          description: Authenticated application download path, not a public storage URL.
+          example: /api/dogs/1/media/1
+        originalName: { type: string, example: photo.png }
+        mimeType: { type: string, example: image/png }
+        sizeBytes: { type: integer, format: int64, minimum: 1, example: 2048 }
+        width: { type: integer, nullable: true, minimum: 1, example: 800 }
+        height: { type: integer, nullable: true, minimum: 1, example: 600 }
+        createdAt: { type: string, format: date-time }
+    DogMedia:
+      allOf:
+        - { $ref: '#/components/schemas/Media' }
+        - type: object
+          required: [isThumbnail, isProfile]
+          properties:
+            isThumbnail: { type: boolean, example: false }
+            isProfile: { type: boolean, example: false }
+    TreatmentPhoto:
+      allOf:
+        - { $ref: '#/components/schemas/Media' }
+        - type: object
+          required: [position]
+          properties:
+            type: { type: string, enum: [image] }
+            width: { type: integer, minimum: 1 }
+            height: { type: integer, minimum: 1 }
+            position: { type: integer, enum: [1] }
+            url: { type: string, example: /api/dogs/1/treatments/1/media/1 }
+    UploadMode:
+      oneOf:
+        - type: object
+          required: [mode]
+          properties:
+            mode: { type: string, enum: [multipart] }
+        - type: object
+          required: [mode, uploadId, uploadUrl, contentType]
+          properties:
+            mode: { type: string, enum: [direct] }
+            uploadId: { type: string, pattern: '^[a-f0-9]{32}$' }
+            uploadUrl: { type: string, format: uri }
+            contentType: { type: string, example: image/png }
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string, example: validation_failed }
+            message: { type: string, example: The request contains invalid values. }
+            violations:
+              type: array
+              items:
+                type: object
+                required: [field, message]
+                properties:
+                  field: { type: string, example: birthDate }
+                  message: { type: string, example: Birth date cannot be in the future. }
+  responses:
+    Dog:
+      description: Dog details
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Dog' }
+    Treatment:
+      description: Treatment with optional photo
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Treatment' }
+    DogMedia:
+      description: Dog media metadata
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/DogMedia' }
+    TreatmentPhoto:
+      description: Current treatment photo metadata
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/TreatmentPhoto' }
+    UploadMode:
+      description: Storage-dependent upload mode
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/UploadMode' }
+    MediaBytes:
+      description: Private bytes with the stored image/video MIME type; local video downloads support Range requests.
+      content:
+        '*/*':
+          schema: { type: string, format: binary }
+    StorageRedirect:
+      description: Redirect to a signed R2 download URL valid for 60 seconds.
+      headers:
+        Location:
+          schema: { type: string, format: uri }
+    InvalidRequest:
+      description: Malformed JSON or an otherwise invalid request that cannot be decoded.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthenticated:
+      description: Sign in at /login, then reload this page if the session expired.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: { code: authentication_required, message: Authentication is required. } }
+    InvalidCsrf:
+      description: Missing or invalid CSRF token. Reload the documentation page after signing in.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: { code: invalid_csrf_token, message: The CSRF token is missing or invalid. } }
+    NotFound:
+      description: Resource is missing, foreign, or does not belong to the supplied parent IDs.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Conflict:
+      description: Finalization already in progress, or multipart upload attempted with R2 storage.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    ExpiredUpload:
+      description: Ticket expired or its completed media was removed; start a new upload.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    TooLarge:
+      description: Image exceeds 10 MiB or video exceeds 100 MiB; server request limits also apply.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    UnsupportedMedia:
+      description: Unsupported request Content-Type or media type; treatment photos accept images only.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Validation:
+      description: Missing required fields, incompatible value types, invalid field values, or invalid file contents. Violations may identify individual fields.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    RateLimited:
+      description: Upload issuance or finalization rate limit reached.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    StorageUnavailable:
+      description: Temporary failure while reading staged R2 media.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }

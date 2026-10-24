@@ -1,9 +1,10 @@
-FROM dunglas/frankenphp:1-php8.4-bookworm AS php_base
+FROM dunglas/frankenphp:1.13.2-php8.4-bookworm AS php_base
 
 RUN install-php-extensions \
         intl \
         pdo_pgsql \
-        zip
+        zip \
+    && php -r 'if (PHP_VERSION_ID < 80427 || PHP_VERSION_ID >= 80500) { fwrite(STDERR, "PHP 8.4.27 or newer is required.\n"); exit(1); }'
 
 ENV APP_ENV=prod \
     APP_DEBUG=0
