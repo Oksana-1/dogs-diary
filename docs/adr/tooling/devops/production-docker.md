@@ -6,6 +6,12 @@ AssetMapper assets. Compose uses its development target; the separate
 `Dockerfile.vercel` builds the hosted Production/Preview runtime described in
 [Hosted runtime](../../architecture/devops/stateless-runtime.md).
 
+Both images pin FrankenPHP 1.13.2 on PHP 8.4 and fail their build if PHP is
+older than 8.4.27, the PHP2Shell security release. The runtime `docker/php.ini`
+also disables session upload progress until the follow-up PHP advisory is fixed.
+Rebuild the image and verify the resulting PHP version before lifting deployment
+protection; redeploying an existing image does not update its bundled PHP.
+
 All repository `.env` variants are excluded from the image, together with
 development dependencies and tests. The image receives a container-only base
 dotenv file containing fail-closed, non-secret defaults because Symfony Runtime
