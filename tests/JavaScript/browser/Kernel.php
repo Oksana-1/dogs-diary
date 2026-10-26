@@ -5,6 +5,7 @@ namespace App\Tests\JavaScript\Browser;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Bundle\TwigBundle\TwigBundle;
+use Symfony\Component\AssetMapper\AssetMapperInterface;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Kernel as BaseKernel;
@@ -54,6 +55,7 @@ final class Kernel extends BaseKernel
         ]);
         $container->extension('twig', ['default_path' => __DIR__]);
         $container->services()->alias('browser_tests.twig', 'twig')->public();
+        $container->services()->alias('browser_tests.asset_mapper', AssetMapperInterface::class)->public();
     }
 
     protected function configureRoutes(RoutingConfigurator $routes): void
@@ -63,6 +65,15 @@ final class Kernel extends BaseKernel
 
     public function page(): Response
     {
-        return new Response($this->getContainer()->get('browser_tests.twig')->render('runner.html.twig'));
+        $mapper = $this->getContainer()->get('browser_tests.asset_mapper');
+        $testModules = [];
+        foreach (require __DIR__.'/test-modules.php' as $logicalPath) {
+            $testModules[] = $mapper->getPublicPath($logicalPath)
+                ?? throw new \RuntimeException('Cannot resolve test module: '.$logicalPath);
+        }
+
+        return new Response($this->getContainer()->get('browser_tests.twig')->render('runner.html.twig', [
+            'test_modules' => $testModules,
+        ]));
     }
 }

@@ -20,7 +20,13 @@ QUnit.on('runEnd', result => {
 });
 
 try {
-    await import('../modules/dogsDiary/view/ui/modals/ConfirmModal.test.js');
+    const modules = JSON.parse(document.getElementById('browser-test-modules').textContent);
+    if (!Array.isArray(modules) || modules.length === 0) {
+        throw new Error('No browser test modules discovered.');
+    }
+    for (const url of modules) {
+        await import(url);
+    }
     QUnit.start();
 } catch (error) {
     window.reportBrowserTests({status: 'error', message: String(error)});

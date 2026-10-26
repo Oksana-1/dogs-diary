@@ -33,6 +33,7 @@ Chrome/Chromium, served by a separate test-only Symfony kernel and ImportMap.
 Do not add npm tooling or a production Node.js requirement. Production assets
 use Symfony AssetMapper and ImportMap. The test map derives its Vue entry from
 the production map, so tests and components share one full Vue browser build.
+The icon dependency also uses the production map's pinned version.
 The VTU `esm-browser` artifact imports only `vue`; no fake compiler or server
 renderer modules are needed.
 
@@ -72,9 +73,36 @@ and native Teleport with full mounting to cover rendered content and native
 disabled buttons. These are browser-executed component unit tests, not browser
 navigation/E2E tests. Transport tests do not establish rendered UI coverage.
 
+`ModalDialog.test.js` covers accessible title/description relationships, independent
+labels for simultaneous dialogs, open-prop updates, backdrop and Escape dismissal,
+and disabled dismissal. `useAsyncModal.test.js` uses a rendered harness to cover
+subject selection, cancellation, pending and duplicate-submit guards, successful
+completion, failure messages, retry, and clearing errors when reopening. These
+tests do not establish focus-management or complete form/page coverage.
+
+Additional suites cover dog and treatment form validation, pending controls,
+draft preservation, treatment photo selection/removal, and the photo viewer.
+`useDogTreatments` covers create, delete, pending guards, photo removal, and retry
+after a partial save without creating a duplicate treatment. Repository contract
+tests cover request paths, methods, payloads, entity mapping, multipart upload,
+and error propagation. Domain tests cover nested hydration, optional photos,
+media-role normalization, and collection ordering.
+
+This is not whole-project coverage: dog detail/media composables, page islands,
+other reusable UI, authentication forms, and further transport edge cases still
+need dedicated tests. No coverage percentage or threshold has been established.
+
 ## 3. Test locations and names
 
 Mirror the relevant source structure below `tests/JavaScript/`.
+
+The test-only kernel discovers `*.test.js` recursively under
+`tests/JavaScript/modules/`, excluding `fixtures/` directories. Discovery is sorted
+and shared with the test ImportMap so relative dependencies resolve through
+AssetMapper. Add a test file in that tree and reload the runner; no JavaScript
+import list needs editing. Helpers and fixtures are imported by their tests,
+while the existing Node `.mjs` suite remains a separate command. An empty discovery
+list or a module-load failure is an error, not a successful empty run.
 
 ```text
 assets/js/modules/dogsDiary/view/ui/modals/ModalDialog.js

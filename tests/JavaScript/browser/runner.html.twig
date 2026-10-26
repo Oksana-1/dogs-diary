@@ -120,6 +120,7 @@
     <div id="qunit"></div>
     <div id="qunit-fixture"></div>
     <pre id="browser-test-result" aria-live="polite">pending</pre>
+    <script id="browser-test-modules" type="application/json">{{ test_modules|json_encode(constant('JSON_HEX_TAG'))|raw }}</script>
     <script>
         window.reportBrowserTests = result => {
             document.getElementById('browser-test-result').textContent = JSON.stringify(result);
