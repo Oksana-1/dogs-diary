@@ -27,15 +27,35 @@ A refactor that preserves user-visible behavior and public collaborator contract
 
 ## 2. Test stack
 
-The target component-test stack is:
+The configured suite uses Node's built-in test runner without npm dependencies.
+The component suite runs QUnit 2.24.1 and Vue Test Utils 2.4.6 in installed
+Chrome/Chromium, served by a separate test-only Symfony kernel and ImportMap.
+Do not add npm tooling or a production Node.js requirement. Production assets
+use Symfony AssetMapper and ImportMap. The test map derives its Vue entry from
+the production map, so tests and components share one full Vue browser build.
+The VTU `esm-browser` artifact imports only `vue`; no fake compiler or server
+renderer modules are needed.
 
-- Vitest
-- Vue Test Utils for Vue 3
-- jsdom
+Install Composer dependencies first, then install the isolated browser vendors:
 
-Use Vitest APIs (`describe`, `it`, `expect`, `vi`) for new component, composable, entity, repository, and HTTP-client unit tests once the package toolchain is configured.
+```bash
+bin/browser-tests --install
+bin/browser-tests
+bin/browser-tests --serve # prints an interactive local runner URL; Ctrl-C stops it
+```
 
-`FetchClient.test.mjs` currently uses Node's built-in test runner because it predates the component toolchain. Keep its current command working until it is deliberately migrated; do not silently maintain two versions of the same test.
+The install command invokes the test kernel's real Symfony `importmap:install`.
+Pinned vendor downloads and kernel caches live in ignored `var/browser-tests/`.
+No npm, package manifest, bundler, or Node process is used by this component suite.
+Host PHP with installed Composer dependencies and Google Chrome are required.
+Set `CHROME_BIN` to an alternative Chrome/Chromium executable when needed; the
+default is `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`.
+The headless command binds an ephemeral loopback port, uses a temporary browser
+profile, and cleans up both processes and the profile. It prints QUnit JSON and
+fails on assertions, module/resource errors, zero tests, absent completion, or a
+30-second browser timeout. Browser vendors must be installed before running.
+The runner is not exposed through the production kernel, routes or public files.
+CI integration is deferred; run this command separately from the transport check.
 
 Current executable command:
 
@@ -43,11 +63,14 @@ Current executable command:
 node --test tests/JavaScript/FetchClient.test.mjs
 ```
 
-From the repository root, `bin/check frontend` wraps this same command and
-propagates its exit status. It uses host Node.js and does not require Docker or
-Composer. This wrapper adds no frontend dependencies or package toolchain.
+`bin/check frontend` and GitHub Actions run this transport suite using Node.js
+directly, not through PHP. Node.js 24 is configured in CI. The wrapper uses host
+Node.js and does not require Docker, Composer, or npm installation.
 
-When Vitest and package scripts are added, update this section in the same change with the canonical commands for a full run, watch mode, and a single file.
+`ConfirmModal.test.js` is the first component suite. It uses real ModalDialog
+and native Teleport with full mounting to cover rendered content and native
+disabled buttons. These are browser-executed component unit tests, not browser
+navigation/E2E tests. Transport tests do not establish rendered UI coverage.
 
 ## 3. Test locations and names
 
@@ -70,7 +93,10 @@ Keep a one-off fixture in its test file. Move it to the nearest `fixtures/` dire
 
 ## 4. Mounting components
 
-Use the shared `createComponent` helper once it exists. Do not create file-local `createWrapper`, `factory`, or mounting helpers.
+Use the shared `tests/JavaScript/helpers/createComponent.js` helper. It attaches
+each wrapper to a fresh body node and automatically unmounts wrappers (including
+native Teleport content) and removes mount nodes after each QUnit test. Do not
+create file-local `createWrapper`, `factory`, or mounting helpers.
 
 The Dogs Diary helper must use an options object rather than positional arguments:
 
@@ -156,7 +182,7 @@ Appropriate mock targets:
 - Time, when behavior explicitly depends on the current date
 - Large child components when testing only the parent's contract
 
-Use `vi.mock()` for module-level imports. Use dependency injection through `provide` when production code already exposes that boundary. Do not redesign production code solely to make every collaborator injectable.
+Use the agreed runner's mocking facilities at module boundaries. Use dependency injection through `provide` when production code already exposes that boundary. Do not redesign production code solely to make every collaborator injectable.
 
 Prefer realistic resolved or rejected values:
 
@@ -178,18 +204,12 @@ Use real `Dog`, `Treatment`, and media entities when their normalization or gett
 
 Every test must leave global state as it found it.
 
-Baseline cleanup:
-
-```js
-afterEach(() => {
-    vi.clearAllMocks();
-});
-```
+Clear mocks after each test using the configured runner's facilities.
 
 Additional cleanup is mandatory when applicable:
 
-- `vi.restoreAllMocks()` for spies on existing functions
-- `vi.useRealTimers()` after fake timers
+- Restore spies on existing functions
+- Restore real timers after fake timers
 - Restore replaced globals and browser properties
 - Revoke created object URLs
 - Unmount wrappers if the helper does not do so automatically
@@ -267,4 +287,4 @@ Before considering a frontend unit-test change complete, confirm:
 - Mocks, timers, globals, URLs, and wrappers are cleaned up.
 - Fixtures follow the size and reuse rule.
 - The relevant configured test command passes.
-- New or changed testing commands are documented here and in package scripts together.
+- New or changed testing commands are documented here and in their executable scripts together; component CI integration is deferred.
