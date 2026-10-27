@@ -13,17 +13,17 @@ appropriate path to the script). From the repository root:
 ```bash
 bin/check                 # All quality checks
 bin/check php             # PHP quality checks only
-bin/check frontend        # Node.js transport and PHP/Chrome component tests
+bin/check frontend        # All frontend tests using host PHP/Chrome
 bin/check --local         # All checks using host PHP/Composer instead of Docker
 bin/check php --local     # PHP checks using host PHP/Composer
 ```
 
 By default, backend PHP checks run in the already-running Compose `app`
 container. Start the development Compose stack before running those checks,
-or use `--local` to run them on the host. Node.js and the PHP/Chrome component
-runner always run on the host. `--local` requires host PHP, Composer, the required PHP
+or use `--local` to run them on the host. The PHP/Chrome frontend
+runner always runs on the host. `--local` requires host PHP, Composer, the required PHP
 extensions (including SQLite), and installed Composer dependencies. CI uses PHP
-8.4 and Node.js 24. The script does not install dependencies or start containers.
+8.4; frontend tests no longer require Node.js. The script does not install dependencies or start containers.
 
 For frontend checks, install host PHP, Composer dependencies, Chrome/Chromium,
 and the version-pinned browser vendors with `bin/browser-tests --install`.
@@ -51,7 +51,7 @@ continues to run separately against a clean PostgreSQL service in CI.
 
 ## Quality job
 
-The quality job uses PHP 8.4, Node.js 24, and the repository's isolated SQLite
+The quality job uses PHP 8.4, Chrome, and the repository's isolated SQLite
 test configuration. It runs:
 
 ```bash
@@ -68,11 +68,11 @@ php bin/console lint:twig templates
 php bin/console lint:container
 ```
 
-`bin/check frontend` executes `node --test tests/JavaScript/FetchClient.test.mjs`
-and `php bin/browser-tests`, failing on either suite. The former covers transport
-and direct uploads; the latter covers the discovered QUnit component, composable,
-repository and domain tests. These are unit tests, not complete browser journeys
-or whole-project coverage. PHP formatting also includes the test-only kernel;
+`bin/check frontend` executes `php bin/browser-tests` and fails on any test
+failure. The discovered QUnit suite covers transport/session behavior, direct
+uploads, components, composables, repositories, and domain objects. It replaces
+the former Node transport command; CI no longer sets up Node.js. These are unit
+tests, not complete browser journeys or whole-project coverage. PHP formatting also includes the test-only kernel;
 its runner template can be checked with
 `php tests/JavaScript/browser/console.php lint:twig tests/JavaScript/browser/runner.html.twig`.
 

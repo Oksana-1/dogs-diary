@@ -7,8 +7,8 @@ is already implemented.
 The strategy separates three concerns:
 
 - [Frontend tests](frontend/README.md) protect JavaScript domain behavior, API
-  contracts, composables, and Vue component behavior. The configured suites use
-  Node for transport tests and QUnit/Vue Test Utils in Chrome for component tests.
+  contracts, composables, and Vue component behavior. The configured suite uses
+  QUnit in Chrome, with Vue Test Utils for component tests.
 - [Backend tests](backend/README.md) protect PHP domain rules, application
   services, Symfony request handling, persistence, security, and media storage.
 - [Integration and browser tests](integrations/README.md) protect a small set of
@@ -38,8 +38,8 @@ instrument all applicable production files.
 
 The approved frontend setup uses QUnit and Vue Test Utils through an isolated
 Symfony kernel and ImportMap, replacing the earlier Vitest/jsdom proposal.
-The CI workflow and `bin/check frontend` are configured to run both transport
-and component suites. Commands, prerequisites, watch mode, and single-file
+The CI workflow and `bin/check frontend` are configured to run transport
+and component tests together in QUnit, including the migrated Node scenarios. Commands, prerequisites, watch mode, and single-file
 selection are canonical in the [frontend testing guide](frontend/testing-guide.md).
 See [CI and local checks](../tooling/devops/ci.md) for the complete quality gate.
 Configured CI behavior does not establish that a hosted run has passed.
@@ -68,7 +68,7 @@ application, database, authentication, or media-storage workflows.
 - Add a PHP coverage driver to a dedicated CI step and publish a machine-readable
   report.
 - Select and configure whole-project frontend coverage reporting for the
-  existing Node and QUnit suites; no coverage tool or threshold is configured yet.
+  existing QUnit suite; no coverage tool or threshold is configured yet.
 - Record the initial whole-project baselines without introducing an arbitrary
   high threshold.
 - Exclude generated code, migrations, configuration, and templates only when

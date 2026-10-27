@@ -25,9 +25,8 @@ This baseline belongs to the 2026-09-23 testing plan; it is not a fresh test run
 - Vue components, composables, repositories, and domain entities do not yet
   have dedicated automated tests.
 
-A built-in Node coverage report for the transport suite describes only the
-modules that suite imports. It must not be presented as coverage for all
-frontend code.
+Any historical Node coverage report described only the modules imported by
+that suite. It must not be presented as current or whole-project coverage.
 
 ## Implemented tooling
 
@@ -39,11 +38,15 @@ AssetMapper/ImportMap; no production build step was introduced.
 Full-suite, single-file, watch, and interactive commands are maintained in the
 [canonical frontend testing guide](testing-guide.md).
 
+The former Node transport suite has also been migrated to QUnit; no duplicate
+suite or Node.js CI setup remains. The eight original transport/session/upload
+scenarios are retained.
+
 The implementation provides:
 
 - The shared `createComponent` helper mounts and cleans up Vue wrappers.
-- Test discovery includes `*.test.js` under `tests/JavaScript/modules/` and excludes
-  fixture directories. The isolated ImportMap resolves test dependencies.
+- Test discovery includes `*.test.js` under `tests/JavaScript/core/` and
+  `tests/JavaScript/modules/`, excluding fixture directories. The isolated ImportMap resolves test dependencies.
 - The CI quality job installs browser vendors and runs `bin/check frontend`.
 
 Whole-project coverage reporting and the broader coverage targets below remain

@@ -2,7 +2,7 @@
 
 Canonical rules for frontend unit and component tests in Dogs Diary.
 
-These rules apply to JavaScript under `assets/` and tests under `tests/JavaScript/`. They describe the intended Vue test suite as well as the existing framework-independent Node tests.
+These rules apply to JavaScript under `assets/` and tests under `tests/JavaScript/`. They cover the browser-executed QUnit suite, including transport, domain, repository, composable, and Vue component tests.
 
 ## 1. Testing philosophy
 
@@ -27,8 +27,7 @@ A refactor that preserves user-visible behavior and public collaborator contract
 
 ## 2. Test stack
 
-The configured suite uses Node's built-in test runner without npm dependencies.
-The component suite runs QUnit 2.24.1 and Vue Test Utils 2.4.6 in installed
+The frontend suite runs QUnit 2.24.1 and Vue Test Utils 2.4.6 in installed
 Chrome/Chromium, served by a separate test-only Symfony kernel and ImportMap.
 Do not add npm tooling or a production Node.js requirement. Production assets
 use Symfony AssetMapper and ImportMap. The test map derives its Vue entry from
@@ -51,9 +50,9 @@ bin/check frontend # transport and component suites
 
 The install command invokes the test kernel's real Symfony `importmap:install`.
 Pinned vendor downloads and kernel caches live in ignored `var/browser-tests/`.
-No npm, package manifest, bundler, or Node process is used by this component suite.
+No npm, package manifest, bundler, or Node process is used by the frontend suite.
 Host PHP with installed Composer dependencies and Chrome/Chromium are required.
-Use PHP 8.4 and Node.js 24 to match CI. Composer dependencies are locked in
+Use PHP 8.4 to match CI. Composer dependencies are locked in
 `composer.lock`; browser vendors are version-pinned in the test ImportMap and
 the production map it references. No npm package manifest or lockfile is needed.
 Set `CHROME_BIN` to an alternative Chrome/Chromium executable when needed. On
@@ -62,9 +61,9 @@ on Linux the launcher searches PATH for google-chrome, chromium, or chromium-bro
 CI uses `/usr/bin/google-chrome` from the Ubuntu runner image and prints its
 version. Browser updates follow that image; the browser binary is not pinned.
 
-`--file` accepts an existing test path under `tests/JavaScript/modules/`, from
-the current directory or repository root. Fixtures, missing files, and paths
-outside that tree are rejected with exit 2. It can be combined with `--serve`
+`--file` accepts an existing test path under `tests/JavaScript/core/` or
+`tests/JavaScript/modules/`, from the current directory or repository root. Fixtures, missing files, and paths
+outside those trees are rejected with exit 2. It can be combined with `--serve`
 or `--watch`. Only that test and its dependencies are loaded.
 
 Watch mode requires PHP's pcntl extension. It runs immediately, then checks
@@ -82,20 +81,24 @@ The launcher drains the test server's output while Chrome runs, preventing
 debug logs from blocking module requests as the suite grows. Server and browser
 diagnostics are retained for launcher failures.
 The runner is not exposed through the production kernel, routes or public files.
-`bin/check frontend` and the CI quality job run both frontend suites. The
-component runner always uses host PHP and Chrome, including when backend PHP
+`bin/check frontend` and the CI quality job run the complete QUnit suite. The
+frontend runner always uses host PHP and Chrome, including when backend PHP
 checks use Docker. Install Composer and browser vendor dependencies beforehand;
 `bin/check` never installs them. CI installs the browser vendors before checking.
 
-Transport-only command:
+Run the HTTP-client tests separately with:
 
 ```bash
-node --test tests/JavaScript/FetchClient.test.mjs
+bin/browser-tests --file tests/JavaScript/core/http/FetchClient.test.js
 ```
 
-The transport-only command still uses host Node.js directly and does not require
-Docker, Composer, Chrome, or npm installation. It has not been duplicated or
-migrated into the component suite.
+The former Node suite has been migrated, without retaining a duplicate, into
+`core/http/FetchClient.test.js`, `core/auth/SessionExpiryRedirect.test.js`, and
+`modules/dogsDiary/repositories/MediaUpload.test.js` under `tests/JavaScript/`.
+All eight original scenarios now use QUnit and native browser APIs. Fetch stubs
+are restored after each test; upload tests do not contact external storage.
+Single-file transport runs require the same PHP/Chrome prerequisites as the full
+suite. Node.js is not required locally or by the project's CI test commands.
 
 `ConfirmModal.test.js` is the first component suite. It uses real ModalDialog
 and native Teleport with full mounting to cover rendered content and native
@@ -126,11 +129,11 @@ need dedicated tests. No coverage percentage or threshold has been established.
 Mirror the relevant source structure below `tests/JavaScript/`.
 
 The test-only kernel discovers `*.test.js` recursively under
-`tests/JavaScript/modules/`, excluding `fixtures/` directories. Discovery is sorted
+`tests/JavaScript/core/` and `tests/JavaScript/modules/`, excluding `fixtures/`
+directories. Discovery is sorted
 and shared with the test ImportMap so relative dependencies resolve through
 AssetMapper. Add a test file in that tree and reload the runner; no JavaScript
-import list needs editing. Helpers and fixtures are imported by their tests,
-while the existing Node `.mjs` suite remains a separate command. An empty discovery
+import list needs editing. Helpers and fixtures are imported by their tests. An empty discovery
 list or a module-load failure is an error, not a successful empty run.
 
 ```text
@@ -351,4 +354,4 @@ Before considering a frontend unit-test change complete, confirm:
 - Mocks, timers, globals, URLs, and wrappers are cleaned up.
 - Fixtures follow the size and reuse rule.
 - The relevant configured test command passes.
-- New or changed testing commands are documented here and in their executable scripts together; the full frontend check and CI run both suites.
+- New or changed testing commands are documented here and in their executable scripts together; the full frontend check and CI run all discovered QUnit tests.

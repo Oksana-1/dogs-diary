@@ -20,10 +20,12 @@ for ($index = 1; $index < $argc; ++$index) {
     if ('--file' === $argument && null === $testFile && isset($argv[$index + 1])) {
         $input = $argv[++$index];
         $resolved = realpath($input) ?: realpath($root.'/'.$input);
-        $modules = realpath($root.'/tests/JavaScript/modules').DIRECTORY_SEPARATOR;
-        if (false === $resolved || !is_file($resolved) || !str_starts_with($resolved, $modules)
+        $modules = $root.'/tests/JavaScript/modules/';
+        $core = $root.'/tests/JavaScript/core/';
+        if (false === $resolved || !is_file($resolved)
+            || (!str_starts_with($resolved, $modules) && !str_starts_with($resolved, $core))
             || !str_ends_with($resolved, '.test.js') || str_contains($resolved, '/fixtures/')) {
-            fwrite(STDERR, "Select an existing *.test.js file under tests/JavaScript/modules (outside fixtures).\n");
+            fwrite(STDERR, "Select an existing *.test.js file under tests/JavaScript/core or modules (outside fixtures).\n");
             exit(2);
         }
         $testFile = substr($resolved, strlen($root) + 1);

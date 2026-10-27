@@ -3,14 +3,18 @@
 use Symfony\Component\Finder\Finder;
 
 $modules = [];
-$files = (new Finder())->files()->in(dirname(__DIR__).'/modules')
-    ->exclude('fixtures')->name('*.test.js')->sortByName();
+$files = (new Finder())->files()->in(dirname(__DIR__))
+    ->exclude(['fixtures', 'helpers', 'browser'])->name('*.test.js')->sortByName();
 $selected = getenv('DOGS_DIARY_TEST_FILE');
 foreach ($files as $file) {
-    if ($selected && 'tests/JavaScript/modules/'.$file->getRelativePathname() !== $selected) {
+    $relativePath = $file->getRelativePathname();
+    if (!str_starts_with($relativePath, 'core/') && !str_starts_with($relativePath, 'modules/')) {
         continue;
     }
-    $modules[] = 'tests/modules/'.$file->getRelativePathname();
+    if ($selected && 'tests/JavaScript/'.$relativePath !== $selected) {
+        continue;
+    }
+    $modules[] = 'tests/'.$relativePath;
 }
 
 return $modules;
