@@ -51,7 +51,12 @@ jobs:
               run: php bin/phpunit
 
             - name: Run JavaScript tests
-              run: node --test tests/JavaScript/FetchClient.test.mjs
+              env:
+                  CHROME_BIN: /usr/bin/google-chrome
+              run: |
+                  "$CHROME_BIN" --version
+                  bin/browser-tests --install
+                  bin/check frontend
 
             - name: Run runtime operations tests
               run: python3 -B -m unittest discover -s tests/Operations -v

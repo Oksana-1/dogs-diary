@@ -7,7 +7,7 @@ usage() {
         '' \
         'all       PHP quality checks, frontend tests, and Python runtime tests (default).' \
         'php       Composer validation/audit, PHPUnit, formatting, Symfony lint.' \
-        'frontend  Node.js transport tests.' \
+        'frontend  Node.js transport tests and PHP/Chrome component tests (host tools).' \
         '--local   Run PHP/Composer on the host instead of the running app container.' \
         '' \
         'Requires installed dependencies; does not install them or start Docker.' \
@@ -77,6 +77,11 @@ if [[ "$scope" != frontend ]]; then
 fi
 if [[ "$scope" != php ]]; then
     require_command node
+    require_command php
+    if [[ ! -f vendor/autoload.php ]]; then
+        printf 'Dependencies missing. Run composer install and bin/browser-tests --install first.\n' >&2
+        exit 1
+    fi
 fi
 if [[ "$scope" == all ]]; then
     require_command python3
@@ -111,6 +116,7 @@ if [[ "$scope" != frontend ]]; then
 fi
 if [[ "$scope" != php ]]; then
     run host node --test tests/JavaScript/FetchClient.test.mjs
+    run host php bin/browser-tests
 fi
 if [[ "$scope" == all ]]; then
     run host python3 -B -m unittest discover -s tests/Operations -v

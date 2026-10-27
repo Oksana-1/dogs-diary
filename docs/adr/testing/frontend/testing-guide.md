@@ -42,31 +42,60 @@ Install Composer dependencies first, then install the isolated browser vendors:
 ```bash
 bin/browser-tests --install
 bin/browser-tests
+bin/browser-tests --file tests/JavaScript/modules/dogsDiary/view/ui/modals/ConfirmModal.test.js
+bin/browser-tests --watch
+bin/browser-tests --watch --file tests/JavaScript/modules/dogsDiary/view/ui/modals/ConfirmModal.test.js
 bin/browser-tests --serve # prints an interactive local runner URL; Ctrl-C stops it
+bin/check frontend # transport and component suites
 ```
 
 The install command invokes the test kernel's real Symfony `importmap:install`.
 Pinned vendor downloads and kernel caches live in ignored `var/browser-tests/`.
 No npm, package manifest, bundler, or Node process is used by this component suite.
-Host PHP with installed Composer dependencies and Google Chrome are required.
-Set `CHROME_BIN` to an alternative Chrome/Chromium executable when needed; the
-default is `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`.
+Host PHP with installed Composer dependencies and Chrome/Chromium are required.
+Use PHP 8.4 and Node.js 24 to match CI. Composer dependencies are locked in
+`composer.lock`; browser vendors are version-pinned in the test ImportMap and
+the production map it references. No npm package manifest or lockfile is needed.
+Set `CHROME_BIN` to an alternative Chrome/Chromium executable when needed. On
+macOS the default is `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`;
+on Linux the launcher searches PATH for google-chrome, chromium, or chromium-browser.
+CI uses `/usr/bin/google-chrome` from the Ubuntu runner image and prints its
+version. Browser updates follow that image; the browser binary is not pinned.
+
+`--file` accepts an existing test path under `tests/JavaScript/modules/`, from
+the current directory or repository root. Fixtures, missing files, and paths
+outside that tree are rejected with exit 2. It can be combined with `--serve`
+or `--watch`. Only that test and its dependencies are loaded.
+
+Watch mode requires PHP's pcntl extension. It runs immediately, then checks
+content changes every 250 ms under `assets/js` and `tests/JavaScript`, plus the
+launcher, root ImportMap and Composer lockfile. Adds, edits, removals, and changes
+during a running test trigger another run. Runs are serial and use fresh browser
+profiles. Failures are printed without ending watch mode; Ctrl-C stops child
+processes and exits 130. Watch does not reinstall changed vendor dependencies:
+run `bin/browser-tests --install` after changing vendor versions.
 The headless command binds an ephemeral loopback port, uses a temporary browser
 profile, and cleans up both processes and the profile. It prints QUnit JSON and
 fails on assertions, module/resource errors, zero tests, absent completion, or a
 30-second browser timeout. Browser vendors must be installed before running.
+The launcher drains the test server's output while Chrome runs, preventing
+debug logs from blocking module requests as the suite grows. Server and browser
+diagnostics are retained for launcher failures.
 The runner is not exposed through the production kernel, routes or public files.
-CI integration is deferred; run this command separately from the transport check.
+`bin/check frontend` and the CI quality job run both frontend suites. The
+component runner always uses host PHP and Chrome, including when backend PHP
+checks use Docker. Install Composer and browser vendor dependencies beforehand;
+`bin/check` never installs them. CI installs the browser vendors before checking.
 
-Current executable command:
+Transport-only command:
 
 ```bash
 node --test tests/JavaScript/FetchClient.test.mjs
 ```
 
-`bin/check frontend` and GitHub Actions run this transport suite using Node.js
-directly, not through PHP. Node.js 24 is configured in CI. The wrapper uses host
-Node.js and does not require Docker, Composer, or npm installation.
+The transport-only command still uses host Node.js directly and does not require
+Docker, Composer, Chrome, or npm installation. It has not been duplicated or
+migrated into the component suite.
 
 `ConfirmModal.test.js` is the first component suite. It uses real ModalDialog
 and native Teleport with full mounting to cover rendered content and native
@@ -210,13 +239,19 @@ Appropriate mock targets:
 - Time, when behavior explicitly depends on the current date
 - Large child components when testing only the parent's contract
 
-Use the agreed runner's mocking facilities at module boundaries. Use dependency injection through `provide` when production code already exposes that boundary. Do not redesign production code solely to make every collaborator injectable.
+QUnit does not provide Vitest/Jest-style module mocks or spy functions. Supply
+plain test doubles through existing constructor or composable arguments, or
+through `provide` where production code already uses it. When replacing a public
+method or browser API, retain the original and restore it after the test.
+Do not redesign production code solely to make every collaborator injectable.
 
 Prefer realistic resolved or rejected values:
 
 ```js
-repository.list.mockResolvedValue([dog]);
-repository.create.mockRejectedValue(new Error('Unable to save dog.'));
+const repository = {
+    list: async () => [dog],
+    create: async () => { throw new Error('Unable to save dog.'); },
+};
 ```
 
 Do not mock:
@@ -232,7 +267,8 @@ Use real `Dog`, `Treatment`, and media entities when their normalization or gett
 
 Every test must leave global state as it found it.
 
-Clear mocks after each test using the configured runner's facilities.
+Create fresh test doubles and call-recording arrays for each test. Restore any
+replaced methods or globals in `finally` or a QUnit `afterEach` hook.
 
 Additional cleanup is mandatory when applicable:
 
@@ -252,7 +288,7 @@ Use Arrange, Act, Assert without comments when the phases are already obvious. A
 Test names should describe behavior and outcome:
 
 ```js
-it('shows the API error and keeps the treatment form open when saving fails', async () => {
+QUnit.test('shows the API error and keeps the treatment form open when saving fails', async assert => {
     // ...
 });
 ```
@@ -260,7 +296,7 @@ it('shows the API error and keeps the treatment form open when saving fails', as
 Avoid names tied to method names:
 
 ```js
-it('calls handleSubmit', () => {}); // Avoid
+QUnit.test('calls handleSubmit', assert => {}); // Avoid
 ```
 
 Prefer one behavioral reason for failure per test. Several closely related assertions about the same rendered state are fine.
@@ -315,4 +351,4 @@ Before considering a frontend unit-test change complete, confirm:
 - Mocks, timers, globals, URLs, and wrappers are cleaned up.
 - Fixtures follow the size and reuse rule.
 - The relevant configured test command passes.
-- New or changed testing commands are documented here and in their executable scripts together; component CI integration is deferred.
+- New or changed testing commands are documented here and in their executable scripts together; the full frontend check and CI run both suites.

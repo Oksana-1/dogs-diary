@@ -37,7 +37,7 @@ Scale the body to the task. Usually include:
 
 Preserve settled choices. Record open technical choices as open; creating an issue does not approve an implementation approach. Use the project's shaping process before dependent implementation, without blocking backlog creation on every future decision.
 
-Use `docs/README.md` to locate applicable decisions and `docs/adr/tooling/devops/ci.md` for configured checks. Read `tests/JavaScript/TESTING.md` before prescribing frontend test tooling changes. Do not invent executable commands, claim tests were run, or imply transport tests establish UI correctness. Tests and API/documentation updates belong in the relevant implementation issue's completion criteria.
+Use `docs/README.md` to locate applicable decisions and `docs/adr/tooling/devops/ci.md` for configured checks. Read `docs/adr/testing/frontend/testing-guide.md` before prescribing frontend test tooling changes. Do not invent executable commands, claim tests were run, or imply transport tests establish UI correctness. Tests and API/documentation updates belong in the relevant implementation issue's completion criteria.
 
 Do not copy local credentials, private environment values, or machine-specific temporary paths into GitHub. Link repository files using repository-relative paths or GitHub links.
 

@@ -48,7 +48,8 @@ Plans describe proposed work and a historical baseline, separately from accepted
 
 - [Testing strategy](adr/testing/README.md)
 - [Backend testing](adr/testing/backend/README.md)
-- [Frontend testing](adr/testing/frontend/README.md)
+- [Frontend testing plan](adr/testing/frontend/README.md)
+- [Frontend testing guide](adr/testing/frontend/testing-guide.md)
 - [Integration and browser testing](adr/testing/integrations/README.md)
 
 ## Tooling

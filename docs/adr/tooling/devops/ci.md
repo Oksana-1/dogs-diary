@@ -13,16 +13,25 @@ appropriate path to the script). From the repository root:
 ```bash
 bin/check                 # All quality checks
 bin/check php             # PHP quality checks only
-bin/check frontend        # Existing Node.js transport tests only
+bin/check frontend        # Node.js transport and PHP/Chrome component tests
 bin/check --local         # All checks using host PHP/Composer instead of Docker
 bin/check php --local     # PHP checks using host PHP/Composer
 ```
 
-By default, PHP commands run in the already-running Compose `app` container;
-Node.js runs on the host. Start the development Compose stack before running
-PHP checks. `--local` requires host PHP, Composer, the required PHP
+By default, backend PHP checks run in the already-running Compose `app`
+container. Start the development Compose stack before running those checks,
+or use `--local` to run them on the host. Node.js and the PHP/Chrome component
+runner always run on the host. `--local` requires host PHP, Composer, the required PHP
 extensions (including SQLite), and installed Composer dependencies. CI uses PHP
 8.4 and Node.js 24. The script does not install dependencies or start containers.
+
+For frontend checks, install host PHP, Composer dependencies, Chrome/Chromium,
+and the version-pinned browser vendors with `bin/browser-tests --install`.
+`CHROME_BIN` can override the browser executable. The CI quality job is configured to use the
+Ubuntu image's `/usr/bin/google-chrome`, prints its version, installs browser
+vendors, then runs `bin/check frontend`. The browser version follows the image.
+No npm toolchain is required. See the [frontend testing guide](../../testing/frontend/testing-guide.md)
+for `--file`, `--watch`, and interactive `--serve` commands.
 
 The full `bin/check` run also executes the Vercel entrypoint tests using host
 Python 3 (`python3 -B -m unittest discover -s tests/Operations -v`). These tests
@@ -50,7 +59,8 @@ composer validate --strict --no-check-publish
 composer install --prefer-dist --no-interaction --no-progress
 composer audit --locked --abandoned=fail --no-interaction
 php bin/phpunit
-node --test tests/JavaScript/FetchClient.test.mjs
+bin/browser-tests --install
+bin/check frontend
 python3 -B -m unittest discover -s tests/Operations -v
 vendor/bin/php-cs-fixer fix --dry-run --diff
 php bin/console lint:yaml config --parse-tags
@@ -58,8 +68,13 @@ php bin/console lint:twig templates
 php bin/console lint:container
 ```
 
-The Node command is the canonical frontend command documented in
-`tests/JavaScript/TESTING.md`; no unconfigured package runner is used.
+`bin/check frontend` executes `node --test tests/JavaScript/FetchClient.test.mjs`
+and `php bin/browser-tests`, failing on either suite. The former covers transport
+and direct uploads; the latter covers the discovered QUnit component, composable,
+repository and domain tests. These are unit tests, not complete browser journeys
+or whole-project coverage. PHP formatting also includes the test-only kernel;
+its runner template can be checked with
+`php tests/JavaScript/browser/console.php lint:twig tests/JavaScript/browser/runner.html.twig`.
 
 ## Database job
 

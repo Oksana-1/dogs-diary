@@ -7,8 +7,8 @@ is already implemented.
 The strategy separates three concerns:
 
 - [Frontend tests](frontend/README.md) protect JavaScript domain behavior, API
-  contracts, composables, and Vue component behavior in a fast DOM-based test
-  environment.
+  contracts, composables, and Vue component behavior. The configured suites use
+  Node for transport tests and QUnit/Vue Test Utils in Chrome for component tests.
 - [Backend tests](backend/README.md) protect PHP domain rules, application
   services, Symfony request handling, persistence, security, and media storage.
 - [Integration and browser tests](integrations/README.md) protect a small set of
@@ -16,30 +16,45 @@ The strategy separates three concerns:
 
 ## Historical baseline
 
-As of 2026-09-23, the executable baseline is:
+On 2026-09-23, the executable baseline was:
 
-| Area | Current suite | Result | Measured coverage |
+| Area | Suite at that date | Result | Measured coverage |
 |---|---|---:|---:|
 | Backend | PHPUnit | 87 tests, 752 assertions | Not configured |
 | Frontend | Node test runner | 4 tests | Not configured project-wide |
 | Browser journeys | None | Not applicable | Not applicable |
 
-The backend suite already provides substantial functional coverage around
+The backend suite already provided substantial functional coverage around
 authentication, authorization, CSRF protection, ownership isolation, password
 reset, private media delivery, and production error handling. The frontend
-suite currently covers only the shared HTTP and session-expiry behavior. There
-is no Playwright suite yet.
+suite then covered only the shared HTTP and session-expiry behavior. There
+was no Playwright suite.
 
 Do not use file counts, test counts, or coverage from only the modules loaded by
 a single test as a project coverage percentage. A trustworthy percentage must
 instrument all applicable production files.
+
+## Current tooling
+
+The approved frontend setup uses QUnit and Vue Test Utils through an isolated
+Symfony kernel and ImportMap, replacing the earlier Vitest/jsdom proposal.
+The CI workflow and `bin/check frontend` are configured to run both transport
+and component suites. Commands, prerequisites, watch mode, and single-file
+selection are canonical in the [frontend testing guide](frontend/testing-guide.md).
+See [CI and local checks](../tooling/devops/ci.md) for the complete quality gate.
+Configured CI behavior does not establish that a hosted run has passed.
+
+Whole-project coverage reporting and complete Playwright journeys remain
+planned work. Component tests run in Chrome but do not exercise the complete
+application, database, authentication, or media-storage workflows.
 
 ## Quality principles
 
 1. Test behavior and public contracts, not implementation details.
 2. Put each behavior at the lowest level that can verify it honestly.
 3. Keep the fast frontend and backend suites as the primary feedback loop.
-4. Use browser tests only for high-value cross-layer journeys.
+4. Reserve end-to-end browser tests for high-value cross-layer journeys;
+   browser-executed component tests remain unit tests.
 5. Make every test independent, deterministic, and safe to retry.
 6. Treat security boundaries, ownership isolation, migrations, and private
    media as release-critical behavior.
@@ -52,8 +67,8 @@ instrument all applicable production files.
 
 - Add a PHP coverage driver to a dedicated CI step and publish a machine-readable
   report.
-- Configure the frontend package toolchain, Vitest, Vue Test Utils, jsdom, and
-  V8 coverage.
+- Select and configure whole-project frontend coverage reporting for the
+  existing Node and QUnit suites; no coverage tool or threshold is configured yet.
 - Record the initial whole-project baselines without introducing an arbitrary
   high threshold.
 - Exclude generated code, migrations, configuration, and templates only when

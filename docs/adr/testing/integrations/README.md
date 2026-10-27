@@ -8,13 +8,13 @@ Twig pages, Vue islands, ImportMap modules, JSON APIs, CSRF protection,
 authentication, the database, and private media work together.
 
 Playwright tests are end-to-end browser tests in this plan. They complement the
-existing Symfony functional tests and the planned frontend component tests; they
-do not replace either suite.
+existing Symfony functional tests and the configured
+[frontend component tests](../frontend/README.md); they do not replace either suite.
 
 ## Why browser tests are valuable here
 
-Several important behaviors cross boundaries that jsdom and Symfony's browser
-client cannot fully exercise:
+Several important behaviors require the complete application rather than
+isolated QUnit components or Symfony's browser client:
 
 - Vue islands mounting into server-rendered Twig pages;
 - ImportMap module loading in an actual browser;
@@ -25,7 +25,8 @@ client cannot fully exercise:
 
 ## Infrastructure work
 
-1. Add Playwright to the frontend package toolchain and commit its lockfile.
+1. Agree on a separate Playwright package toolchain and commit its lockfile.
+   The current QUnit component suite has no npm package toolchain.
 2. Add a Playwright configuration with one canonical local command and one CI
    command.
 3. Start the application through a deterministic test-only web server or Docker

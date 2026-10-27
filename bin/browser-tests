@@ -2,20 +2,50 @@
 <?php
 
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;
 
 require dirname(__DIR__).'/vendor/autoload.php';
 
 $root = dirname(__DIR__);
-$mode = $argv[1] ?? '';
+$mode = '';
+$testFile = null;
+$usage = "Usage: bin/browser-tests [--install|--serve|--watch] [--file PATH]\n";
+for ($index = 1; $index < $argc; ++$index) {
+    $argument = $argv[$index];
+    if ('--help' === $argument || '-h' === $argument) {
+        echo $usage;
+        exit(0);
+    }
+    if ('--file' === $argument && null === $testFile && isset($argv[$index + 1])) {
+        $input = $argv[++$index];
+        $resolved = realpath($input) ?: realpath($root.'/'.$input);
+        $modules = realpath($root.'/tests/JavaScript/modules').DIRECTORY_SEPARATOR;
+        if (false === $resolved || !is_file($resolved) || !str_starts_with($resolved, $modules)
+            || !str_ends_with($resolved, '.test.js') || str_contains($resolved, '/fixtures/')) {
+            fwrite(STDERR, "Select an existing *.test.js file under tests/JavaScript/modules (outside fixtures).\n");
+            exit(2);
+        }
+        $testFile = substr($resolved, strlen($root) + 1);
+    } elseif (in_array($argument, ['--install', '--serve', '--watch'], true) && '' === $mode) {
+        $mode = $argument;
+    } else {
+        fwrite(STDERR, $usage);
+        exit(2);
+    }
+}
+if ('--install' === $mode && null !== $testFile) {
+    fwrite(STDERR, $usage);
+    exit(2);
+}
+if ('--watch' === $mode) {
+    require $root.'/tests/JavaScript/browser/watch.php';
+    exit(watchBrowserTests($root, $testFile));
+}
 if ('--install' === $mode) {
     $install = new Process([PHP_BINARY, 'tests/JavaScript/browser/console.php', 'importmap:install'], $root);
     $install->setTimeout(120);
     exit($install->run(static function ($type, $output): void { echo $output; }));
-}
-if (!in_array($mode, ['', '--serve'], true)) {
-    fwrite(STDERR, "Usage: bin/browser-tests [--install|--serve]\n");
-    exit(2);
 }
 
 $socket = stream_socket_server('tcp://127.0.0.1:0', $errorCode, $errorMessage);
@@ -24,7 +54,9 @@ if (false === $socket) {
 }
 $address = stream_socket_get_name($socket, false);
 fclose($socket);
-$server = new Process([PHP_BINARY, '-S', $address, 'tests/JavaScript/browser/router.php'], $root);
+$server = new Process([PHP_BINARY, '-S', $address, 'tests/JavaScript/browser/router.php'], $root, [
+    'DOGS_DIARY_TEST_FILE' => $testFile ?? false,
+]);
 $server->setTimeout(null);
 $profile = null;
 $chrome = null;
@@ -46,7 +78,10 @@ try {
         exit($server->getExitCode() ?? 1);
     }
 
-    $browser = getenv('CHROME_BIN') ?: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+    $finder = new ExecutableFinder();
+    $browser = getenv('CHROME_BIN') ?: (PHP_OS_FAMILY === 'Darwin'
+        ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+        : ($finder->find('google-chrome') ?? $finder->find('chromium') ?? $finder->find('chromium-browser') ?? ''));
     if (!is_executable($browser)) {
         throw new RuntimeException('Set CHROME_BIN to an installed Chrome/Chromium executable.');
     }
@@ -72,7 +107,18 @@ try {
         usleep(20000);
     }
     $chrome->setTimeout(30);
-    $chrome->run();
+    $chrome->start();
+    while ($chrome->isRunning()) {
+        // Drain both server pipes while Chrome loads modules. Waiting only on
+        // Chrome can deadlock when Symfony's debug output fills a server pipe.
+        $server->getOutput();
+        $server->getErrorOutput();
+        if (!$server->isRunning()) {
+            throw new RuntimeException('Test server stopped before the browser completed.');
+        }
+        $chrome->checkTimeout();
+        usleep(10000);
+    }
     $html = new DOMDocument();
     @$html->loadHTML($chrome->getOutput());
     $result = json_decode($html->getElementById('browser-test-result')?->textContent ?? '', true);
@@ -86,6 +132,9 @@ try {
         && 0 === ($result['tests']['failed'] ?? null) ? 0 : 1;
 } catch (Throwable $error) {
     fwrite(STDERR, $error->getMessage()."\n");
+    if (null !== $chrome) {
+        fwrite(STDERR, $chrome->getErrorOutput()."\n".$server->getErrorOutput());
+    }
 } finally {
     $chrome?->stop(1);
     $server->stop(1);

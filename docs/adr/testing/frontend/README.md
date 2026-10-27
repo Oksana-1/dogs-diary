@@ -3,13 +3,13 @@
 ## Goal
 
 Provide fast, behavior-focused protection for the JavaScript under `assets/`
-without changing the application's AssetMapper and ImportMap runtime model. A
-Node package toolchain is needed for tests, but it does not need to become a
-production asset build step.
+without changing the application's AssetMapper and ImportMap runtime model.
+The approved implementation uses QUnit and Vue Test Utils in Chrome through an
+isolated Symfony test kernel, with no npm test toolchain.
 
 The canonical frontend testing rules remain in
-[`tests/JavaScript/TESTING.md`](../../../../tests/JavaScript/TESTING.md). Update that
-guide and the package scripts together when the toolchain is introduced.
+[frontend testing guide](testing-guide.md). Update that
+guide and executable scripts together when test commands change.
 
 ## Historical baseline
 
@@ -25,27 +25,29 @@ This baseline belongs to the 2026-09-23 testing plan; it is not a fresh test run
 - Vue components, composables, repositories, and domain entities do not yet
   have dedicated automated tests.
 
-The built-in Node coverage report for the current test is useful only for the
-few modules that test imports. It must not be presented as coverage for all
+A built-in Node coverage report for the transport suite describes only the
+modules that suite imports. It must not be presented as coverage for all
 frontend code.
 
-## Tooling work
+## Implemented tooling
 
-1. Add a committed package manifest and lockfile using one package manager.
-2. Add Vitest, Vue Test Utils for Vue 3, jsdom, and the V8 coverage provider.
-3. Define canonical scripts for:
-   - the complete frontend suite;
-   - watch mode;
-   - one test file;
-   - coverage with all eligible source files included.
-4. Add a shared `createComponent` helper following the contract in the canonical
-   testing guide.
-5. Decide whether to migrate `FetchClient.test.mjs` to Vitest. Until migration
-   is intentional and complete, keep its current Node command working and avoid
-   duplicate versions of the same tests.
-6. Configure stable aliases or import resolution for the same module paths used
-   by the browser application.
-7. Add the canonical commands to CI and document how to run them.
+The original Vitest/jsdom/package-manifest proposal has been superseded by the
+approved QUnit browser-module setup. Composer dependencies remain locked, and
+browser dependencies use pinned ImportMap versions. Production assets retain
+AssetMapper/ImportMap; no production build step was introduced.
+
+Full-suite, single-file, watch, and interactive commands are maintained in the
+[canonical frontend testing guide](testing-guide.md).
+
+The implementation provides:
+
+- The shared `createComponent` helper mounts and cleans up Vue wrappers.
+- Test discovery includes `*.test.js` under `tests/JavaScript/modules/` and excludes
+  fixture directories. The isolated ImportMap resolves test dependencies.
+- The CI quality job installs browser vendors and runs `bin/check frontend`.
+
+Whole-project coverage reporting and the broader coverage targets below remain
+future work; they are not claims about the infrastructure issue's completion.
 
 ## Coverage priorities
 
@@ -116,7 +118,7 @@ workflows. Those belong in the browser plan.
 - The relevant test command is run after every frontend implementation or test
   change.
 
-## Completion criteria
+## Long-term coverage goals
 
 - The toolchain and commands are documented and reproducible locally and in CI.
 - All repositories and shared HTTP behavior have contract tests.
