@@ -1,0 +1,147 @@
+#!/usr/bin/env php
+<?php
+
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Process\ExecutableFinder;
+use Symfony\Component\Process\Process;
+
+require dirname(__DIR__).'/vendor/autoload.php';
+
+$root = dirname(__DIR__);
+$mode = '';
+$testFile = null;
+$usage = "Usage: bin/browser-tests [--install|--serve|--watch] [--file PATH]\n";
+for ($index = 1; $index < $argc; ++$index) {
+    $argument = $argv[$index];
+    if ('--help' === $argument || '-h' === $argument) {
+        echo $usage;
+        exit(0);
+    }
+    if ('--file' === $argument && null === $testFile && isset($argv[$index + 1])) {
+        $input = $argv[++$index];
+        $resolved = realpath($input) ?: realpath($root.'/'.$input);
+        $modules = $root.'/tests/JavaScript/modules/';
+        $core = $root.'/tests/JavaScript/core/';
+        if (false === $resolved || !is_file($resolved)
+            || (!str_starts_with($resolved, $modules) && !str_starts_with($resolved, $core))
+            || !str_ends_with($resolved, '.test.js') || str_contains($resolved, '/fixtures/')) {
+            fwrite(STDERR, "Select an existing *.test.js file under tests/JavaScript/core or modules (outside fixtures).\n");
+            exit(2);
+        }
+        $testFile = substr($resolved, strlen($root) + 1);
+    } elseif (in_array($argument, ['--install', '--serve', '--watch'], true) && '' === $mode) {
+        $mode = $argument;
+    } else {
+        fwrite(STDERR, $usage);
+        exit(2);
+    }
+}
+if ('--install' === $mode && null !== $testFile) {
+    fwrite(STDERR, $usage);
+    exit(2);
+}
+if ('--watch' === $mode) {
+    require $root.'/tests/JavaScript/browser/watch.php';
+    exit(watchBrowserTests($root, $testFile));
+}
+if ('--install' === $mode) {
+    $install = new Process([PHP_BINARY, 'tests/JavaScript/browser/console.php', 'importmap:install'], $root);
+    $install->setTimeout(120);
+    exit($install->run(static function ($type, $output): void { echo $output; }));
+}
+
+$socket = stream_socket_server('tcp://127.0.0.1:0', $errorCode, $errorMessage);
+if (false === $socket) {
+    throw new RuntimeException($errorMessage, $errorCode);
+}
+$address = stream_socket_get_name($socket, false);
+fclose($socket);
+$server = new Process([PHP_BINARY, '-S', $address, 'tests/JavaScript/browser/router.php'], $root, [
+    'DOGS_DIARY_TEST_FILE' => $testFile ?? false,
+]);
+$server->setTimeout(null);
+$profile = null;
+$chrome = null;
+$exitCode = 1;
+if (function_exists('pcntl_async_signals')) {
+    pcntl_async_signals(true);
+    foreach ([SIGINT, SIGTERM] as $signal) {
+        pcntl_signal($signal, static function (int $signal): void {
+            throw new RuntimeException('Browser tests interrupted by signal '.$signal.'.');
+        });
+    }
+}
+try {
+    $server->start();
+    $url = 'http://'.$address.'/';
+    if ('--serve' === $mode) {
+        echo "Component unit tests: $url (Ctrl-C to stop)\n";
+        $server->wait(static function ($type, $output): void { echo $output; });
+        exit($server->getExitCode() ?? 1);
+    }
+
+    $finder = new ExecutableFinder();
+    $browser = getenv('CHROME_BIN') ?: (PHP_OS_FAMILY === 'Darwin'
+        ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+        : ($finder->find('google-chrome') ?? $finder->find('chromium') ?? $finder->find('chromium-browser') ?? ''));
+    if (!is_executable($browser)) {
+        throw new RuntimeException('Set CHROME_BIN to an installed Chrome/Chromium executable.');
+    }
+    // A unique profile keeps this run independent of signed-in browser sessions.
+    $profile = tempnam(sys_get_temp_dir(), 'dogs-diary-browser-');
+    unlink($profile);
+    mkdir($profile, 0700);
+    $chrome = new Process([
+        $browser, '--headless', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
+        '--user-data-dir='.$profile, '--dump-dom', '--virtual-time-budget=10000', $url,
+    ], $root);
+    // PHP's server is ready before Chrome navigates, without requesting or compiling assets twice.
+    $deadline = microtime(true) + 5;
+    while (true) {
+        $connection = @stream_socket_client('tcp://'.$address, $errorCode, $errorMessage, 0.1);
+        if ($connection) {
+            fclose($connection);
+            break;
+        }
+        if (!$server->isRunning() || microtime(true) >= $deadline) {
+            throw new RuntimeException('Test server did not start: '.$server->getErrorOutput());
+        }
+        usleep(20000);
+    }
+    $chrome->setTimeout(30);
+    $chrome->start();
+    while ($chrome->isRunning()) {
+        // Drain both server pipes while Chrome loads modules. Waiting only on
+        // Chrome can deadlock when Symfony's debug output fills a server pipe.
+        $server->getOutput();
+        $server->getErrorOutput();
+        if (!$server->isRunning()) {
+            throw new RuntimeException('Test server stopped before the browser completed.');
+        }
+        $chrome->checkTimeout();
+        usleep(10000);
+    }
+    $html = new DOMDocument();
+    @$html->loadHTML($chrome->getOutput());
+    $result = json_decode($html->getElementById('browser-test-result')?->textContent ?? '', true);
+    if (!is_array($result)) {
+        throw new RuntimeException('No explicit test completion (module load failure, browser failure or timeout). '.$chrome->getErrorOutput()."\n".$server->getErrorOutput());
+    }
+    echo json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)."\n";
+    $exitCode = $chrome->isSuccessful()
+        && 'passed' === ($result['status'] ?? null)
+        && ($result['tests']['total'] ?? 0) > 0
+        && 0 === ($result['tests']['failed'] ?? null) ? 0 : 1;
+} catch (Throwable $error) {
+    fwrite(STDERR, $error->getMessage()."\n");
+    if (null !== $chrome) {
+        fwrite(STDERR, $chrome->getErrorOutput()."\n".$server->getErrorOutput());
+    }
+} finally {
+    $chrome?->stop(1);
+    $server->stop(1);
+    if (null !== $profile) {
+        (new Filesystem())->remove($profile);
+    }
+}
+exit($exitCode);

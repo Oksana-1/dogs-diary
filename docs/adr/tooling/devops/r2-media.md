@@ -123,7 +123,7 @@ Affected code includes `MediaStorageInterface`, `LocalMediaStorage`, a new R2
 adapter, `PrivateMediaResponseFactory`, `AuditMediaCommand`, dog/treatment media
 services and controllers, the upload-ticket persistence/migration, and both Vue
 media repositories. Before frontend test changes, follow
-`tests/JavaScript/TESTING.md`.
+`docs/adr/testing/frontend/testing-guide.md`.
 
 ## Deletion, retention, and migration
 
