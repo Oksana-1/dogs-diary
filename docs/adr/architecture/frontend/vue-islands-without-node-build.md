@@ -18,7 +18,8 @@ modules with template strings.
 
 Application assets require no Node build pipeline. Components work within native
 module and browser compilation constraints; single-file component compilation
-would require additional tooling. Existing frontend tests still use Node.
+would require additional tooling. Frontend tests used Node at the time of this decision. They have since moved
+to QUnit in Chrome; see the [current testing guide](../../testing/frontend/testing-guide.md).
 
 ## References
 

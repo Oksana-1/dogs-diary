@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dogs Diary component unit tests</title>
+    <style>
+        body {
+            margin: 0;
+            padding: clamp(16px, 4vw, 48px);
+            background: #f3f5f8;
+            color: #253247;
+            font: 15px/1.6 system-ui, sans-serif;
+        }
+
+        #qunit, #browser-test-result {
+            max-width: 1100px;
+            margin: 0 auto;
+            overflow-wrap: anywhere;
+        }
+
+        #qunit {
+            border: 1px solid #dce2eb;
+            border-radius: 16px;
+            background: #fff;
+            box-shadow: 0 8px 28px #2532470a;
+            overflow: hidden;
+        }
+
+        #qunit a { color: #285bb3; text-underline-offset: 3px; }
+        #qunit-header { margin: 0; padding: 24px; font-size: clamp(20px, 3vw, 28px); }
+        #qunit-header a { color: inherit; text-decoration: none; }
+        #qunit-banner { height: 5px; background: #dce2eb; }
+        #qunit-banner.qunit-pass { background: #248257; }
+        #qunit-banner.qunit-fail { background: #bd3434; }
+
+        #qunit-testrunner-toolbar, #qunit-userAgent, #qunit-testresult {
+            padding: 16px 24px;
+            border-bottom: 1px solid #e5e9ef;
+            background: #f8fafc;
+        }
+
+        #qunit-testrunner-toolbar { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; }
+        #qunit-testrunner-toolbar .qunit-url-config,
+        #qunit-toolbar-filters { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; flex-basis: 100%; }
+        #qunit-modulefilter-dropdown-list { padding: 10px; }
+        #qunit-modulefilter-actions { display: flex; flex-direction: column; gap: 8px; }
+        #qunit-modulefilter-actions button { width: 100%; }
+        #qunit-modulefilter-search-container { position: relative; display: inline-block; }
+        #qunit-modulefilter-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 10;
+            box-sizing: border-box;
+            max-width: 100%;
+            padding: 16px;
+            border: 1px solid #dce2eb;
+            border-radius: 12px;
+            background: #fff;
+            box-shadow: 0 8px 28px #25324726;
+        }
+        #qunit-testrunner-toolbar label { display: inline-flex; gap: 6px; align-items: center; }
+        #qunit-userAgent { margin: 0; font-size: 12px; font-weight: normal; color: #526078; }
+        #qunit-testresult { margin: 0; }
+        #qunit input, #qunit select, #qunit button { font: inherit; max-width: 100%; box-sizing: border-box; }
+        #qunit input:not([type="checkbox"]), #qunit select, #qunit button {
+            padding: 6px 10px;
+            border: 1px solid #b7c2d2;
+            border-radius: 6px;
+            background: #fff;
+            color: inherit;
+        }
+        #qunit button { cursor: pointer; }
+        #qunit button:hover { background: #edf2fa; }
+        #qunit :focus-visible { outline: 3px solid #3774d4; outline-offset: 3px; }
+
+        #qunit-tests { margin: 0; padding: 0; list-style: none; }
+        #qunit-tests > li { padding: 18px 24px; border-bottom: 1px solid #e5e9ef; border-left: 4px solid #a6b3c5; }
+        #qunit-tests > li:last-child { border-bottom: 0; }
+        #qunit-tests > li.pass { border-left-color: #248257; }
+        #qunit-tests > li.fail { border-left-color: #bd3434; background: #fff5f5; }
+        #qunit-tests > li > strong { cursor: pointer; }
+        #qunit-tests > li > a { margin-left: 12px; font-size: 13px; }
+        #qunit .module-name, #qunit .runtime, #qunit .counts { color: #526078; font-size: 13px; }
+        #qunit .runtime { margin-left: 12px; white-space: nowrap; }
+        #qunit-tests ol { margin-top: 12px; padding-left: 24px; }
+        #qunit-tests ol li { padding: 5px 0; }
+        #qunit .passed { color: #1b7048; }
+        #qunit .failed, #qunit-tests ol .fail { color: #a62929; }
+        #qunit .qunit-collapsed { display: none; }
+        #qunit table { width: 100%; border-collapse: collapse; margin-top: 8px; table-layout: fixed; }
+        #qunit th, #qunit td { padding: 8px; text-align: left; vertical-align: top; border: 1px solid #dce2eb; }
+        #qunit th { width: 80px; }
+        #qunit pre, #qunit .qunit-source { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; }
+        #qunit pre { margin: 0; }
+        #qunit ins { background: #d9f3e3; text-decoration: none; }
+        #qunit del { background: #ffe0e0; }
+
+        #browser-test-result {
+            box-sizing: border-box;
+            margin-top: 20px;
+            padding: 16px 20px;
+            border: 1px solid #dce2eb;
+            border-radius: 10px;
+            background: #eaf0f6;
+            color: #42516a;
+            white-space: pre-wrap;
+            font: 12px/1.7 ui-monospace, monospace;
+        }
+
+        @media (max-width: 600px) {
+            #qunit-header, #qunit-testrunner-toolbar, #qunit-userAgent, #qunit-testresult,
+            #qunit-tests > li { padding: 14px; }
+            #qunit-testrunner-toolbar > * { min-width: 0; max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div id="qunit"></div>
+    <div id="qunit-fixture"></div>
+    <pre id="browser-test-result" aria-live="polite">pending</pre>
+    <script id="browser-test-modules" type="application/json">{{ test_modules|json_encode(constant('JSON_HEX_TAG'))|raw }}</script>
+    <script>
+        window.reportBrowserTests = result => {
+            document.getElementById('browser-test-result').textContent = JSON.stringify(result);
+        };
+        window.addEventListener('error', event => window.reportBrowserTests({status: 'error', message: event.message || 'Resource failed to load'}), true);
+        window.addEventListener('unhandledrejection', event => window.reportBrowserTests({status: 'error', message: String(event.reason)}));
+    </script>
+    {{ importmap('browser-tests') }}
+</body>
+</html>
