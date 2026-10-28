@@ -5,7 +5,7 @@ Symfony serves Twig pages enhanced by Vue 3 islands through AssetMapper and
 ImportMap. A JSON API connects the UI to application services, Doctrine entities,
 and PostgreSQL. Media uses local storage in development and private R2 in production.
 
-All documents are listed below. They live under `adr/architecture`, `adr/domain`,
+Implementation guides and accepted decisions are listed below. They live under `adr/architecture`, `adr/domain`,
 `adr/testing`, or `adr/tooling`, with specialization subfolders where useful.
 
 ## Architecture
@@ -44,13 +44,7 @@ Implementation and runtime guides:
 
 ## Testing
 
-Plans describe proposed work and a historical baseline, separately from accepted ADRs.
-
-- [Testing strategy](adr/testing/README.md)
-- [Backend testing](adr/testing/backend/README.md)
-- [Frontend testing plan](adr/testing/frontend/README.md)
 - [Frontend testing guide](adr/testing/frontend/testing-guide.md)
-- [Integration and browser testing](adr/testing/integrations/README.md)
 
 ## Tooling
 

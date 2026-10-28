@@ -107,10 +107,16 @@ navigation/E2E tests. Transport tests do not establish rendered UI coverage.
 
 `ModalDialog.test.js` covers accessible title/description relationships, independent
 labels for simultaneous dialogs, open-prop updates, backdrop and Escape dismissal,
-and disabled dismissal. `useAsyncModal.test.js` uses a rendered harness to cover
+and disabled dismissal. Its real native `<dialog>` boundary also covers initial
+focus, Tab boundary handling with changing controls, opener/fallback restoration,
+and shared scroll-lock cleanup. Cancellation is dispatched through the native
+`cancel` event; synthetic key events do not reproduce the browser’s trusted
+Escape default action. `useAsyncModal.test.js` uses a rendered harness to cover
 subject selection, cancellation, pending and duplicate-submit guards, successful
 completion, failure messages, retry, and clearing errors when reopening. These
-tests do not establish focus-management or complete form/page coverage.
+tests do not establish trusted keyboard navigation, assistive-technology
+behavior, actual page scrolling, or complete form/page coverage. Verify those
+native browser behaviors separately in the running application.
 
 Additional suites cover dog and treatment form validation, pending controls,
 draft preservation, treatment photo selection/removal, and the photo viewer.
