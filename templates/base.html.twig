@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ locale_bootstrap().locale }}">
     <head>
         <meta charset="UTF-8">
+        <meta name="diary-i18n" content="{{ locale_bootstrap()|json_encode|e('html_attr') }}">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="login-url" content="{{ path('app_login') }}">
         {% if app.user %}

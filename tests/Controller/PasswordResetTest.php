@@ -6,10 +6,13 @@ namespace App\Tests\Controller;
 
 use App\Entity\ResetPasswordRequest;
 use App\Entity\User;
+use App\Localization\LocalePolicy;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\BrowserKit\Cookie;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
@@ -186,6 +189,21 @@ final class PasswordResetTest extends WebTestCase
         $this->client->request('GET', '/reset-password/'.$token);
         self::assertResponseStatusCodeSame(422);
         self::assertSelectorTextContains('.auth-errors', 'invalid or has expired');
+    }
+
+    public function testResetPagesFollowThisBrowserAndEmailReceivesItsLocaleContext(): void
+    {
+        $this->client->getCookieJar()->set(new Cookie(LocalePolicy::COOKIE, 'uk'));
+        $token = $this->requestToken();
+        $message = self::getMailerMessage();
+        self::assertInstanceOf(TemplatedEmail::class, $message);
+        self::assertSame('uk', $message->getLocale());
+
+        $this->client->request('GET', '/reset-password/'.$token);
+        self::assertSelectorExists('html[lang="uk"]');
+        $this->client->getCookieJar()->set(new Cookie(LocalePolicy::COOKIE, 'en'));
+        $this->client->request('GET', '/reset-password/'.$token);
+        self::assertSelectorExists('html[lang="en"]');
     }
 
     private function requestToken(): string

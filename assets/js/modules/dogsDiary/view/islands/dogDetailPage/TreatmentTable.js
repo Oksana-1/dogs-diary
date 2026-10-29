@@ -1,3 +1,4 @@
+import { formatDate } from '../../../../../utils/helpers.js';
 import { mdiCircleEditOutline, mdiDeleteCircleOutline, mdiImageOutline, mdiPlusCircleOutline } from '@mdi/js';
 
 export default {
@@ -27,6 +28,7 @@ export default {
     },
 
     methods: {
+        formatDate,
         formatType(type) {
             return type.replaceAll('_', ' ');
         },
@@ -64,8 +66,8 @@ export default {
                         <span v-for="type in treatment.types" :key="type" class="treatment-badge">{{ formatType(type) }}</span>
                     </td>
                     <td>{{ treatment.productName }}</td>
-                    <td>{{ treatment.treatmentDate }}</td>
-                    <td>{{ treatment.dueDate ?? '—' }}</td>
+                    <td>{{ formatDate(treatment.treatmentDate) }}</td>
+                    <td>{{ formatDate(treatment.dueDate) }}</td>
                     <td>{{ treatment.note ?? '—' }}</td>
                     <td class="treatment-photo-column">
                         <button v-if="treatment.photo"

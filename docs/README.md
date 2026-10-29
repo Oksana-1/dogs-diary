@@ -27,6 +27,8 @@ Changed decisions get a successor record.
 
 Implementation and runtime guides:
 
+- [Browser language and shared catalogue contract](adr/architecture/localization/locale-contract.md)
+
 - [API error contract](adr/architecture/backend/api-errors.md)
 - [Production security](adr/architecture/backend/production-safety.md)
 - [Shared state and hosted runtime](adr/architecture/devops/stateless-runtime.md)

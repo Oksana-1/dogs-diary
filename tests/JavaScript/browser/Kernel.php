@@ -2,6 +2,7 @@
 
 namespace App\Tests\JavaScript\Browser;
 
+use App\Localization\LocalePolicy;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Bundle\TwigBundle\TwigBundle;
@@ -74,6 +75,10 @@ final class Kernel extends BaseKernel
 
         return new Response($this->getContainer()->get('browser_tests.twig')->render('runner.html.twig', [
             'test_modules' => $testModules,
+            'locale_catalogues' => array_combine(LocalePolicy::SUPPORTED, array_map(
+                fn (string $locale): array => json_decode(file_get_contents($this->getProjectDir().'/translations/messages.'.$locale.'.json'), true, flags: JSON_THROW_ON_ERROR),
+                LocalePolicy::SUPPORTED,
+            )),
         ]));
     }
 }

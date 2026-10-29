@@ -1,0 +1,9 @@
+<form action="{{ path('app_language') }}" method="post" class="language-selector">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token('language') }}">
+    <input type="hidden" name="returnTo" value="{{ app.request ? app.request.requestUri : '/' }}">
+    <select id="language-select" name="locale" aria-label="{{ 'language.label'|trans }}">
+        {% for locale in locale_bootstrap().supportedLocales %}
+            <option value="{{ locale }}"{% if app.request and app.request.locale == locale %} selected{% endif %}>{{ ('language.name.' ~ locale)|trans }}</option>
+        {% endfor %}
+    </select>
+</form>

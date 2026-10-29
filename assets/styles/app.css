@@ -838,7 +838,6 @@ textarea:focus-visible,
     width: 100%;
     max-width: 500px;
     max-height: calc(100vh - 2rem);
-    max-height: calc(100dvh - 2rem);
     overflow-y: auto;
     overscroll-behavior: contain;
     overflow-wrap: anywhere;
@@ -1570,4 +1569,25 @@ textarea:focus-visible,
     .header-logo .logo {
         font-size: 34px;
     }
+}
+.header-container { max-width: none; }
+.language-selector { order: 4; flex-shrink: 0; margin: 0 0 0 auto; }
+@media (min-width: 800px) {
+    .header-container { position: relative; gap: 1rem; }
+    .header-logo { position: absolute; left: 50%; transform: translateX(-50%); }
+    .header-auth { margin-left: auto; }
+    .header-container > .language-selector { margin-left: 0; }
+}
+.language-selector select {
+    min-height: 44px;
+    padding: .25rem .25rem;
+    border: 0;
+    cursor: pointer;
+    border-radius: 0.85rem;
+}
+
+.language-bar {
+    display: flex;
+    justify-content: flex-end;
+    padding: 1rem 1.5rem 0;
 }

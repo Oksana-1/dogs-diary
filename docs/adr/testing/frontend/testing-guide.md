@@ -32,7 +32,11 @@ Chrome/Chromium, served by a separate test-only Symfony kernel and ImportMap.
 Do not add npm tooling or a production Node.js requirement. Production assets
 use Symfony AssetMapper and ImportMap. The test map derives its Vue entry from
 the production map, so tests and components share one full Vue browser build.
-The icon dependency also uses the production map's pinned version.
+The icon and vue-i18n dependencies also use the production map's pinned versions.
+Vue I18n uses its full native `esm-browser.prod` build and imports the same Vue
+instance as the islands. After adding it, rerun `bin/browser-tests --install`.
+The isolated runner embeds the production JSON message catalogues for locale
+contract tests; it does not maintain copied test translations.
 The VTU `esm-browser` artifact imports only `vue`; no fake compiler or server
 renderer modules are needed.
 

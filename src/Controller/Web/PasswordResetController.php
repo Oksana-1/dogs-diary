@@ -56,7 +56,7 @@ final class PasswordResetController extends AbstractController
             }
 
             if ([] === $errors) {
-                $this->sendResetEmailIfPossible($email, $mailer, $urlGenerator);
+                $this->sendResetEmailIfPossible($email, $mailer, $urlGenerator, $request->getLocale());
 
                 return $this->redirectToRoute('app_check_email');
             }
@@ -130,6 +130,7 @@ final class PasswordResetController extends AbstractController
         string $email,
         MailerInterface $mailer,
         UrlGeneratorInterface $urlGenerator,
+        string $locale,
     ): void {
         $user = $this->users->loadUserByIdentifier($email);
         if (null === $user) {
@@ -152,6 +153,7 @@ final class PasswordResetController extends AbstractController
                 ->from(new Address($this->senderAddress, $this->senderName))
                 ->to($user->getEmail())
                 ->subject('Reset your Dogs Diary password')
+                ->locale($locale)
                 ->htmlTemplate('auth/reset_password_email.html.twig')
                 ->context([
                     'user' => $user,

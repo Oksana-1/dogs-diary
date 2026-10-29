@@ -17,8 +17,8 @@ export default {
                 <div class="auth-heading">
                     <span class="auth-icon auth-icon-emoji" aria-hidden="true">🐾</span>
                     <p class="auth-eyebrow">Welcome back</p>
-                    <h1 id="login-title">Login to Dogs Diary</h1>
-                    <p>Keep every walk, treatment, and happy memory close at hand.</p>
+                    <h1 id="login-title">{{ $t('auth.login_title') }}</h1>
+                    <p>{{ $t('auth.login_intro') }}</p>
                 </div>
 
                 <form class="auth-form" :action="formAction" method="post">

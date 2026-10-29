@@ -2,7 +2,7 @@
 
 {% block title %}Login | Dogs Diary{% endblock %}
 
-{% block header %}{% endblock %}
+{% block header %}<div class="container language-bar">{% include '_language_selector.html.twig' %}</div>{% endblock %}
 
 {% block body %}
     <div
@@ -22,8 +22,8 @@
                 <div class="auth-heading">
                     <span class="auth-icon auth-icon-emoji" aria-hidden="true">🐾</span>
                     <p class="auth-eyebrow">Welcome back</p>
-                    <h1 id="login-title">Login to Dogs Diary</h1>
-                    <p>Keep every walk, treatment, and happy memory close at hand.</p>
+                    <h1 id="login-title">{{ 'auth.login_title'|trans }}</h1>
+                    <p>{{ 'auth.login_intro'|trans }}</p>
                 </div>
 
                 <form class="auth-form" action="{{ path('app_login') }}" method="post">

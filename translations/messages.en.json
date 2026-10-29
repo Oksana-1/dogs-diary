@@ -1,0 +1,8 @@
+{
+    "language.label": "Language",
+    "language.name.en": "ENG",
+    "language.name.uk": "UKR",
+    "auth.login_title": "Login to Dogs Diary",
+    "diary.treatments_count": "{count} treatment | {count} treatments",
+    "auth.login_intro": "Keep every walk, treatment, and happy memory close at hand."
+}

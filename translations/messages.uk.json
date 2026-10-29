@@ -1,0 +1,7 @@
+{
+    "language.label": "Мова",
+    "language.name.en": "АНГЛ",
+    "language.name.uk": "УКР",
+    "auth.login_title": "Увійти до Dogs Diary",
+    "diary.treatments_count": "{count} процедура | {count} процедури | {count} процедур | {count} процедури"
+}

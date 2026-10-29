@@ -1,4 +1,5 @@
 import { createApp } from 'vue';
+import { createLocaleI18n } from './js/core/i18n/locale.js';
 import AppDogList from './js/modules/dogsDiary/view/AppDogList.js';
 import AppDogDetail from './js/modules/dogsDiary/view/AppDogDetail.js';
 import AppLogin from './js/modules/dogsDiary/view/AppLogin.js';
@@ -8,6 +9,7 @@ import AppResetPasswordCheckEmail from './js/modules/dogsDiary/view/AppResetPass
 import AppResetPassword from './js/modules/dogsDiary/view/AppResetPassword.js';
 import './styles/app.css';
 import './js/headerNavigation.js';
+import './js/languageSelector.js';
 
 const APPS = [
     {
@@ -51,5 +53,5 @@ for (const { id, component } of APPS) {
         ? JSON.parse(root.dataset.props)
         : {};
 
-    createApp(component, props).mount(root);
+    createApp(component, props).use(createLocaleI18n()).mount(root);
 }

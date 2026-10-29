@@ -117,6 +117,7 @@
     </style>
 </head>
 <body>
+    <script id="locale-test-catalogues" type="application/json">{{ locale_catalogues|json_encode(constant('JSON_HEX_TAG'))|raw }}</script>
     <div id="qunit"></div>
     <div id="qunit-fixture"></div>
     <pre id="browser-test-result" aria-live="polite">pending</pre>

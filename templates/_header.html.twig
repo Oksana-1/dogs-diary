@@ -27,5 +27,6 @@
                 <span class="nav-link nav-link-disabled" aria-disabled="true">Walk Map <span class="nav-coming-soon">Coming soon</span></span>
             </nav>
         </div>
+        {% if app.request %}{% include '_language_selector.html.twig' %}{% endif %}
     </div>
 </header>

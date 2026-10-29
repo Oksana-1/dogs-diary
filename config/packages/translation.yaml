@@ -1,0 +1,6 @@
+framework:
+    default_locale: !php/const App\Localization\LocalePolicy::DEFAULT
+    enabled_locales: !php/const App\Localization\LocalePolicy::SUPPORTED
+    translator:
+        default_path: '%kernel.project_dir%/translations'
+        fallbacks: [!php/const App\Localization\LocalePolicy::DEFAULT]

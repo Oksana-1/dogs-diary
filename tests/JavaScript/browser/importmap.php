@@ -5,6 +5,7 @@ $application = require dirname(__DIR__, 3).'/importmap.php';
 $imports = [
     'browser-tests' => ['path' => './runner.js', 'entrypoint' => true],
     'vue' => $application['vue'],
+    'vue-i18n' => $application['vue-i18n'],
     '@mdi/js' => $application['@mdi/js'],
     '@vue/test-utils' => [
         'version' => '2.4.6',

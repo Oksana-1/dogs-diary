@@ -26,6 +26,10 @@ return [
         'version' => '3.5.40',
         'package_specifier' => 'vue/dist/vue.esm-browser.js',
     ],
+    'vue-i18n' => [
+        'version' => '11.1.12',
+        'package_specifier' => 'vue-i18n/dist/vue-i18n.esm-browser.prod.js',
+    ],
     '@mdi/js' => [
         'version' => '7.4.47',
     ],
