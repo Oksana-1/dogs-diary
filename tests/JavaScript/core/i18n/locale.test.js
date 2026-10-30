@@ -9,7 +9,9 @@ const messages = JSON.parse(document.getElementById('locale-test-catalogues').te
 QUnit.module('Locale foundation');
 
 QUnit.test('login island uses the server locale and falls back to the shared English catalogue', assert => {
-    const context = { locale: 'uk', fallbackLocale: 'en', messages };
+    const fallbackMessages = { ...messages, uk: { ...messages.uk } };
+    delete fallbackMessages.uk['auth.login_intro'];
+    const context = { locale: 'uk', fallbackLocale: 'en', messages: fallbackMessages };
     const meta = document.createElement('meta');
     meta.name = 'diary-i18n';
     meta.content = JSON.stringify(context);

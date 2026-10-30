@@ -1,0 +1,14 @@
+{
+    "auth.validation.name_required": "Введіть ім’я.",
+    "auth.validation.name_short": "Ім’я має містити щонайменше {{ limit }} символи.",
+    "auth.validation.name_long": "Ім’я має містити не більше {{ limit }} символів.",
+    "auth.validation.email_required": "Введіть електронну адресу.",
+    "auth.validation.email_invalid": "Введіть коректну електронну адресу.",
+    "auth.validation.email_long": "Електронна адреса має містити не більше {{ limit }} символів.",
+    "auth.validation.password_required": "Створіть пароль.",
+    "auth.validation.password_short": "Пароль має містити щонайменше {{ limit }} символів.",
+    "auth.validation.password_long": "Пароль задовгий.",
+    "auth.validation.confirmation_required": "Підтвердьте пароль.",
+    "auth.validation.password_mismatch": "Паролі не збігаються.",
+    "auth.validation.terms_required": "Потрібно прийняти Умови користування та Політику конфіденційності."
+}

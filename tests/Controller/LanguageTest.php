@@ -79,7 +79,7 @@ final class LanguageTest extends WebTestCase
         $crawler = $this->client->request('GET', '/');
         self::assertSelectorExists('html[lang="uk"]');
 
-        $this->client->submit($crawler->selectButton('Logout')->form());
+        $this->client->submit($crawler->filter('form[action="/logout"]')->form());
         self::assertResponseRedirects('/login');
         $crawler = $this->client->followRedirect();
         self::assertSelectorExists('html[lang="uk"]');
@@ -103,6 +103,22 @@ final class LanguageTest extends WebTestCase
         $this->client->getCookieJar()->set(new Cookie(LocalePolicy::COOKIE, 'unsupported'));
         $this->client->request('GET', '/login', server: ['HTTP_ACCEPT_LANGUAGE' => 'uk']);
         self::assertSelectorExists('html[lang="en"]');
+    }
+
+    public function testUkrainianLoginShowsSessionExpiryAndGenericAuthenticationFailure(): void
+    {
+        $this->client->getCookieJar()->set(new Cookie(LocalePolicy::COOKIE, 'uk'));
+        $crawler = $this->client->request('GET', '/login?reason=session_expired');
+        self::assertSelectorTextSame('[role="status"]', 'Термін дії сеансу закінчився. Увійдіть знову.');
+        $this->client->submit($crawler->selectButton('Увійти')->form([
+            'email' => ' UNKNOWN@EXAMPLE.TEST ', 'password' => 'incorrect-password',
+        ]));
+        self::assertResponseRedirects('/login');
+        $this->client->followRedirect();
+        self::assertSelectorTextSame('[role="alert"]', 'Неправильна електронна адреса або пароль.');
+        self::assertSelectorExists('input[name="email"][value="unknown@example.test"]');
+        self::assertSelectorExists('input[name="password"]:not([value])');
+        self::assertNull(self::getContainer()->get('security.token_storage')->getToken()?->getUser());
     }
 
     public function testInvalidCsrfAndUnsupportedLocaleLeavePreferenceUntouched(): void
@@ -148,13 +164,13 @@ final class LanguageTest extends WebTestCase
         self::assertResponseHeaderSame('Content-Language', 'uk');
     }
 
-    public function testSymfonyAndVueBootstrapBothRetainEnglishFallbackMessages(): void
+    public function testSymfonyAndVueBootstrapShareTranslatedMessages(): void
     {
         $this->client->request('GET', '/login');
         $translator = self::getContainer()->get(TranslatorInterface::class);
         self::assertInstanceOf(TranslatorBagInterface::class, $translator);
         $english = 'Keep every walk, treatment, and happy memory close at hand.';
-        self::assertSame($english, $translator->trans('auth.login_intro', locale: 'uk'));
+        self::assertSame('Зберігайте спогади про прогулянки, процедури та щасливі миті поруч.', $translator->trans('auth.login_intro', locale: 'uk'));
         $this->client->getCookieJar()->set(new Cookie(LocalePolicy::COOKIE, 'uk'));
         $crawler = $this->client->request('GET', '/login');
         $context = json_decode($crawler->filter('meta[name="diary-i18n"]')->attr('content'), true, flags: JSON_THROW_ON_ERROR);

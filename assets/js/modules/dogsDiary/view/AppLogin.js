@@ -16,7 +16,7 @@ export default {
             <div class="auth-card">
                 <div class="auth-heading">
                     <span class="auth-icon auth-icon-emoji" aria-hidden="true">🐾</span>
-                    <p class="auth-eyebrow">Welcome back</p>
+                    <p class="auth-eyebrow">{{ $t('auth.welcome') }}</p>
                     <h1 id="login-title">{{ $t('auth.login_title') }}</h1>
                     <p>{{ $t('auth.login_intro') }}</p>
                 </div>
@@ -33,7 +33,7 @@ export default {
                     </div>
 
                     <div class="auth-field">
-                        <label for="login-email">Email address</label>
+                        <label for="login-email">{{ $t('auth.email') }}</label>
                         <input
                             id="login-email"
                             name="email"
@@ -50,15 +50,15 @@ export default {
 
                     <div class="auth-field">
                         <div class="auth-label-row">
-                            <label for="login-password">Password</label>
-                            <a :href="forgotPasswordUrl">Forgot password?</a>
+                            <label for="login-password">{{ $t('auth.password') }}</label>
+                            <a :href="forgotPasswordUrl">{{ $t('auth.forgot') }}</a>
                         </div>
                         <input
                             id="login-password"
                             name="password"
                             type="password"
                             autocomplete="current-password"
-                            placeholder="Enter your password"
+                            :placeholder="$t('auth.password_placeholder')"
                             required
                             :aria-invalid="error ? 'true' : undefined"
                             :aria-describedby="error ? 'login-error' : undefined"
@@ -67,15 +67,15 @@ export default {
 
                     <label class="auth-check">
                         <input name="remember_me" type="checkbox" value="1">
-                        <span>Remember me</span>
+                        <span>{{ $t('auth.remember') }}</span>
                     </label>
 
-                    <button class="btn btn-black auth-submit" type="submit">Login</button>
+                    <button class="btn btn-black auth-submit" type="submit">{{ $t('auth.login') }}</button>
                 </form>
 
                 <p class="auth-switch">
-                    New to Dogs Diary?
-                    <a :href="signUpUrl">Create an account</a>
+                    {{ $t('auth.new_here') }}
+                    <a :href="signUpUrl">{{ $t('auth.create_account') }}</a>
                 </p>
             </div>
         </section>

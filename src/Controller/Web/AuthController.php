@@ -15,9 +15,14 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class AuthController extends AbstractController
 {
+    public function __construct(private readonly TranslatorInterface $translator)
+    {
+    }
+
     #[Route('/login', name: 'app_login', methods: ['GET', 'POST'])]
     public function login(AuthenticationUtils $authenticationUtils, Request $request): Response
     {
@@ -25,16 +30,16 @@ class AuthController extends AbstractController
             return $this->redirectToRoute('app_main');
         }
 
-        $notices = $request->getSession()->getFlashBag()->get('password_reset_success');
+        $notices = array_map(fn (string $key): string => $this->translator->trans($key), $request->getSession()->getFlashBag()->get('password_reset_success'));
 
         if ('session_expired' === $request->query->getString('reason')) {
-            $notices[] = 'Your session expired. Please log in again.';
+            $notices[] = $this->translator->trans('auth.session_expired');
         }
 
         return $this->render('auth/login.html.twig', [
             'last_email' => User::normalizeEmail($authenticationUtils->getLastUsername()),
             'login_error' => null !== $authenticationUtils->getLastAuthenticationError()
-                ? 'Invalid email or password.'
+                ? $this->translator->trans('auth.invalid_credentials')
                 : null,
             'login_notices' => $notices,
         ]);
@@ -75,7 +80,7 @@ class AuthController extends AbstractController
         $errors = [];
 
         if (!$this->isCsrfTokenValid('registration', $request->request->getString('_csrf_token'))) {
-            $errors['global'][] = 'Your registration form expired. Please try again.';
+            $errors['global'][] = $this->translator->trans('auth.registration_expired');
         }
 
         foreach ($validator->validate($registration) as $violation) {
@@ -88,7 +93,7 @@ class AuthController extends AbstractController
         }
 
         if (!isset($errors['global'], $errors['email']) && null !== $userRepository->loadUserByIdentifier($registration->email)) {
-            $errors['email'][] = 'An account already exists for this email address.';
+            $errors['email'][] = $this->translator->trans('auth.email_exists');
         }
 
         if ([] !== $errors) {
@@ -104,7 +109,7 @@ class AuthController extends AbstractController
             $entityManager->persist($user);
             $entityManager->flush();
         } catch (UniqueConstraintViolationException) {
-            $errors['email'][] = 'An account already exists for this email address.';
+            $errors['email'][] = $this->translator->trans('auth.email_exists');
 
             return $this->renderSignUp($registration, $errors, Response::HTTP_UNPROCESSABLE_ENTITY);
         }

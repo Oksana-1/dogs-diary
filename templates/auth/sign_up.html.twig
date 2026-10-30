@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Sign Up | Dogs Diary{% endblock %}
+{% block title %}{{ 'auth.signup'|trans }} | Dogs Diary{% endblock %}
 
 {% block header %}<div class="container language-bar">{% include '_language_selector.html.twig' %}</div>{% endblock %}
 
@@ -19,9 +19,9 @@
             <div class="auth-card">
                 <div class="auth-heading">
                     <span class="auth-icon auth-icon-emoji" aria-hidden="true">🐾</span>
-                    <p class="auth-eyebrow">Join the pack</p>
-                    <h1 id="sign-up-title">Create your account</h1>
-                    <p>Start one simple diary for your dog's health and happiest days.</p>
+                    <p class="auth-eyebrow">{{ 'auth.join'|trans }}</p>
+                    <h1 id="sign-up-title">{{ 'auth.signup_title'|trans }}</h1>
+                    <p>{{ 'auth.signup_intro'|trans }}</p>
                 </div>
 
                 <form class="auth-form" action="{{ path('app_sign_up') }}" method="post">
@@ -34,8 +34,8 @@
                     {% endif %}
 
                     {% for input in [
-                        ['name', 'Name', 'text', 'name', 'Your name'],
-                        ['email', 'Email address', 'email', 'email', 'you@example.com']
+                        ['name', ('auth.name'|trans), 'text', 'name', ('auth.name_placeholder'|trans)],
+                        ['email', ('auth.email'|trans), 'email', 'email', 'you@example.com']
                     ] %}
                         <div class="auth-field">
                             <label for="sign-up-{{ input[0] }}">{{ input[1] }}</label>
@@ -51,8 +51,8 @@
                     {% endfor %}
 
                     {% for input in [
-                        ['password', 'Password', 'Create a password'],
-                        ['password_confirmation', 'Confirm password', 'Repeat your password']
+                        ['password', ('auth.password'|trans), ('auth.create_password'|trans)],
+                        ['password_confirmation', ('auth.confirm_password'|trans), ('auth.repeat_password'|trans)]
                     ] %}
                         <div class="auth-field">
                             <label for="sign-up-{{ input[0]|replace({'_': '-'}) }}">{{ input[1] }}</label>
@@ -68,16 +68,16 @@
                     <label class="auth-check">
                         <input name="terms" type="checkbox" value="1" required {% if registration_values.terms %}checked{% endif %}
                                {% if registration_errors.terms is defined %}aria-invalid="true" aria-describedby="sign-up-terms-error"{% endif %}>
-                        <span>I agree to the Terms of Service and Privacy Policy.</span>
+                        <span>{{ 'auth.terms'|trans }}</span>
                     </label>
                     {% if registration_errors.terms is defined %}
                         <p id="sign-up-terms-error" class="auth-field-error">{{ registration_errors.terms|first }}</p>
                     {% endif %}
 
-                    <button class="btn btn-black auth-submit" type="submit">Create account</button>
+                    <button class="btn btn-black auth-submit" type="submit">{{ 'auth.create'|trans }}</button>
                 </form>
 
-                <p class="auth-switch">Already have an account? <a href="{{ path('app_login') }}">Login</a></p>
+                <p class="auth-switch">{{ 'auth.existing'|trans }} <a href="{{ path('app_login') }}">{{ 'auth.login'|trans }}</a></p>
             </div>
         </section>
     </div>

@@ -1,0 +1,14 @@
+{
+    "auth.validation.name_required": "Please enter your name.",
+    "auth.validation.name_short": "Your name must be at least {{ limit }} characters long.",
+    "auth.validation.name_long": "Your name cannot be longer than {{ limit }} characters.",
+    "auth.validation.email_required": "Please enter your email address.",
+    "auth.validation.email_invalid": "Please enter a valid email address.",
+    "auth.validation.email_long": "Your email address cannot be longer than {{ limit }} characters.",
+    "auth.validation.password_required": "Please create a password.",
+    "auth.validation.password_short": "Your password must be at least {{ limit }} characters long.",
+    "auth.validation.password_long": "Your password is too long.",
+    "auth.validation.confirmation_required": "Please confirm your password.",
+    "auth.validation.password_mismatch": "The passwords do not match.",
+    "auth.validation.terms_required": "You must accept the Terms of Service and Privacy Policy."
+}

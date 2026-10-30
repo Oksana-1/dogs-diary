@@ -14,9 +14,9 @@ export default {
             <div class="auth-card">
                 <div class="auth-heading">
                     <span class="auth-icon auth-icon-emoji" aria-hidden="true">🐾</span>
-                    <p class="auth-eyebrow">Join the pack</p>
-                    <h1 id="sign-up-title">Create your account</h1>
-                    <p>Start one simple diary for your dog's health and happiest days.</p>
+                    <p class="auth-eyebrow">{{ $t('auth.join') }}</p>
+                    <h1 id="sign-up-title">{{ $t('auth.signup_title') }}</h1>
+                    <p>{{ $t('auth.signup_intro') }}</p>
                 </div>
 
                 <form class="auth-form" :action="formAction" method="post">
@@ -27,13 +27,13 @@ export default {
                     </div>
 
                     <div class="auth-field">
-                        <label for="sign-up-name">Name</label>
+                        <label for="sign-up-name">{{ $t('auth.name') }}</label>
                         <input
                             id="sign-up-name"
                             name="name"
                             type="text"
                             autocomplete="name"
-                            placeholder="Your name"
+                            :placeholder="$t('auth.name_placeholder')"
                             :value="values.name"
                             required
                             autofocus
@@ -44,7 +44,7 @@ export default {
                     </div>
 
                     <div class="auth-field">
-                        <label for="sign-up-email">Email address</label>
+                        <label for="sign-up-email">{{ $t('auth.email') }}</label>
                         <input
                             id="sign-up-email"
                             name="email"
@@ -60,13 +60,13 @@ export default {
                     </div>
 
                     <div class="auth-field">
-                        <label for="sign-up-password">Password</label>
+                        <label for="sign-up-password">{{ $t('auth.password') }}</label>
                         <input
                             id="sign-up-password"
                             name="password"
                             type="password"
                             autocomplete="new-password"
-                            placeholder="Create a password"
+                            :placeholder="$t('auth.create_password')"
                             required
                             minlength="12"
                             :aria-invalid="errors.password?.length ? 'true' : undefined"
@@ -76,13 +76,13 @@ export default {
                     </div>
 
                     <div class="auth-field">
-                        <label for="sign-up-password-confirmation">Confirm password</label>
+                        <label for="sign-up-password-confirmation">{{ $t('auth.confirm_password') }}</label>
                         <input
                             id="sign-up-password-confirmation"
                             name="password_confirmation"
                             type="password"
                             autocomplete="new-password"
-                            placeholder="Repeat your password"
+                            :placeholder="$t('auth.repeat_password')"
                             required
                             minlength="12"
                             :aria-invalid="errors.password_confirmation?.length ? 'true' : undefined"
@@ -101,16 +101,16 @@ export default {
                             :aria-invalid="errors.terms?.length ? 'true' : undefined"
                             :aria-describedby="errors.terms?.length ? 'sign-up-terms-error' : undefined"
                         >
-                        <span>I agree to the Terms of Service and Privacy Policy.</span>
+                        <span>{{ $t('auth.terms') }}</span>
                     </label>
                     <p v-if="errors.terms?.length" id="sign-up-terms-error" class="auth-field-error">{{ errors.terms[0] }}</p>
 
-                    <button class="btn btn-black auth-submit" type="submit">Create account</button>
+                    <button class="btn btn-black auth-submit" type="submit">{{ $t('auth.create') }}</button>
                 </form>
 
                 <p class="auth-switch">
-                    Already have an account?
-                    <a :href="loginUrl">Login</a>
+                    {{ $t('auth.existing') }}
+                    <a :href="loginUrl">{{ $t('auth.login') }}</a>
                 </p>
             </div>
         </section>

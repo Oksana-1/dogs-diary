@@ -44,7 +44,7 @@ bootstrap. No browser language detection competes with the server decision.
 sources. Use stable dotted keys. Symfony Translation loads them; Vue I18n uses
 `flatJson` to consume them. Missing Ukrainian keys fall back to English in both
 runtimes. Missing keys in both languages remain visible as keys, so additions
-should always provide English. `auth.login_intro` demonstrates English fallback.
+should always provide English. The authentication catalogue is complete in both languages; the frontend fallback test removes one Ukrainian key in its isolated fixture.
 Messages are plain text; do not introduce HTML or render translations with
 `v-html`. Shared named interpolation can use `{name}`: Vue uses named arguments;
 Symfony callers supply the literal replacement key `{'{name}': value}`.
@@ -71,11 +71,8 @@ an em dash. This is presentation formatting, not a timestamp conversion policy.
 
 Password recovery pages resolve the locale of the browser opening the page,
 including when a reset link opens in another browser. The request locale is
-passed explicitly through `TemplatedEmail::locale()` for #16 (available to the
-template as `email.locale`); this issue does not
-translate the email body or bind the token to a language. Full authentication and
-diary text translation remain #16 and #17; selector and login heading demonstrate
-the shared translation boundary now.
+passed explicitly through `TemplatedEmail::locale()` for authentication translations (passed to the template as `email_locale`); the email subject and body use that locale without binding the token to a language.
+Authentication translations are provided by #16; diary translations remain #17.
 
 ## Verification
 

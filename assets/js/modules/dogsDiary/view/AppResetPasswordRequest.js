@@ -23,13 +23,13 @@ export default {
     template: /*language=HTML*/ `
         <section class="auth-page" aria-labelledby="reset-request-title">
             <div class="auth-card">
-                <a class="auth-back" :href="loginUrl">← Back to login</a>
+                <a class="auth-back" :href="loginUrl">{{ $t('auth.back_arrow') }}</a>
 
                 <div class="auth-heading">
                     <AuthMdiIcon :path="mdiEmailOutline" />
-                    <p class="auth-eyebrow">Password recovery</p>
-                    <h1 id="reset-request-title">Forgot password?</h1>
-                    <p>Enter the email address connected to your account and we'll send you a reset link.</p>
+                    <p class="auth-eyebrow">{{ $t('auth.recovery') }}</p>
+                    <h1 id="reset-request-title">{{ $t('auth.forgot') }}</h1>
+                    <p>{{ $t('auth.request_intro') }}</p>
                 </div>
 
                 <form class="auth-form" :action="formAction" method="post">
@@ -40,7 +40,7 @@ export default {
                     </div>
 
                     <div class="auth-field">
-                        <label for="reset-email">Email address</label>
+                        <label for="reset-email">{{ $t('auth.email') }}</label>
                         <input
                             id="reset-email"
                             name="email"
@@ -55,12 +55,12 @@ export default {
                         >
                     </div>
 
-                    <button class="btn btn-black auth-submit" type="submit">Send reset link</button>
+                    <button class="btn btn-black auth-submit" type="submit">{{ $t('auth.send_link') }}</button>
                 </form>
 
                 <p class="auth-switch">
-                    Remembered your password?
-                    <a :href="loginUrl">Login</a>
+                    {{ $t('auth.remembered') }}
+                    <a :href="loginUrl">{{ $t('auth.login') }}</a>
                 </p>
             </div>
         </section>

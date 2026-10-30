@@ -8,6 +8,7 @@ use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -24,6 +25,23 @@ final class RegistrationTest extends WebTestCase
         $metadata = $entityManager->getMetadataFactory()->getAllMetadata();
         (new SchemaTool($entityManager))->createSchema($metadata);
         $this->client->disableReboot();
+    }
+
+    public function testUkrainianRegistrationValidation(): void
+    {
+        $this->client->getCookieJar()->set(new \Symfony\Component\BrowserKit\Cookie('diary_locale', 'uk'));
+        $this->client->request('GET', '/sign-up');
+        self::assertSelectorTextSame('#sign-up-title', 'Створіть обліковий запис');
+        $this->client->request('POST', '/sign-up', ['name' => 'Я', 'email' => 'invalid', 'password' => 'short']);
+        self::assertResponseStatusCodeSame(422);
+        self::assertSelectorTextContains('.auth-errors', 'Термін дії форми реєстрації');
+        self::assertSelectorTextContains('#sign-up-name-error', 'щонайменше 2');
+        self::assertSelectorTextContains('#sign-up-email-error', 'коректну електронну адресу');
+        self::assertSelectorTextContains('#sign-up-password-error', 'щонайменше 12');
+        self::assertSelectorTextContains('#sign-up-password-confirmation-error', 'Підтвердьте пароль.');
+        self::assertSelectorTextContains('#sign-up-terms-error', 'Потрібно прийняти Умови користування');
+        self::assertSelectorExists('input[name="password"]:not([value])');
+        self::assertSame(0, self::getContainer()->get(UserRepository::class)->count([]));
     }
 
     public function testSignUpPageContainsAStandardPostForm(): void
@@ -90,8 +108,10 @@ final class RegistrationTest extends WebTestCase
         self::assertTrue($passwordHasher->isPasswordValid($user, 'correct horse battery staple'));
     }
 
-    public function testItRejectsAnExistingNormalizedEmail(): void
+    #[DataProvider('duplicateEmailLocales')]
+    public function testItRejectsAnExistingNormalizedEmail(string $locale, string $action, string $error): void
     {
+        $this->client->getCookieJar()->set(new \Symfony\Component\BrowserKit\Cookie('diary_locale', $locale));
         $existingUser = (new User())
             ->setName('Existing User')
             ->setEmail('existing@example.com')
@@ -102,7 +122,7 @@ final class RegistrationTest extends WebTestCase
         $entityManager->flush();
 
         $crawler = $this->client->request('GET', '/sign-up');
-        $form = $crawler->selectButton('Create account')->form([
+        $form = $crawler->selectButton($action)->form([
             'name' => 'Another User',
             'email' => ' EXISTING@EXAMPLE.COM ',
             'password' => 'correct horse battery staple',
@@ -113,7 +133,13 @@ final class RegistrationTest extends WebTestCase
         $this->client->submit($form);
 
         self::assertResponseStatusCodeSame(422);
-        self::assertSelectorTextContains('#sign-up-email-error', 'already exists');
+        self::assertSelectorTextContains('#sign-up-email-error', $error);
         self::assertSame(1, $entityManager->getRepository(User::class)->count([]));
+    }
+
+    public static function duplicateEmailLocales(): iterable
+    {
+        yield 'English' => ['en', 'Create account', 'already exists'];
+        yield 'Ukrainian' => ['uk', 'Створити обліковий запис', 'Обліковий запис із цією електронною адресою вже існує.'];
     }
 }

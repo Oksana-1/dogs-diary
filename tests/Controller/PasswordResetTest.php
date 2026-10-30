@@ -9,6 +9,7 @@ use App\Entity\User;
 use App\Localization\LocalePolicy;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -44,8 +45,10 @@ final class PasswordResetTest extends WebTestCase
         $this->client->disableReboot();
     }
 
-    public function testRequestFormUsesCsrfAndShowsTheSameResultForExistingAndUnknownEmails(): void
+    #[DataProvider('locales')]
+    public function testRequestFormUsesCsrfAndShowsTheSameResultForExistingAndUnknownEmails(string $locale): void
     {
+        $this->client->getCookieJar()->set(new Cookie(LocalePolicy::COOKIE, $locale));
         $crawler = $this->client->request('GET', '/reset-password');
 
         self::assertResponseIsSuccessful();
@@ -54,17 +57,19 @@ final class PasswordResetTest extends WebTestCase
         self::assertSelectorExists('input[name="email"][required]');
         self::assertNotSame('', $crawler->filter('input[name="_csrf_token"]')->attr('value'));
 
-        $this->client->submit($crawler->selectButton('Send reset link')->form(['email' => ' JANE@EXAMPLE.COM ']));
+        $action = 'uk' === $locale ? 'Надіслати посилання' : 'Send reset link';
+        $this->client->submit($crawler->selectButton($action)->form(['email' => ' JANE@EXAMPLE.COM ']));
         self::assertResponseRedirects('/reset-password/check-email');
         self::assertEmailCount(1);
 
         $this->client->followRedirect();
-        self::assertSelectorTextContains('.auth-heading', 'If an account matches');
+        self::assertSelectorTextContains('.auth-heading', 'uk' === $locale ? 'Якщо обліковий запис' : 'If an account matches');
+        self::assertResponseHeaderSame('Content-Language', $locale);
         self::assertSelectorTextNotContains('body', self::EMAIL);
         $existingAccountConfirmation = $this->client->getCrawler()->filter('.auth-card')->text(normalizeWhitespace: true);
 
         $crawler = $this->client->request('GET', '/reset-password');
-        $this->client->submit($crawler->selectButton('Send reset link')->form(['email' => 'unknown@example.com']));
+        $this->client->submit($crawler->selectButton($action)->form(['email' => 'unknown@example.com']));
         self::assertResponseRedirects('/reset-password/check-email');
         self::assertEmailCount(0);
 
@@ -161,23 +166,32 @@ final class PasswordResetTest extends WebTestCase
         self::assertResponseRedirects('/login');
     }
 
-    public function testRepeatedRequestsAreThrottledWithoutRevealingWhy(): void
+    #[DataProvider('locales')]
+    public function testRepeatedRequestsAreThrottledWithoutRevealingWhy(string $locale): void
     {
+        $this->client->getCookieJar()->set(new Cookie(LocalePolicy::COOKIE, $locale));
         $this->requestToken();
+        $this->client->followRedirect();
+        $confirmation = $this->client->getCrawler()->filter('.auth-card')->text(normalizeWhitespace: true);
 
         $crawler = $this->client->request('GET', '/reset-password');
-        $this->client->submit($crawler->selectButton('Send reset link')->form(['email' => self::EMAIL]));
+        $this->client->submit($crawler->filter('form.auth-form')->form(['email' => self::EMAIL]));
 
         self::assertResponseRedirects('/reset-password/check-email');
         self::assertEmailCount(0);
         self::assertSame(1, $this->entityManager->getRepository(ResetPasswordRequest::class)->count([]));
+        $this->client->followRedirect();
+        self::assertSame($confirmation, $this->client->getCrawler()->filter('.auth-card')->text(normalizeWhitespace: true));
     }
 
-    public function testInvalidAndExpiredTokensAreRejected(): void
+    #[DataProvider('locales')]
+    public function testInvalidAndExpiredTokensAreRejected(string $locale): void
     {
+        $this->client->getCookieJar()->set(new Cookie(LocalePolicy::COOKIE, $locale));
+        $error = 'uk' === $locale ? 'Посилання для відновлення пароля недійсне' : 'invalid or has expired';
         $this->client->request('GET', '/reset-password/'.str_repeat('a', 40));
         self::assertResponseStatusCodeSame(422);
-        self::assertSelectorTextContains('.auth-errors', 'invalid or has expired');
+        self::assertSelectorTextContains('.auth-errors', $error);
 
         $token = $this->requestToken();
         $this->entityManager->getConnection()->executeStatement(
@@ -188,7 +202,8 @@ final class PasswordResetTest extends WebTestCase
 
         $this->client->request('GET', '/reset-password/'.$token);
         self::assertResponseStatusCodeSame(422);
-        self::assertSelectorTextContains('.auth-errors', 'invalid or has expired');
+        self::assertSelectorTextContains('.auth-errors', $error);
+        self::assertSelectorNotExists('input[name="password"]');
     }
 
     public function testResetPagesFollowThisBrowserAndEmailReceivesItsLocaleContext(): void
@@ -198,18 +213,69 @@ final class PasswordResetTest extends WebTestCase
         $message = self::getMailerMessage();
         self::assertInstanceOf(TemplatedEmail::class, $message);
         self::assertSame('uk', $message->getLocale());
+        self::assertStringContainsString('lang="uk"', $message->getHtmlBody());
+        self::assertStringContainsString('Виберіть новий пароль', $message->getHtmlBody());
 
         $this->client->request('GET', '/reset-password/'.$token);
         self::assertSelectorExists('html[lang="uk"]');
         $this->client->getCookieJar()->set(new Cookie(LocalePolicy::COOKIE, 'en'));
         $this->client->request('GET', '/reset-password/'.$token);
         self::assertSelectorExists('html[lang="en"]');
+        self::assertSelectorTextSame('h1', 'Choose a new password');
+        self::assertStringContainsString('Виберіть новий пароль', $message->getHtmlBody());
+    }
+
+    public function testUkrainianRequestValidationPreservesEmailAndDoesNotSendMail(): void
+    {
+        $this->client->getCookieJar()->set(new Cookie(LocalePolicy::COOKIE, 'uk'));
+        $this->client->request('POST', '/reset-password', ['email' => ' INVALID@ ', '_csrf_token' => 'invalid']);
+
+        self::assertResponseStatusCodeSame(422);
+        self::assertSelectorTextContains('[role="alert"]', 'Термін дії форми відновлення пароля');
+        self::assertSelectorTextContains('[role="alert"]', 'Введіть коректну електронну адресу.');
+        self::assertSelectorExists('input[name="email"][value="invalid@"][aria-invalid="true"]');
+        self::assertSelectorTextSame('button[type="submit"]', 'Надіслати посилання');
+        self::assertEmailCount(0);
+        self::assertSame(0, $this->entityManager->getRepository(ResetPasswordRequest::class)->count([]));
+    }
+
+    public function testUkrainianRecoveryValidatesResetsAndRejectsReusedToken(): void
+    {
+        $this->client->getCookieJar()->set(new Cookie(LocalePolicy::COOKIE, 'uk'));
+        $token = $this->requestToken();
+        $this->client->request('POST', '/reset-password/'.$token, [
+            'password' => 'short', 'password_confirmation' => 'different', '_csrf_token' => 'invalid',
+        ]);
+        self::assertResponseStatusCodeSame(422);
+        self::assertSelectorTextContains('.auth-errors', 'Термін дії форми');
+        self::assertSelectorTextContains('#reset-password-error', 'щонайменше 12');
+        self::assertSelectorTextContains('#reset-password-confirmation-error', 'Паролі не збігаються');
+        $crawler = $this->client->request('GET', '/reset-password/'.$token);
+        $this->client->submit($crawler->selectButton('Змінити пароль')->form([
+            'password' => self::NEW_PASSWORD, 'password_confirmation' => self::NEW_PASSWORD,
+        ]));
+        self::assertResponseRedirects('/login');
+        $crawler = $this->client->followRedirect();
+        self::assertSelectorTextContains('.auth-notice', 'Пароль змінено');
+        $this->client->submit($crawler->selectButton('Увійти')->form([
+            'email' => self::EMAIL, 'password' => self::NEW_PASSWORD,
+        ]));
+        self::assertResponseRedirects('/');
+        $this->client->request('GET', '/reset-password/'.$token);
+        self::assertResponseStatusCodeSame(422);
+        self::assertSelectorTextContains('.auth-errors', 'Посилання для відновлення пароля недійсне');
+    }
+
+    public static function locales(): iterable
+    {
+        yield 'English' => ['en'];
+        yield 'Ukrainian' => ['uk'];
     }
 
     private function requestToken(): string
     {
         $crawler = $this->client->request('GET', '/reset-password');
-        $this->client->submit($crawler->selectButton('Send reset link')->form(['email' => self::EMAIL]));
+        $this->client->submit($crawler->filter('form.auth-form')->form(['email' => self::EMAIL]));
         self::assertResponseRedirects('/reset-password/check-email');
         self::assertEmailCount(1);
 
@@ -217,7 +283,7 @@ final class PasswordResetTest extends WebTestCase
         self::assertInstanceOf(Email::class, $message);
         self::assertEmailAddressContains($message, 'from', 'no-reply@dogs-diary.test');
         self::assertEmailAddressContains($message, 'to', self::EMAIL);
-        self::assertEmailSubjectContains($message, 'Reset your Dogs Diary password');
+        self::assertEmailSubjectContains($message, $message instanceof TemplatedEmail && 'uk' === $message->getLocale() ? 'Відновлення пароля Dogs Diary' : 'Reset your Dogs Diary password');
 
         $html = $message->getHtmlBody();
         self::assertIsString($html);

@@ -17,6 +17,7 @@ use Symfony\Component\Mime\Address;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use SymfonyCasts\Bundle\ResetPassword\Exception\ResetPasswordExceptionInterface;
 use SymfonyCasts\Bundle\ResetPassword\ResetPasswordHelperInterface;
 
@@ -27,6 +28,7 @@ final class PasswordResetController extends AbstractController
     private const RESET_CSRF_ID = 'reset_password';
 
     public function __construct(
+        private readonly TranslatorInterface $translator,
         private readonly ResetPasswordHelperInterface $resetPasswordHelper,
         private readonly UserRepository $users,
         private readonly EntityManagerInterface $entityManager,
@@ -49,10 +51,10 @@ final class PasswordResetController extends AbstractController
             $email = User::normalizeEmail($request->request->getString('email'));
 
             if (!$this->isCsrfTokenValid(self::REQUEST_CSRF_ID, $request->request->getString('_csrf_token'))) {
-                $errors[] = 'Your password reset form expired. Please try again.';
+                $errors[] = $this->translator->trans('auth.reset_expired');
             }
             if ('' === $email || false === filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $errors[] = 'Please enter a valid email address.';
+                $errors[] = $this->translator->trans('auth.invalid_email');
             }
 
             if ([] === $errors) {
@@ -83,7 +85,7 @@ final class PasswordResetController extends AbstractController
             $user = $this->resetPasswordHelper->validateTokenAndFetchUser($token);
         } catch (ResetPasswordExceptionInterface) {
             return $this->renderRequestPage('', [
-                'This password reset link is invalid or has expired. Please request a new one.',
+                $this->translator->trans('auth.invalid_link'),
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
@@ -97,13 +99,13 @@ final class PasswordResetController extends AbstractController
             $confirmation = $request->request->getString('password_confirmation');
 
             if (!$this->isCsrfTokenValid(self::RESET_CSRF_ID, $request->request->getString('_csrf_token'))) {
-                $errors['global'][] = 'Your password reset form expired. Please try again.';
+                $errors['global'][] = $this->translator->trans('auth.reset_expired');
             }
             if (mb_strlen($password) < 12) {
-                $errors['password'][] = 'Your password must be at least 12 characters.';
+                $errors['password'][] = $this->translator->trans('auth.password_short');
             }
             if ($password !== $confirmation) {
-                $errors['password_confirmation'][] = 'The passwords do not match.';
+                $errors['password_confirmation'][] = $this->translator->trans('auth.password_mismatch');
             }
 
             if ([] === $errors) {
@@ -111,7 +113,7 @@ final class PasswordResetController extends AbstractController
                 $this->resetPasswordHelper->removeResetRequest($token);
                 $this->entityManager->flush();
 
-                $this->addFlash('password_reset_success', 'Your password has been reset. You can now log in.');
+                $this->addFlash('password_reset_success', 'auth.reset_success');
 
                 return $this->redirectToRoute('app_login');
             }
@@ -152,11 +154,12 @@ final class PasswordResetController extends AbstractController
             (new TemplatedEmail())
                 ->from(new Address($this->senderAddress, $this->senderName))
                 ->to($user->getEmail())
-                ->subject('Reset your Dogs Diary password')
+                ->subject($this->translator->trans('auth.email_subject', locale: $locale))
                 ->locale($locale)
                 ->htmlTemplate('auth/reset_password_email.html.twig')
                 ->context([
                     'user' => $user,
+                    'email_locale' => $locale,
                     'reset_url' => $resetUrl,
                     'expires_at' => $resetToken->getExpiresAt(),
                     'token_lifetime_minutes' => (int) ceil($this->resetPasswordHelper->getTokenLifetime() / 60),
