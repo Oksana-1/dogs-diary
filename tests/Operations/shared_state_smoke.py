@@ -15,6 +15,7 @@ import re
 import secrets
 import subprocess
 import time
+from pathlib import Path
 from urllib.parse import urlencode, urlsplit
 
 
@@ -90,6 +91,11 @@ def main():
         assert f"/{DATABASE}?" in env["DATABASE_URL"]
         assert env["APP_SECRET"] == SECRET
         assert not config["Mounts"], "Smoke instances must not share filesystem volumes"
+
+    subprocess.run(
+        ["docker", "exec", "-i", "dogs-diary-runtime-a", "php"],
+        input=Path(__file__).with_name("session_waits.php").read_text(), text=True, check=True,
+    )
 
     # Reset only disposable test budgets, before the scenario under test starts.
     sql("DELETE FROM security_rate_limits")

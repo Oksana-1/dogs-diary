@@ -41,6 +41,46 @@ final class R2MediaStorageTest extends TestCase
         self::assertSame('private, no-store', $query['response-cache-control']);
     }
 
+    public function testInteractiveLookupHasAShortBudgetWithoutChangingUploadBudget(): void
+    {
+        $storage = $this->storage([new Result(), new Result(['ContentLength' => 3, 'ETag' => 'version']), new Result(['Body' => Utils::streamFor('abc')])]);
+        $storage->createResponse(self::KEY, 'photo.png', 'image/png');
+        self::assertSame(2, $this->commands[0]['args']['@http']['connect_timeout']);
+        self::assertSame(5, $this->commands[0]['args']['@http']['timeout']);
+        self::assertSame(0, $this->commands[0]['args']['@retries']);
+        $file = $storage->downloadUpload(self::ID, 'photo.png', 'image/png', 3);
+        try {
+            self::assertSame('abc', file_get_contents($file->getPathname()));
+            self::assertArrayNotHasKey('@retries', $this->commands[1]['args']);
+            self::assertArrayNotHasKey('timeout', $this->commands[2]['args']['@http']);
+        } finally {
+            unlink($file->getPathname());
+        }
+    }
+
+    public function testFailedInteractiveLookupDoesNotRetryAtHttpLayer(): void
+    {
+        $calls = 0;
+        $client = new S3Client([
+            'version' => 'latest', 'region' => 'auto', 'endpoint' => 'https://'.str_repeat('a', 32).'.r2.cloudflarestorage.com',
+            'credentials' => ['key' => 'test-key', 'secret' => 'test-secret'], 'retries' => 2,
+            'http_handler' => function ($request, $options) use (&$calls) {
+                ++$calls;
+                self::assertSame(2, $options['connect_timeout']);
+                self::assertSame(5, $options['timeout']);
+
+                return \GuzzleHttp\Promise\Create::rejectionFor(['exception' => new \RuntimeException('Synthetic unavailable storage'), 'response' => new Response(503)]);
+            },
+        ]);
+        try {
+            (new R2MediaStorage($client, 'media'))->createResponse(self::KEY, 'private.png', 'image/png');
+            self::fail('A storage failure must not produce a successful redirect.');
+        } catch (\RuntimeException $error) {
+            self::assertSame('Unable to check the media object in R2.', $error->getMessage());
+        }
+        self::assertSame(1, $calls);
+    }
+
     public function testDeletionRetainsBeforeRemovingTheCanonicalObject(): void
     {
         $this->storage([new Result(), new Result(), new Result()])->delete(self::KEY);

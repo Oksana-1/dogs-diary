@@ -2,6 +2,7 @@
 
 namespace App\Application\Media;
 
+use App\Http\DeferredMediaResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 final readonly class PrivateMediaResponseFactory
@@ -12,6 +13,6 @@ final readonly class PrivateMediaResponseFactory
 
     public function create(string $storageKey, string $originalName, string $mimeType): ?Response
     {
-        return $this->storage->createResponse($storageKey, $originalName, $mimeType);
+        return new DeferredMediaResponse(fn () => $this->storage->createResponse($storageKey, $originalName, $mimeType));
     }
 }

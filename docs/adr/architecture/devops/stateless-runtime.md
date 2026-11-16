@@ -172,3 +172,43 @@ removed automatically, including the tmpfs database:
 docker stop dogs-diary-runtime-a dogs-diary-runtime-b dogs-diary-runtime-db
 docker network rm dogs-diary-runtime
 ```
+
+## Bounded session waits and private media lookup
+
+Private media ownership is checked by the existing owner-scoped services before
+creating a deferred response. The storage lookup runs at `kernel.response` priority
+`-1100`, after Security has persisted its token and Symfony's session listener
+has saved/closed the session (`-1000`). Do not replace this with a controller-level
+`session->save()`: the later security listener could write an old token after a
+concurrent logout. The deferred response preserves response cookies/security
+headers, private caching, missing-file errors and local video byte ranges.
+
+Only R2 `exists()` metadata requests have a 2-second connect timeout, a 5-second
+request timeout and no retries. Uploads, staged-file validation/downloads,
+retention copies and deletion retain their existing transfer budgets. No public
+bucket or authorization bypass is introduced.
+
+PostgreSQL session transactions use `SET LOCAL lock_timeout = '3s'` and
+`SET LOCAL statement_timeout = '10s'`. A narrow PDO adapter applies these at the
+start of each session transaction while keeping Symfony's session locking,
+rollback and expiry algorithm intact. Transaction-local settings also work with
+transaction pooling and disappear at commit/rollback. They do not cap the whole
+transaction's idle time, interrupt file transfers, or change ORM/migration query
+budgets. Connection establishment and provider-side pool queueing are not bounded
+by these SQL timeouts. SQLite test/local behavior is unchanged.
+
+The existing stderr logger has a `runtime` channel for session-read and private
+media-lookup duration/outcome. It emits successful slow waits as well as failures,
+without waiting for an error to flush Monolog's buffer. Entries omit session IDs,
+user IDs, media keys, signed URLs, filenames and exception payloads. A session
+read duration includes its connection's query/lock work, not factory connection
+establishment. These measurements diagnose future usage; they do not reconstruct
+the October 19 incident or prove a particular hosted resource saving.
+
+`python3 -B tests/Operations/shared_state_smoke.py` now also executes
+`session_waits.php` inside the disposable app container: a contended session times
+out, its data survives rollback, a long statement times out, and local settings
+are cleared. The normal PHPUnit suite checks that storage runs after session
+close, subsequent requests stay authenticated, a concurrent logout stays logged
+out, foreign/anonymous access is denied, byte ranges still work, and upload
+validation/transfer behavior remains intact.

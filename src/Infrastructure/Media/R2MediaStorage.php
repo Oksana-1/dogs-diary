@@ -65,7 +65,11 @@ final readonly class R2MediaStorage implements DirectUploadStorageInterface
             return false;
         }
         try {
-            $this->client->headObject(['Bucket' => $this->bucket, 'Key' => $storageKey]);
+            $this->client->headObject([
+                'Bucket' => $this->bucket, 'Key' => $storageKey,
+                '@http' => ['connect_timeout' => 2, 'timeout' => 5],
+                '@retries' => 0,
+            ]);
 
             return true;
         } catch (AwsException $exception) {

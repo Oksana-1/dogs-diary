@@ -21,6 +21,8 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 final class PrivateMediaDownloadTest extends WebTestCase
 {
     private KernelBrowser $client;
+    private \PHPUnit\Framework\MockObject\MockObject $storage;
+    private ?\Closure $lookup = null;
     private EntityManagerInterface $entityManager;
     private string $mediaDirectory;
     private User $alice;
@@ -41,10 +43,10 @@ final class PrivateMediaDownloadTest extends WebTestCase
         self::assertTrue(mkdir($this->mediaDirectory, 0777, true));
 
         $this->client = static::createClient();
-        self::getContainer()->set(
-            MediaStorageInterface::class,
-            new LocalMediaStorage($this->mediaDirectory),
-        );
+        $local = new LocalMediaStorage($this->mediaDirectory);
+        $this->storage = $this->createMock(MediaStorageInterface::class);
+        $this->storage->method('createResponse')->willReturnCallback(fn (...$args) => null !== $this->lookup ? ($this->lookup)(...$args) : $local->createResponse(...$args));
+        self::getContainer()->set(MediaStorageInterface::class, $this->storage);
 
         $this->entityManager = self::getContainer()->get(EntityManagerInterface::class);
         (new SchemaTool($this->entityManager))->createSchema(
@@ -176,6 +178,55 @@ final class PrivateMediaDownloadTest extends WebTestCase
         $this->client->request('GET', $this->dogMediaUrl($this->aliceDog, $this->aliceImage));
 
         $this->assertJsonNotFound();
+    }
+
+    public function testMediaStorageRunsAfterSessionCloseAndAuthenticationSurvives(): void
+    {
+        $requests = self::getContainer()->get('request_stack');
+        $this->storage->expects(self::once())->method('createResponse');
+        $this->lookup = function () use ($requests) {
+            self::assertFalse($requests->getCurrentRequest()->getSession()->isStarted());
+
+            return new \Symfony\Component\HttpFoundation\RedirectResponse('https://media.example.test/signed', 307, ['Referrer-Policy' => 'no-referrer']);
+        };
+        $this->client->request('GET', $this->dogMediaUrl($this->aliceDog, $this->aliceImage));
+        self::assertResponseStatusCodeSame(307);
+        self::assertResponseHeaderSame('referrer-policy', 'no-referrer');
+        self::assertResponseHeaderSame('x-content-type-options', 'nosniff');
+        $this->client->request('GET', '/api/dogs');
+        self::assertResponseIsSuccessful();
+    }
+
+    public function testLogoutDuringMediaLookupCannotRestoreAuthentication(): void
+    {
+        $requests = self::getContainer()->get('request_stack');
+        $factory = self::getContainer()->get('session.factory');
+        $this->storage->expects(self::once())->method('createResponse');
+        $this->lookup = function () use ($requests, $factory) {
+            $session = $requests->getCurrentRequest()->getSession();
+            self::assertFalse($session->isStarted());
+            // Another request invalidates the persisted session while storage is pending.
+            $other = $factory->createSession();
+            $other->setId($session->getId());
+            $other->invalidate();
+            $other->save();
+
+            return new \Symfony\Component\HttpFoundation\RedirectResponse('https://media.example.test/signed', 307);
+        };
+        $this->client->request('GET', $this->dogMediaUrl($this->aliceDog, $this->aliceImage));
+        self::assertResponseStatusCodeSame(307);
+        $this->client->request('GET', '/api/dogs');
+        self::assertResponseStatusCodeSame(401);
+    }
+
+    public function testUnauthorizedMediaNeverTouchesStorage(): void
+    {
+        $this->storage->expects(self::never())->method('createResponse');
+        $this->client->request('GET', $this->dogMediaUrl($this->bobDog, $this->bobImage));
+        $this->assertJsonNotFound();
+        $this->client->getCookieJar()->clear();
+        $this->client->request('GET', $this->dogMediaUrl($this->aliceDog, $this->aliceImage));
+        self::assertResponseStatusCodeSame(401);
     }
 
     private function createUser(string $name, string $email): User

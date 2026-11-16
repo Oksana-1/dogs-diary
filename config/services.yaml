@@ -30,6 +30,9 @@ services:
         exclude:
             - '../src/Infrastructure/Media/R2MediaStorage.php'
             - '../src/Infrastructure/Media/R2StorageCheck.php'
+            - '../src/Http/'
+            - '../src/Infrastructure/Security/BoundedSessionPdo.php'
+            - '../src/Infrastructure/Security/TimedSessionHandler.php'
 
     App\Application\Media\MediaUploadValidator:
         arguments:
@@ -61,7 +64,7 @@ services:
             $mediaUploadLimiter: '@limiter.media_upload'
 
     app.database_session_handler:
-        class: Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler
+        class: App\Infrastructure\Security\TimedSessionHandler
         factory: ['@App\Infrastructure\Security\DatabaseSessionHandlerFactory', 'create']
         lazy: true
 

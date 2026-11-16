@@ -6,15 +6,17 @@ namespace App\Infrastructure\Security;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
-use Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 final class DatabaseSessionHandlerFactory
 {
-    public function __construct(private readonly Connection $connection)
+    public function __construct(private readonly Connection $connection, #[Autowire(service: 'monolog.logger.runtime')] private readonly LoggerInterface $logger = new NullLogger())
     {
     }
 
-    public function create(): PdoSessionHandler
+    public function create(): TimedSessionHandler
     {
         // Keep the session transaction separate from ORM transactions. DBAL also
         // preserves sslmode, which PdoSessionHandler's URL parser discards.
@@ -24,9 +26,10 @@ final class DatabaseSessionHandlerFactory
             throw new \LogicException('Database sessions require a PDO driver.');
         }
 
-        return new PdoSessionHandler($pdo, [
-            'lock_mode' => PdoSessionHandler::LOCK_TRANSACTIONAL,
-            'ttl' => 1440,
-        ]);
+        if ('pgsql' === $pdo->getAttribute(\PDO::ATTR_DRIVER_NAME)) {
+            $pdo = new BoundedSessionPdo($pdo);
+        }
+
+        return new TimedSessionHandler($pdo, $this->logger);
     }
 }
